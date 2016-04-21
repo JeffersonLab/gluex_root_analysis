@@ -1,0 +1,19 @@
+#!/bin/csh -f
+
+# SET ROOT_ANALYSIS_HOME TO $PWD, IF NOT SET ALREADY
+if ( ! $?ROOT_ANALYSIS_HOME ) then
+	setenv ROOT_ANALYSIS_HOME $PWD
+endif
+
+# SET BMS_OSNAME, IF NOT SET ALREADY # COPIED FROM sim-recon
+if ( ! $?BMS_OSNAME ) then
+	setenv BMS_OSNAME `${ROOT_ANALYSIS_HOME}/osrelease.pl`
+endif
+
+# SET LIBRARY, PATH
+if ( ! $?LD_LIBRARY_PATH ) then
+	setenv LD_LIBRARY_PATH
+endif
+setenv LD_LIBRARY_PATH ${ROOT_ANALYSIS_HOME}/${BMS_OSNAME}/lib/:$LD_LIBRARY_PATH
+setenv PATH ${ROOT_ANALYSIS_HOME}/${BMS_OSNAME}/bin/:$PATH
+
