@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# SET ROOT_ANALYSIS_HOME TO $PWD, IF NOT SET ALREADY
+if [[ $ROOT_ANALYSIS_HOME == "" ]]; then
+	export ROOT_ANALYSIS_HOME=${PWD}
+fi
+
+# SET BMS_OSNAME, IF NOT SET ALREADY # COPIED FROM sim-recon
+if [[ $BMS_OSNAME == "" ]]; then
+	export BMS_OSNAME=`$ROOT_ANALYSIS_HOME/osrelease.pl`
+fi
+
+# SET LIBRARY, PATH
+if [[ $LD_LIBRARY_PATH == "" ]]; then
+	export LD_LIBRARY_PATH
+fi
+
+export LD_LIBRARY_PATH=$ROOT_ANALYSIS_HOME/$BMS_OSNAME/lib:$LD_LIBRARY_PATH
+export PATH=$ROOT_ANALYSIS_HOME/$BMS_OSNAME/bin:$PATH
