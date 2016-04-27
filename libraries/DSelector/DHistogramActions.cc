@@ -330,3 +330,244 @@ void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicDa
 	dBeamParticleHist_DeltaTRF->Fill(locDeltaTRF);
 	dBeamParticleHist_DeltaTRFVsBeamE->Fill(locP4.E(), locDeltaTRF);
 }
+
+void DHistogramAction_ParticleID::Initialize(void)
+{
+	string locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
+
+	//CREATE MAIN FOLDER
+	string locDirName = "Hist_ParticleID";
+	if(dActionUniqueString != "")
+		locDirName += string("_") + dActionUniqueString;
+	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+
+	//Steps
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		ostringstream locStepName;
+		locStepName << "Step" << loc_i << "__" << locStep->Get_StepName();
+		string locStepROOTName = locStep->Get_StepROOTName();
+		bool locStepDirectoryCreatedFlag = false;
+
+		// final state particles
+		for(size_t loc_j = 0; loc_j < locStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			if(locStep->Get_FinalParticle(loc_j) == NULL)
+				continue; //not reconstructed at all
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locStep->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			Particle_t locPID = locStep->Get_FinalPID(loc_j);
+			if(dHistMap_BetaVsP_BCAL[loc_i].find(locPID) != dHistMap_BetaVsP_BCAL[loc_i].end())
+				continue; //pid already done
+
+			if(!locStepDirectoryCreatedFlag)
+			{
+				(new TDirectoryFile(locStepName.str().c_str(), locStepName.str().c_str()))->cd();
+				locStepDirectoryCreatedFlag = true;
+			}
+
+			locParticleName = ParticleType(locPID);
+			(new TDirectoryFile(locParticleName.c_str(), locParticleName.c_str()))->cd();
+
+			Create_Hists(loc_i, locStepROOTName, locPID);
+			gDirectory->cd("..");
+		} //end of particle loop
+
+		gDirectory->cd("..");
+	} //end of step loop
+
+	//Return to the base directory
+	gDirectory->cd("..");
+}
+
+void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepROOTName, Particle_t locPID)
+{
+	string locParticleROOTName = ParticleName_ROOT(locPID);
+	string locHistName, locHistTitle;
+	
+	// deltaT and beta vs p
+	locHistName = "DeltaTVsP_BCAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL #Delta T (ns)");
+	dHistMap_DeltaTVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+	locHistName = "BetaVsP_BCAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL #beta");
+	dHistMap_BetaVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
+
+	locHistName = "DeltaTVsP_FCAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL #Delta T (ns)");
+	dHistMap_DeltaTVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+	locHistName = "BetaVsP_FCAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL #beta");
+	dHistMap_BetaVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
+
+	if(ParticleCharge(locPID) != 0) {
+		
+		locHistName = "DeltaTVsP_TOF";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF #Delta T (ns)");
+		dHistMap_DeltaTVsP_TOF[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+		locHistName = "BetaVsP_TOF";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF #beta");
+		dHistMap_BetaVsP_TOF[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
+
+		locHistName = "DeltaTVsP_SC";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); SC #Delta T (ns)");
+		dHistMap_DeltaTVsP_SC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+
+		// dE/dx vs P
+		locHistName = "dEdxVsP_CDC";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); CDC dE/dx (MeV/cm) ");
+		dHistMap_dEdxVsP_CDC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
+	
+		locHistName = "dEdxVsP_FDC";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); FDC dE/dx (MeV/cm) ");
+		dHistMap_dEdxVsP_FDC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
+		
+		locHistName = "dEdxVsP_SC";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); SC dE/dx (MeV/cm) ");
+		dHistMap_dEdxVsP_SC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
+		
+		locHistName = "dEdxVsP_TOF";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF dE/dx (MeV/cm) ");
+		dHistMap_dEdxVsP_TOF[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
+		
+		// E/p vs p, theta
+		locHistName = "EoverPVsP_BCAL";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL E/p");
+		dHistMap_EoverPVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumEoverPBins, dMinEoverP, dMaxEoverP);
+		locHistName = "EoverPVsTheta_BCAL";
+		locHistTitle = locParticleROOTName + string(";#theta (degrees); BCAL E/p");
+		dHistMap_EoverPVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumEoverPBins, dMinEoverP, dMaxEoverP);
+		
+		locHistName = "EoverPVsP_FCAL";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL E/p");
+		dHistMap_EoverPVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumEoverPBins, dMinEoverP, dMaxEoverP);
+		locHistName = "EoverPVsTheta_FCAL";
+		locHistTitle = locParticleROOTName + string(";#theta (degrees); FCAL E/p");
+		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);	
+	}
+	else {
+		locHistName = "ShowerZVsParticleZ";
+		locHistTitle = locParticleROOTName + string(";Particle Vertex Z (cm); Shower Vertex Z (cm)");
+		dHistMap_ShowerZVsParticleZ[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 200, 0., 200., 200, 0., 200);
+		locHistName = "ShowerTVsParticleT";
+		locHistTitle = locParticleROOTName + string(";Particle Vertex T (ns); Shower Vertex T (ns)");
+		dHistMap_ShowerTVsParticleT[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 200, -100., 100., 200, -100., 100);
+	}
+
+}
+	
+bool DHistogramAction_ParticleID::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locParticleComboStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//final particles
+		for(size_t loc_j = 0; loc_j < locParticleComboStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locParticleComboStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locParticleComboStep->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			//check if duplicate
+			set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][locKinematicData->Get_PID()];
+			if(locParticleSet.find(locKinematicData->Get_ID()) != locParticleSet.end())
+				continue;
+
+			Fill_Hists(locKinematicData, loc_i);
+			locParticleSet.insert(locKinematicData->Get_ID());
+		} //end of particle loop
+	} //end of step loop
+
+	return true;
+}
+
+void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex)
+{
+	double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
+
+	Particle_t locPID = locKinematicData->Get_PID();
+	TLorentzVector locP4 = dUseMeasuredFlag ? locKinematicData->Get_P4_Measured() : locKinematicData->Get_P4();
+	TLorentzVector locX4 = dUseMeasuredFlag ? locKinematicData->Get_X4_Measured() : locKinematicData->Get_X4();
+
+	double locTheta = locP4.Theta()*180.0/TMath::Pi();
+	double locP = locP4.P();
+
+	double locBeta_Timing = 0.0;
+	if(ParticleCharge(locPID) != 0)
+	{
+		const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+		if(locChargedTrackHypothesis != NULL) {
+			locBeta_Timing = dUseMeasuredFlag ? locChargedTrackHypothesis->Get_Beta_Timing_Measured() : locChargedTrackHypothesis->Get_Beta_Timing();
+			double locDeltaT = locX4.T() - locRFTime;
+
+			if(locChargedTrackHypothesis->Get_Energy_BCAL() > 0.) {
+				dHistMap_BetaVsP_BCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
+				dHistMap_DeltaTVsP_BCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
+			}
+			else if(locChargedTrackHypothesis->Get_dEdx_TOF() > 0.) {
+				dHistMap_BetaVsP_TOF[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
+				dHistMap_DeltaTVsP_TOF[locStepIndex][locPID]->Fill(locP, locDeltaT);
+			}
+			else if(locChargedTrackHypothesis->Get_Energy_FCAL() > 0.) {
+				dHistMap_BetaVsP_FCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
+				dHistMap_DeltaTVsP_FCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
+			}
+			
+			// dE/dx vs p
+			if(locChargedTrackHypothesis->Get_dEdx_CDC() > 0.) 
+				dHistMap_dEdxVsP_CDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_CDC()*1e6);
+			if(locChargedTrackHypothesis->Get_dEdx_FDC() > 0.) 
+				dHistMap_dEdxVsP_FDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_FDC()*1e6);
+			if(locChargedTrackHypothesis->Get_dEdx_ST() > 0.) 
+				dHistMap_dEdxVsP_SC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_ST()*1e3);
+			if(locChargedTrackHypothesis->Get_dEdx_TOF() > 0.) 
+				dHistMap_dEdxVsP_TOF[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_TOF()*1e3);
+
+			// E over P
+			if(locChargedTrackHypothesis->Get_Energy_BCAL() > 0.) {
+				double locEoverP = locChargedTrackHypothesis->Get_Energy_BCAL()/locP;
+				dHistMap_EoverPVsP_BCAL[locStepIndex][locPID]->Fill(locP, locEoverP);
+				dHistMap_EoverPVsTheta_BCAL[locStepIndex][locPID]->Fill(locTheta, locEoverP);
+			}
+			if(locChargedTrackHypothesis->Get_Energy_FCAL() > 0.) {
+				double locEoverP = locChargedTrackHypothesis->Get_Energy_FCAL()/locP;
+				dHistMap_EoverPVsP_FCAL[locStepIndex][locPID]->Fill(locP, locEoverP);
+				dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID]->Fill(locTheta, locEoverP);
+			}
+		}
+	}
+	else
+	{
+		const DNeutralParticleHypothesis* locNeutralParticleHypothesis = dynamic_cast<const DNeutralParticleHypothesis*>(locKinematicData);
+		if(locNeutralParticleHypothesis != NULL) {
+			locBeta_Timing = dUseMeasuredFlag ? locNeutralParticleHypothesis->Get_Beta_Timing_Measured() : locNeutralParticleHypothesis->Get_Beta_Timing();
+			double locDeltaT = locX4.T() - locRFTime;
+
+			TLorentzVector locX4_Shower = locNeutralParticleHypothesis->Get_X4_Shower();
+			TLorentzVector locX4_Measured = locNeutralParticleHypothesis->Get_X4_Measured();
+			dHistMap_ShowerZVsParticleZ[locStepIndex][locPID]->Fill(locX4.Z(), locX4_Shower.Z());
+			dHistMap_ShowerTVsParticleT[locStepIndex][locPID]->Fill(locX4.T(), locX4_Shower.T());
+			
+			if(locNeutralParticleHypothesis->Get_Energy_BCAL() > 0.) {
+				dHistMap_BetaVsP_BCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
+				dHistMap_DeltaTVsP_BCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
+			}
+			else if(locNeutralParticleHypothesis->Get_Energy_FCAL() > 0.) {
+				dHistMap_BetaVsP_FCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
+				dHistMap_DeltaTVsP_FCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
+			}
+		}
+	}
+}
