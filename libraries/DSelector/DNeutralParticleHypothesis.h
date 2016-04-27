@@ -7,6 +7,7 @@
 #include "TClonesArray.h"
 
 #include <particleType.h>
+#include <GlueX.h>
 
 #include "DTreeInterface.h"
 #include "DKinematicData.h"
@@ -44,6 +45,7 @@ class DNeutralParticleHypothesis : public DKinematicData
 		Float_t Get_Beta_Timing_Measured(void) const;
 		Float_t Get_ChiSq_Timing_Measured(void) const;
 		Float_t Get_ConfidenceLevel_Timing_Measured(void) const; //is kinfit if kinfit, else is measured
+		DetectorSystem_t Get_Detector_System_Timing(void) const;
 
 		//SHOWER INFO
 		Float_t Get_Energy_BCAL(void) const;
@@ -229,6 +231,16 @@ inline Float_t DNeutralParticleHypothesis::Get_ConfidenceLevel_Timing_Measured(v
 	UInt_t locNDF = Get_NDF_Timing();
 	Float_t locChiSq = Get_ChiSq_Timing_Measured();
 	return ((locNDF != 0) ? TMath::Prob(locChiSq, locNDF) : -1.0);
+}
+
+inline DetectorSystem_t DNeutralParticleHypothesis::Get_Detector_System_Timing(void) const
+{
+	if(Get_Energy_BCAL() > 0.) 
+		return SYS_BCAL;
+	else if(Get_Energy_FCAL() > 0.) 
+		return SYS_FCAL;
+
+	return SYS_NULL;
 }
 
 //SHOWER INFO

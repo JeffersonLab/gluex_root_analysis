@@ -6,6 +6,7 @@
 #include "TBranch.h"
 
 #include <particleType.h>
+#include <GlueX.h>
 
 #include "DTreeInterface.h"
 #include "DKinematicData.h"
@@ -51,6 +52,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_Beta_Timing_Measured(void) const;
 		Float_t Get_ChiSq_Timing_Measured(void) const;
 		Float_t Get_ConfidenceLevel_Timing_Measured(void) const; //is kinfit if kinfit, else is measured
+		DetectorSystem_t Get_Detector_System_Timing(void) const;
 
 		//HIT ENERGY
 		Float_t Get_dEdx_TOF(void) const;
@@ -297,6 +299,20 @@ inline Float_t DChargedTrackHypothesis::Get_ConfidenceLevel_Timing_Measured(void
 	UInt_t locNDF = Get_NDF_Timing();
 	Float_t locChiSq = Get_ChiSq_Timing_Measured();
 	return ((locNDF != 0) ? TMath::Prob(locChiSq, locNDF) : -1.0);
+}
+
+inline DetectorSystem_t DChargedTrackHypothesis::Get_Detector_System_Timing(void) const
+{
+	if(Get_Energy_BCAL() > 0.) 
+		return SYS_BCAL;
+	else if(Get_dEdx_TOF() > 0.)
+		return SYS_TOF;
+	else if(Get_Energy_FCAL() > 0.) 
+		return SYS_FCAL;
+	else if(Get_dEdx_ST() > 0.)
+		return SYS_START;
+
+	return SYS_NULL;
 }
 
 //HIT ENERGY
