@@ -4,24 +4,34 @@ string gPROOFLiteSandbox = "";
 
 /************************************************************ PROCESS ************************************************************/
 
+void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
+{
+        TChain* locChain = new TChain(locTreeName.c_str());
+        locChain->Add(locInputFileName.c_str());
+        Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, locNumThreads);
+}
+
 void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
 {
-	TChain* locChain = new TChain(locTreeName.c_str());
-	locChain->Add(locInputFileName.c_str());
-	Process_Chain(locChain, locSelectorName, locOutputFileName, locNumThreads);
+	Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, "", locNumThreads);
+}
+
+void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
+{
+	string locPackageName = Get_PackagePath();
+	Setup_PROOFSession(locPackageName, "", locOutputFileName, locOutputTreeFileName, locNumThreads);
+	Process_Chain(locChain, locSelectorName);
 }
 
 void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
 {
-	string locPackageName = Get_PackagePath();
-	Setup_PROOFSession(locPackageName, "", locOutputFileName, locNumThreads);
-	Process_Chain(locChain, locSelectorName);
+        Process_Chain(locChain, locSelectorName, locOutputFileName, "", locNumThreads);
 }
 
-void DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, unsigned int locNumThreads, unsigned int locNumEntries)
+void DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads, unsigned int locNumEntries)
 {
 	string locPackageName = Get_PackagePath();
-	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locNumThreads);
+	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locOutputTreeFileName, locNumThreads);
 	locPROOF->Process(locSelectorName.c_str(), locNumEntries, "");
 }
 
@@ -39,14 +49,16 @@ string DPROOFLiteManager::Get_PackagePath(void)
 	return locAnalysisHome + string("/") + locOSName + string("/packages/DSelector.par");
 }
 
-TProof* DPROOFLiteManager::Setup_PROOFSession(string locPackageName, string locInputFileName, string locOutputFileName, unsigned int locNumThreads)
+TProof* DPROOFLiteManager::Setup_PROOFSession(string locPackageName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
 {
 	locInputFileName = Setup_Path(locInputFileName);
 	locOutputFileName = Setup_Path(locOutputFileName);
+	locOutputTreeFileName = Setup_Path(locOutputTreeFileName);
 
 	TObjArray* locSessionVariables = new TObjArray(); //use name/title as key/value
 	locSessionVariables->AddLast(new TNamed("INPUT_FILENAME", locInputFileName.c_str()));
 	locSessionVariables->AddLast(new TNamed("OUTPUT_FILENAME", locOutputFileName.c_str()));
+	locSessionVariables->AddLast(new TNamed("OUTPUT_TREE_FILENAME", locOutputTreeFileName.c_str()));
 
 	return Setup_PROOFSession(locNumThreads, vector<string>(1, locPackageName), locSessionVariables);
 }

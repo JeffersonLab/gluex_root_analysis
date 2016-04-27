@@ -39,6 +39,7 @@ class DSelector : public TSelector
 		virtual Bool_t Process(Long64_t locEntry);
 		void SlaveTerminate(void);
 		void Terminate(void);
+		void FillOutputTree(void);
 
 	protected:
 
@@ -47,6 +48,7 @@ class DSelector : public TSelector
 		bool dInitializedFlag;
 		TString dOption;
 		string dOutputFileName;
+		string dOutputTreeFileName;
 
 		// TARGET INFORMATION
 		TVector3 dTargetCenter;
@@ -99,7 +101,9 @@ class DSelector : public TSelector
 		void ReInitialize_Wrappers(void);
 
 		TFile* dFile;
+		TFile* dOutputTreeFile;
 		TProofOutputFile* dProofFile;
+		TProofOutputFile* dOutputTreeProofFile;
 		DTreeInterface* dTreeInterface;
 
 		// EVENT DATA
@@ -138,7 +142,7 @@ class DSelector : public TSelector
 inline DSelector::DSelector(TTree* locTree) :
 		dInitializedFlag(false), dOutputFileName(""),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
-		dBeamWrapper(NULL), dComboWrapper(NULL), dFile(NULL), dProofFile(NULL), dTreeInterface(NULL),
+		dBeamWrapper(NULL), dComboWrapper(NULL), dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dTreeInterface(NULL),
 		dRunNumber(NULL), dEventNumber(NULL), dMCWeight(NULL), dIsThrownTopology(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}

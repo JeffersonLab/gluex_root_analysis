@@ -59,6 +59,9 @@ class DTreeInterface
 		void Get_Entry(Long64_t locEntry);
 		void Fill(void){dTree->Fill();};
 
+		void CloneTree(){dTreeOutput = dTree->CloneTree(0);};
+		void FillOutputTree(){dTreeOutput->Fill();};
+
 		/************************************************************ GET BRANCHES AND DATA *********************************************************/
 
 		//GET BRANCH
@@ -117,6 +120,7 @@ class DTreeInterface
 		/************************************************************* MEMBER VARIABLES *************************************************************/
 
 		TTree* dTree;
+		TTree* dTreeOutput;
 
 		/************************************************************ GET ENTRY CONTROL *************************************************************/
 

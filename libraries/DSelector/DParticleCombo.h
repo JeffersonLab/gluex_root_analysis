@@ -49,6 +49,7 @@ class DParticleCombo
 		Bool_t Get_IsComboCut(void) const;
 		Bool_t Get_IsTrueCombo(void) const;
 		Bool_t Get_IsBDTSignalCombo(void) const;
+		void Set_IsComboCut(Bool_t locIsComboCut) const;
 
 		// RF:
 		Float_t Get_RFTime_Measured(void) const;
@@ -152,6 +153,12 @@ inline Bool_t DParticleCombo::Get_IsTrueCombo(void) const
 inline Bool_t DParticleCombo::Get_IsBDTSignalCombo(void) const
 {
 	return ((Bool_t*)dBranch_IsBDTSignalCombo->GetAddress())[dComboIndex];
+}
+
+inline void DParticleCombo::Set_IsComboCut(Bool_t locIsComboCut) const
+{
+	dBranch_IsComboCut->GetAddress()[dComboIndex] = locIsComboCut;
+	return;
 }
 
 // RF:

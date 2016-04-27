@@ -24,9 +24,11 @@ class DPROOFLiteManager
 		static void Set_SandBox(string locPath);
 
 		//SIMPLE INTERFACE //only for using DSelector's
+		static void Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads);
 		static void Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, unsigned int locNumThreads);
+		static void Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads);
 		static void Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, unsigned int locNumThreads);
-		static void Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, unsigned int locNumThreads, unsigned int locNumEntries);
+		static void Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads, unsigned int locNumEntries);
 
 		//FULL INTERFACE //For any use
 		//Create PROOF
@@ -37,7 +39,7 @@ class DPROOFLiteManager
 	private:
 
 		//UTILITY FUNCTIONS
-		static TProof* Setup_PROOFSession(string locPackageName, string locInputFileName, string locOutputFileName, unsigned int locNumThreads);
+		static TProof* Setup_PROOFSession(string locPackageName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads);
 		static string Setup_Path(string locInputPath);
 		static string Get_PackagePath(void);
 };
