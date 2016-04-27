@@ -44,9 +44,18 @@ void DSelector::Init(TTree *locTree)
 	// SETUP TARGET
 	Setup_Target();
 
+	// CLONE TTree for writing out if desired
+	if(dOutputTreeFile != NULL) {
+		dOutputTreeFile->cd();
+		dTreeInterface->CloneTree();
+	}
+
 	//Change back to file dir, if it exists //So that user-created histograms are in the right location
-	if(dFile != NULL)
+	if(dFile != NULL) {
 		dFile->cd();
+	}
+
+	
 
 	dInitializedFlag = true;
 }
@@ -123,8 +132,12 @@ void DSelector::Setup_Output(void)
 	if(fInput != NULL)
 	{
 		TNamed* locOutputFileObject = (TNamed*)fInput->FindObject("OUTPUT_FILENAME");
-		if(locOutputFileObject != NULL)
+		if(locOutputFileObject != NULL) 
 			dOutputFileName = locOutputFileObject->GetTitle();
+
+		TNamed* locOutputTreeFileObject = (TNamed*)fInput->FindObject("OUTPUT_TREE_FILENAME");
+		if(locOutputTreeFileObject != NULL) 
+			dOutputTreeFileName = locOutputTreeFileObject->GetTitle();
 	}
 
 	if(dOutputFileName != "")
@@ -135,6 +148,17 @@ void DSelector::Setup_Output(void)
 		{
 			dProofFile = new TProofOutputFile(dOutputFileName.c_str(), TProofOutputFile::kMerge);
 			dFile = dProofFile->OpenFile("RECREATE");
+		}
+	}
+
+	if(dOutputTreeFileName != "")
+	{
+		if(gProofServ == NULL)
+			dOutputTreeFile = new TFile(dOutputTreeFileName.c_str(), "RECREATE");
+		else
+		{
+			dOutputTreeProofFile = new TProofOutputFile(dOutputTreeFileName.c_str(), TProofOutputFile::kMerge);
+			dOutputTreeFile = dOutputTreeProofFile->OpenFile("RECREATE");
 		}
 	}
 }
@@ -245,8 +269,15 @@ void DSelector::Finalize()
 		dFile->Write();
 		dFile->Close();
 	}
+	if(dOutputTreeFile != NULL)
+	{
+		dOutputTreeFile->Write();
+		dOutputTreeFile->Close();
+	}
 	if(dProofFile != NULL)
 		fOutput->Add(dProofFile);
+	if(dOutputTreeProofFile != NULL)
+		fOutput->Add(dOutputTreeProofFile);
 }
 
 /**************************************************************** EXTRACT THROWN INFO *****************************************************************/
@@ -293,4 +324,14 @@ map<Particle_t, UInt_t> DSelector::Get_NumFinalStateThrown(void) const
 		locParticleMultiplexID *= ULong64_t(10);
 	}
 	return locNumFinalStateThrown;
+}
+
+void DSelector::FillOutputTree()
+{
+        // The FillOutputTree() function is called for events in the tree which pass
+	// the user-defined analysis cuts.  The output file then contains the TTree 
+	// with these events that can be used for higher-level analysis (eg. AmptTools fit,
+	// PWA, etc.)
+
+        dTreeInterface->FillOutputTree();
 }
