@@ -91,4 +91,64 @@ class DHistogramAction_ParticleComboKinematics
 		map<size_t, TH1I*> dHistMap_DetachedLifetime_RestFrame; //in rest frame
 };
 
+class DHistogramAction_ParticleID
+{
+	public:
+		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, bool locUseMeasuredFlag, string locActionUniqueString = "") :
+		dParticleComboWrapper(locParticleComboWrapper), dUseMeasuredFlag(locUseMeasuredFlag), dActionUniqueString(locActionUniqueString),
+		dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
+		dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
+		dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
+		dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
+		dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
+		dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
+		dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0) {}
+
+	private:
+		const DParticleCombo* dParticleComboWrapper;
+		bool dUseMeasuredFlag;
+		string dActionUniqueString;
+
+	public:
+		unsigned int dNumPBins, dNumThetaBins, dNumPhiBins, dNumTBins, dNumVertexXYBins, dNumBetaBins, dNumDeltaBetaBins;
+		unsigned int dNum2DPBins, dNum2DThetaBins, dNum2DPhiBins, dNumDeltaTRFBins, dNumPathLengthBins, dNumLifetimeBins;
+		unsigned int dNumDeltaTBins, dNum2DdEdxBins, dNumEoverPBins;
+		double dMinT, dMaxT, dMinP, dMaxP, dMinTheta, dMaxTheta, dMinPhi, dMaxPhi, dMinVertexZ, dMaxVertexZ, dMinVertexXY, dMaxVertexXY;
+		double dMinBeta, dMaxBeta, dMinDeltaBeta, dMaxDeltaBeta, dMinDeltaTRF, dMaxDeltaTRF, dMaxPathLength, dMaxLifetime, dMaxBeamE;
+		double dMinDeltaT, dMaxDeltaT, dMindEdx, dMaxdEdx, dMinEoverP, dMaxEoverP;
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void); //if true, will reset uniqueness tracking
+
+	private:
+
+		void Create_Hists(int locStepIndex, string locStepROOTName, Particle_t locPID);
+		void Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex);
+
+		//keys are step index, PID //beam has PID Unknown
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_CDC;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_FDC;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_SC;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_TOF;
+
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_BCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_TOF;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_FCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_BCAL;	
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_TOF;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_FCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_SC;
+
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_BCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_BCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_FCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_FCAL;
+		
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerZVsParticleZ;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerTVsParticleT;
+
+		map<size_t, map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed; //step index, PID, particle indices
+};
+
 #endif // _DHistogramActions_
