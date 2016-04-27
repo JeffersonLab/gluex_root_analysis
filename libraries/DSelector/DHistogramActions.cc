@@ -265,6 +265,10 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 			if(locKinematicData == NULL)
 				continue; //e.g. a decaying or missing particle whose params aren't set yet
 
+			//check if measured if not using Kin Fit
+			if(dUseMeasuredFlag && locParticleComboStep->Get_DecayStepIndex(loc_j) != -2)
+				continue; //not measured
+
 			//check if duplicate
 			set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][locKinematicData->Get_PID()];
 			if(locParticleSet.find(locKinematicData->Get_ID()) != locParticleSet.end())
@@ -415,10 +419,6 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepR
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF #beta");
 		dHistMap_BetaVsP_TOF[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
 
-		locHistName = "DeltaTVsP_SC";
-		locHistTitle = locParticleROOTName + string(";p (GeV/c); SC #Delta T (ns)");
-		dHistMap_DeltaTVsP_SC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
-
 		// dE/dx vs P
 		locHistName = "dEdxVsP_CDC";
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); CDC dE/dx (MeV/cm) ");
@@ -428,9 +428,9 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepR
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); FDC dE/dx (MeV/cm) ");
 		dHistMap_dEdxVsP_FDC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
 		
-		locHistName = "dEdxVsP_SC";
-		locHistTitle = locParticleROOTName + string(";p (GeV/c); SC dE/dx (MeV/cm) ");
-		dHistMap_dEdxVsP_SC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
+		locHistName = "dEdxVsP_ST";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); ST dE/dx (MeV/cm) ");
+		dHistMap_dEdxVsP_ST[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
 		
 		locHistName = "dEdxVsP_TOF";
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF dE/dx (MeV/cm) ");
@@ -512,15 +512,15 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			locBeta_Timing = dUseMeasuredFlag ? locChargedTrackHypothesis->Get_Beta_Timing_Measured() : locChargedTrackHypothesis->Get_Beta_Timing();
 			double locDeltaT = locX4.T() - locRFTime;
 
-			if(locChargedTrackHypothesis->Get_Energy_BCAL() > 0.) {
+			if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_BCAL) {
 				dHistMap_BetaVsP_BCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
 				dHistMap_DeltaTVsP_BCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
 			}
-			else if(locChargedTrackHypothesis->Get_dEdx_TOF() > 0.) {
+			else if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_TOF) {
 				dHistMap_BetaVsP_TOF[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
 				dHistMap_DeltaTVsP_TOF[locStepIndex][locPID]->Fill(locP, locDeltaT);
 			}
-			else if(locChargedTrackHypothesis->Get_Energy_FCAL() > 0.) {
+			else if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_FCAL) {
 				dHistMap_BetaVsP_FCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
 				dHistMap_DeltaTVsP_FCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
 			}
@@ -531,7 +531,7 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			if(locChargedTrackHypothesis->Get_dEdx_FDC() > 0.) 
 				dHistMap_dEdxVsP_FDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_FDC()*1e6);
 			if(locChargedTrackHypothesis->Get_dEdx_ST() > 0.) 
-				dHistMap_dEdxVsP_SC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_ST()*1e3);
+				dHistMap_dEdxVsP_ST[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_ST()*1e3);
 			if(locChargedTrackHypothesis->Get_dEdx_TOF() > 0.) 
 				dHistMap_dEdxVsP_TOF[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_TOF()*1e3);
 
@@ -553,12 +553,15 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 		const DNeutralParticleHypothesis* locNeutralParticleHypothesis = dynamic_cast<const DNeutralParticleHypothesis*>(locKinematicData);
 		if(locNeutralParticleHypothesis != NULL) {
 			locBeta_Timing = dUseMeasuredFlag ? locNeutralParticleHypothesis->Get_Beta_Timing_Measured() : locNeutralParticleHypothesis->Get_Beta_Timing();
-			double locDeltaT = locX4.T() - locRFTime;
+			
+			//TLorentzVector locX4_Neutral = dUseMeasuredFlag ? locNeutralParticleHypothesis->Get_X4_Measured() : locKinematicData->Get_X4();
+			TLorentzVector locX4_Neutral = locNeutralParticleHypothesis->Get_X4_Measured();
+			double locDeltaT = locX4_Neutral.T() - locRFTime;
 
 			TLorentzVector locX4_Shower = locNeutralParticleHypothesis->Get_X4_Shower();
-			TLorentzVector locX4_Measured = locNeutralParticleHypothesis->Get_X4_Measured();
-			dHistMap_ShowerZVsParticleZ[locStepIndex][locPID]->Fill(locX4.Z(), locX4_Shower.Z());
-			dHistMap_ShowerTVsParticleT[locStepIndex][locPID]->Fill(locX4.T(), locX4_Shower.T());
+			//TLorentzVector locX4_Measured = locNeutralParticleHypothesis->Get_X4_Measured();
+			dHistMap_ShowerZVsParticleZ[locStepIndex][locPID]->Fill(locX4_Neutral.Z(), locX4_Shower.Z());
+			dHistMap_ShowerTVsParticleT[locStepIndex][locPID]->Fill(locX4_Neutral.T(), locX4_Shower.T());
 			
 			if(locNeutralParticleHypothesis->Get_Energy_BCAL() > 0.) {
 				dHistMap_BetaVsP_BCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);

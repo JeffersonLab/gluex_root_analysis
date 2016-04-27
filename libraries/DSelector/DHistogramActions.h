@@ -129,7 +129,7 @@ class DHistogramAction_ParticleID
 		//keys are step index, PID //beam has PID Unknown
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_CDC;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_FDC;
-		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_SC;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_ST;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_TOF;
 
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_BCAL;
@@ -138,7 +138,6 @@ class DHistogramAction_ParticleID
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_BCAL;	
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_TOF;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_FCAL;
-		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_SC;
 
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_BCAL;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_BCAL;
