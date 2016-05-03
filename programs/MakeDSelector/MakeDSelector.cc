@@ -227,7 +227,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	//DO WHATEVER YOU WANT HERE" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE HISTOGRAM ACTIONS" << endl;
-	locSourceStream << "	dHistComboKinematics = new DHistogramAction_ParticleComboKinematics(dComboWrapper, dTargetCenter.Z(), true); //true: use measured data" << endl;
+	locSourceStream << "	dHistComboKinematics = new DHistogramAction_ParticleComboKinematics(dComboWrapper, dTargetCenter.Z(), false); //false: use measured data" << endl;
 	locSourceStream << "	//change binning here" << endl;
 	locSourceStream << "	dHistComboKinematics->Initialize();" << endl;
 	locSourceStream << endl;

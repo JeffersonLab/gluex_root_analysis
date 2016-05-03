@@ -39,7 +39,7 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 			if((dSystem != SYS_NULL) && (locSystem != dSystem))
 				continue;
 
-			TLorentzVector locX4 = dUseMeasuredFlag ? locKinematicData->Get_X4_Measured() : locKinematicData->Get_X4();
+			TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
 			double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
 
 			double locDeltaT = locX4.T() - locRFTime;

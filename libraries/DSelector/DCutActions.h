@@ -25,13 +25,13 @@ using namespace std;
 class DCutAction_PIDDeltaT
 {
 	public:
-                DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseMeasuredFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper), dUseMeasuredFlag(locUseMeasuredFlag), dActionUniqueString(locActionUniqueString),
+                DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+		dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
 		dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
 
 	private:
 		const DParticleCombo* dParticleComboWrapper;
-		bool dUseMeasuredFlag;
+		bool dUseKinFitFlag;
 		string dActionUniqueString;
 
 	public:

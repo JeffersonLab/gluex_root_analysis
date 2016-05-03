@@ -29,8 +29,8 @@ using namespace std;
 class DHistogramAction_ParticleComboKinematics
 {
 	public:
-		DHistogramAction_ParticleComboKinematics(const DParticleCombo* locParticleComboWrapper, double locTargetCenterZ, bool locUseMeasuredFlag, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper), dTargetCenterZ(locTargetCenterZ), dUseMeasuredFlag(locUseMeasuredFlag), dActionUniqueString(locActionUniqueString),
+		DHistogramAction_ParticleComboKinematics(const DParticleCombo* locParticleComboWrapper, double locTargetCenterZ, bool locUseKinFitFlag, string locActionUniqueString = "") :
+		dParticleComboWrapper(locParticleComboWrapper), dTargetCenterZ(locTargetCenterZ), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
 		dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumVertexZBins(600), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 		dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumDeltaTRFBins(500), dNumPathLengthBins(750), dNumLifetimeBins(500),
 		dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
@@ -40,7 +40,7 @@ class DHistogramAction_ParticleComboKinematics
 	private:
 		const DParticleCombo* dParticleComboWrapper;
 		double dTargetCenterZ;
-		bool dUseMeasuredFlag;
+		bool dUseKinFitFlag;
 		string dActionUniqueString;
 
 	public:
@@ -94,8 +94,8 @@ class DHistogramAction_ParticleComboKinematics
 class DHistogramAction_ParticleID
 {
 	public:
-		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, bool locUseMeasuredFlag, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper), dUseMeasuredFlag(locUseMeasuredFlag), dActionUniqueString(locActionUniqueString),
+		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
+		dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
 		dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 		dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
 		dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
@@ -106,7 +106,7 @@ class DHistogramAction_ParticleID
 
 	private:
 		const DParticleCombo* dParticleComboWrapper;
-		bool dUseMeasuredFlag;
+		bool dUseKinFitFlag;
 		string dActionUniqueString;
 
 	public:
