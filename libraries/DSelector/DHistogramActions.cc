@@ -23,7 +23,7 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 
 		//parent //reconstructed &: is gamma, or don't need measured
 		bool locIsBeamFlag = (locInitialPID == Gamma);
-		if((locStep->Get_InitialParticle() != NULL) && (!dUseMeasuredFlag || locIsBeamFlag))
+		if((locStep->Get_InitialParticle() != NULL) && (dUseKinFitFlag || locIsBeamFlag))
 		{
 			(new TDirectoryFile(locStepName.str().c_str(), locStepName.str().c_str()))->cd();
 			locStepDirectoryCreatedFlag = true;
@@ -43,7 +43,7 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 
 			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
 			int locDecayStepIndex = locStep->Get_DecayStepIndex(loc_j);
-			if(dUseMeasuredFlag && (locDecayStepIndex != -2))
+			if(!dUseKinFitFlag && (locDecayStepIndex != -2))
 				continue; //not measured
 
 			Particle_t locPID = locStep->Get_FinalPID(loc_j);
@@ -211,12 +211,12 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 				set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][Unknown];
 				if(locParticleSet.find(locKinematicData->Get_ID()) == locParticleSet.end())
 				{
-					double locRFTime = dUseMeasuredFlag ? dParticleComboWrapper->Get_RFTime_Measured() : dParticleComboWrapper->Get_RFTime();
+					double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
 					Fill_BeamHists(locKinematicData, locRFTime);
 					locParticleSet.insert(locKinematicData->Get_ID());
 				}
 			}
-			else if(!dUseMeasuredFlag) //decaying particle, but reconstructed so can hist
+			else if(dUseKinFitFlag) //decaying particle, but reconstructed so can hist
 				Fill_Hists(locKinematicData, loc_i); //derived from everything in the combo: is technically unique
 		}
 
@@ -266,7 +266,7 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 				continue; //e.g. a decaying or missing particle whose params aren't set yet
 
 			//check if measured if not using Kin Fit
-			if(dUseMeasuredFlag && locParticleComboStep->Get_DecayStepIndex(loc_j) != -2)
+			if(!dUseKinFitFlag && locParticleComboStep->Get_DecayStepIndex(loc_j) != -2)
 				continue; //not measured
 
 			//check if duplicate
@@ -285,8 +285,8 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 void DHistogramAction_ParticleComboKinematics::Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex)
 {
 	Particle_t locPID = locKinematicData->Get_PID();
-	TLorentzVector locP4 = dUseMeasuredFlag ? locKinematicData->Get_P4_Measured() : locKinematicData->Get_P4();
-	TLorentzVector locX4 = dUseMeasuredFlag ? locKinematicData->Get_X4_Measured() : locKinematicData->Get_X4();
+	TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
+	TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
 
 	double locPhi = locP4.Phi()*180.0/TMath::Pi();
 	double locTheta = locP4.Theta()*180.0/TMath::Pi();
@@ -297,13 +297,13 @@ void DHistogramAction_ParticleComboKinematics::Fill_Hists(const DKinematicData* 
 	{
 		const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
 		if(locChargedTrackHypothesis != NULL)
-			locBeta_Timing = dUseMeasuredFlag ? locChargedTrackHypothesis->Get_Beta_Timing_Measured() : locChargedTrackHypothesis->Get_Beta_Timing();
+			locBeta_Timing = dUseKinFitFlag ? locChargedTrackHypothesis->Get_Beta_Timing() : locChargedTrackHypothesis->Get_Beta_Timing_Measured();
 	}
 	else
 	{
 		const DNeutralParticleHypothesis* locNeutralParticleHypothesis = dynamic_cast<const DNeutralParticleHypothesis*>(locKinematicData);
 		if(locNeutralParticleHypothesis != NULL)
-			locBeta_Timing = dUseMeasuredFlag ? locNeutralParticleHypothesis->Get_Beta_Timing_Measured() : locNeutralParticleHypothesis->Get_Beta_Timing();
+			locBeta_Timing = dUseKinFitFlag ? locNeutralParticleHypothesis->Get_Beta_Timing() : locNeutralParticleHypothesis->Get_Beta_Timing_Measured();
 	}
 	double locDeltaBeta = locP4.P()/locP4.E() - locBeta_Timing;
 
@@ -321,8 +321,8 @@ void DHistogramAction_ParticleComboKinematics::Fill_Hists(const DKinematicData* 
 
 void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicData* locKinematicData, double locRFTime)
 {
-	TLorentzVector locP4 = dUseMeasuredFlag ? locKinematicData->Get_P4_Measured() : locKinematicData->Get_P4();
-	TLorentzVector locX4 = dUseMeasuredFlag ? locKinematicData->Get_X4_Measured() : locKinematicData->Get_X4();
+	TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
+	TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
 
 	double locP = locP4.P();
 	double locDeltaTRF = locX4.T() - (locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458);
@@ -498,8 +498,8 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 	double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
 
 	Particle_t locPID = locKinematicData->Get_PID();
-	TLorentzVector locP4 = dUseMeasuredFlag ? locKinematicData->Get_P4_Measured() : locKinematicData->Get_P4();
-	TLorentzVector locX4 = dUseMeasuredFlag ? locKinematicData->Get_X4_Measured() : locKinematicData->Get_X4();
+	TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
+	TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
 
 	double locTheta = locP4.Theta()*180.0/TMath::Pi();
 	double locP = locP4.P();
@@ -509,7 +509,7 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 	{
 		const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
 		if(locChargedTrackHypothesis != NULL) {
-			locBeta_Timing = dUseMeasuredFlag ? locChargedTrackHypothesis->Get_Beta_Timing_Measured() : locChargedTrackHypothesis->Get_Beta_Timing();
+			locBeta_Timing = dUseKinFitFlag ? locChargedTrackHypothesis->Get_Beta_Timing() : locChargedTrackHypothesis->Get_Beta_Timing_Measured();
 			double locDeltaT = locX4.T() - locRFTime;
 
 			if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_BCAL) {
@@ -552,9 +552,9 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 	{
 		const DNeutralParticleHypothesis* locNeutralParticleHypothesis = dynamic_cast<const DNeutralParticleHypothesis*>(locKinematicData);
 		if(locNeutralParticleHypothesis != NULL) {
-			locBeta_Timing = dUseMeasuredFlag ? locNeutralParticleHypothesis->Get_Beta_Timing_Measured() : locNeutralParticleHypothesis->Get_Beta_Timing();
+			locBeta_Timing = dUseKinFitFlag ? locNeutralParticleHypothesis->Get_Beta_Timing() : locNeutralParticleHypothesis->Get_Beta_Timing_Measured();
 			
-			//TLorentzVector locX4_Neutral = dUseMeasuredFlag ? locNeutralParticleHypothesis->Get_X4_Measured() : locKinematicData->Get_X4();
+			//TLorentzVector locX4_Neutral = dUseKinFitFlag ? locKinematicData->Get_X4() : locNeutralParticleHypothesis->Get_X4_Measured();
 			TLorentzVector locX4_Neutral = locNeutralParticleHypothesis->Get_X4_Measured();
 			double locDeltaT = locX4_Neutral.T() - locRFTime;
 
