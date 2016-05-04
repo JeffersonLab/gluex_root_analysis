@@ -24,7 +24,7 @@ void DTreeInterface::Set_BranchAddresses(void)
 			Set_TObjectBranchAddress(locBranchName, locClassName);
 
 		//Register branches
-		dBranchMap[locBranchName] = locBranch;
+		dBranchMap_InputTree[locBranchName] = locBranch;
 		dInputBranches.insert(locBranchName);
 	}
 
