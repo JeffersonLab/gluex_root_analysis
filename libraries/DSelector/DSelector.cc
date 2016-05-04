@@ -10,6 +10,8 @@ void DSelector::Init(TTree *locTree)
 
 	// GET OPTION
 	dOption = GetOption(); //optional argument given to TTree::Process()
+	if(fInput != NULL) 
+		dOption = ((TNamed*)fInput->FindObject("OPTIONS"))->GetTitle();
 
 	// SETUP OUTPUT
 	// This must be done BEFORE initializing the DTreeInterface, etc. Why? I have no idea. Probably something to do with gDirectory changing.
