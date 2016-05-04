@@ -67,6 +67,7 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locHeaderStream << endl;
 	locHeaderStream << "#include \"DSelector/DSelector.h\"" << endl;
 	locHeaderStream << "#include \"DSelector/DHistogramActions.h\"" << endl;
+	locHeaderStream << "#include \"DSelector/DCutActions.h\"" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "#include \"TH1I.h\"" << endl;
 	locHeaderStream << "#include \"TH2I.h\"" << endl;
@@ -131,8 +132,11 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 
 	//resume
 	locHeaderStream << "		// DEFINE YOUR HISTOGRAM ACTIONS HERE" << endl;
-	locHeaderStream << "		// EXAMPLES:" << endl;
+	locHeaderStream << "		// EXAMPLE HISTOGRAM ACTIONS:" << endl;
 	locHeaderStream << "		DHistogramAction_ParticleComboKinematics* dHistComboKinematics;" << endl;
+	locHeaderStream << "		DHistogramAction_ParticleID* dHistComboPID;" << endl;
+	locHeaderStream << "		// EXAMPLE CUT ACTIONS:" << endl;
+	locHeaderStream << "		DCutAction_PIDDeltaT* dCutPIDDeltaT;" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "		// DEFINE YOUR HISTOGRAMS HERE" << endl;
 	locHeaderStream << "		// EXAMPLES:" << endl;
@@ -209,6 +213,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << endl;
 	locSourceStream << "	//SET OUTPUT FILE NAME //can be overriden by user in PROOF" << endl;
 	locSourceStream << "	dOutputFileName = \"myfile.root\"; //\"\" for none" << endl;
+	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//DO THIS NEXT" << endl;
 	locSourceStream << "	//Because this function gets called for each TTree in the TChain, we must be careful:" << endl;
@@ -226,10 +231,15 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << endl;
 	locSourceStream << "	//DO WHATEVER YOU WANT HERE" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//EXAMPLE HISTOGRAM ACTIONS" << endl;
+	locSourceStream << "	//EXAMPLE HISTOGRAM ACTIONS:" << endl;
 	locSourceStream << "	dHistComboKinematics = new DHistogramAction_ParticleComboKinematics(dComboWrapper, dTargetCenter.Z(), false); //false: use measured data" << endl;
+	locSourceStream << "	dHistComboPID = new DHistogramAction_ParticleID(dComboWrapper, false); //false: use measured data" << endl;
 	locSourceStream << "	//change binning here" << endl;
 	locSourceStream << "	dHistComboKinematics->Initialize();" << endl;
+	locSourceStream << "	dHistComboPID->Initialize();" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//EXAMPLE CUT ACTIONS:" << endl;
+        locSourceStream << "	dCutPIDDeltaT = new DCutAction_PIDDeltaT(dComboWrapper, false, 2.0, Unknown, SYS_NULL); //false: use measured data" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE MANUAL HISTOGRAMS:" << endl;
 	locSourceStream << "	dHist_MissingMassSquared = new TH1I(\"MissingMassSquared\", \";Missing Mass Squared (GeV/c^{2})^{2}\", 600, -0.06, 0.06);" << endl;
@@ -268,6 +278,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << endl;
 	locSourceStream << "	//Reset uniqueness tracking for each action" << endl;
 	locSourceStream << "	dHistComboKinematics->Reset_NewEvent();" << endl;
+	locSourceStream << "	dHistComboPID->Reset_NewEvent();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//INSERT OTHER USER ACTIONS HERE" << endl;
 	locSourceStream << endl;
@@ -446,7 +457,15 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "		/**************************************** EXAMPLE: HISTOGRAM KINEMATICS ******************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		dHistComboKinematics->Perform_Action();" << endl;
+	locSourceStream << "		dHistComboPID->Perform_Action();" << endl;
 	locSourceStream << endl;
+	locSourceStream << "		/**************************************** EXAMPLE: PID CUT ACTION ************************************************/" << endl;
+	locSourceStream << "/*" << endl;
+	locSourceStream << "		if(!dCutPIDDeltaT->Perform_Action()) {" << endl;
+	locSourceStream << "			dComboWrapper->Set_IsComboCut(true);" << endl;
+	locSourceStream << "			continue;" << endl;
+	locSourceStream << "		}" << endl;
+	locSourceStream << "*/" << endl;
 	locSourceStream << "		/**************************************** EXAMPLE: HISTOGRAM BEAM ENERGY *****************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//Histogram beam energy (if haven\'t already)" << endl;
@@ -548,6 +567,20 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << endl;
 	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
 	locSourceStream << "	}" << endl;
+	locSourceStream << "*/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/************************************ EXAMPLE: FILL CLONE OF TTREE HERE WITH CUTS APPLIED ************************************/" << endl;
+	locSourceStream << "/*" << endl;
+        locSourceStream << "	Bool_t locIsEventCut = true;" << endl;
+        locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumCombos(); ++loc_i) {" << endl;
+        locSourceStream << "		//Set branch array indices for combo and all combo particles" << endl;
+        locSourceStream << "		dComboWrapper->Set_ComboIndex(loc_i);" << endl;
+        locSourceStream << "		// Is used to indicate when combos have been cut" << endl;
+        locSourceStream << "		if(!dComboWrapper->Get_IsComboCut()) // Is false when tree originally created" << endl;
+        locSourceStream << "			locIsEventCut = false; // Combo has been cut previously" << endl;
+        locSourceStream << "	}" << endl;
+        locSourceStream << "	if(!locIsEventCut && dOutputTreeFileName != \"\")" << endl;
+        locSourceStream << "		FillOutputTree();" << endl;
 	locSourceStream << "*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	return kTRUE;" << endl;
