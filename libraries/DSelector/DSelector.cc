@@ -271,7 +271,7 @@ void DSelector::Finalize()
 	}
 	if(dOutputTreeFile != NULL)
 	{
-		dOutputTreeFile->Write();
+		dOutputTreeFile->Write(0, TObject::kOverwrite);
 		dOutputTreeFile->Close();
 	}
 	if(dProofFile != NULL)
