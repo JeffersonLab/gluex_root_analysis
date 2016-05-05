@@ -155,7 +155,7 @@ inline Particle_t DKinematicData::Get_PID(void) const
 //KINEMATICS
 inline TLorentzVector DKinematicData::Get_P4_Measured(void) const
 {
-	if(dBranchNamePrefix == "Target")
+	if(dBranchNamePrefix.substr(0, 6) == "Target")
 		return dFixedP4; //target
 	int locArrayIndex = Get_IsDetectedComboNeutralParticle() ? dArrayIndex : dMeasuredArrayIndex;
 	return *((TLorentzVector*)dP4_Measured->At(locArrayIndex));

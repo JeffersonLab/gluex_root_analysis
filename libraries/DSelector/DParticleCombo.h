@@ -51,9 +51,13 @@ class DParticleCombo
 		Bool_t Get_IsBDTSignalCombo(void) const;
 		void Set_IsComboCut(Bool_t locIsComboCut) const;
 
-		// RF:
+		// RF: //Quoted at the center of the target
 		Float_t Get_RFTime_Measured(void) const;
 		Float_t Get_RFTime(void) const; //kinfit if spacetime fit, else measured
+
+		// TARGET
+		Particle_t Get_TargetPID(void) const;
+		TVector3 Get_TargetCenter(void) const;
 
 		// KINFIT:
 		Float_t Get_ChiSq_KinFit(void) const;
@@ -94,6 +98,10 @@ class DParticleCombo
 
 		TBranch* dBranch_ChiSq_KinFit; //only if kinematic fit performed
 		TBranch* dBranch_NDF_KinFit; //only if kinematic fit performed // = 0 if kinematic fit doesn't converge
+
+		//Target not necessarily in the particle combo, so add the info here (for convenience)
+		Particle_t dTargetPID;
+		TVector3 dTargetCenter;
 };
 
 inline void DParticleCombo::Print_Reaction(void) const
@@ -172,6 +180,17 @@ inline Float_t DParticleCombo::Get_RFTime(void) const
 	if(dBranch_RFTime_KinFit != NULL)
 		return ((Float_t*)dBranch_RFTime_KinFit->GetAddress())[dComboIndex];
 	return Get_RFTime_Measured();
+}
+
+//TARGET:
+inline Particle_t DParticleCombo::Get_TargetPID(void) const
+{
+	return dTargetPID;
+}
+
+inline TVector3 DParticleCombo::Get_TargetCenter(void) const
+{
+	return dTargetCenter;
 }
 
 // KINFIT:

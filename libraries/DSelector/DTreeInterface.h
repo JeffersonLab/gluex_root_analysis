@@ -37,9 +37,13 @@ class DTreeInterface
 		// Is optional. If needed array size is not specified, it will be set to a default value.
 		void Set_InitialArraySize(string locArraySizeBranchName, UInt_t locInitialSize);
 
-		// Is optional. For setting up DParticleCombo. Returns # steps. Keys are step index, particle index.
+		/********************************************************* READ GLUEX TTREE METADATA ********************************************************/
+
+		// For setting up DParticleCombo. Returns # steps. Keys are step index, particle index.
 			//ParticleIndex = -1 for initial, -2 for target, 0+ for final state
 		size_t Get_ComboInfo(map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap) const;
+		Particle_t Get_TargetPID(void) const;
+		TVector3 Get_TargetCenter(void) const;
 
 		/********************************************************* SPECIFY GET-ENTRY BRANCHES *******************************************************/
 
@@ -51,7 +55,7 @@ class DTreeInterface
 
 		/************************************************************* GET ENTRY AND FILL ***********************************************************/
 
-		TList* Get_UserInfo(void){return dTree->GetUserInfo();}
+		TList* Get_UserInfo(void) const{return dTree->GetUserInfo();}
 		void Get_Entry(Long64_t locEntry);
 		void Fill(void){dTree->Fill();};
 

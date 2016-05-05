@@ -167,63 +167,9 @@ void DSelector::Setup_Output(void)
 
 void DSelector::Setup_Target(void)
 {
-	TList* locUserInfo = dTreeInterface->Get_UserInfo();
-	TMap* locMiscInfoMap = (TMap*)locUserInfo->FindObject("MiscInfoMap");
-
-	//PID
-	if(locMiscInfoMap->FindObject("Target__PID") != NULL)
-	{
-		TObjString* locPIDObjString = (TObjString*)locMiscInfoMap->GetValue("Target__PID");
-		int locPDGPID;
-		istringstream locPIDStream;
-		locPIDStream.str(locPIDObjString->GetName());
-		locPIDStream >> locPDGPID;
-		dTargetPID = PDGtoPType(locPDGPID);
-	}
-	else
-		dTargetPID = Unknown;
-
-	//TARGET P4
+	dTargetPID = dTreeInterface->Get_TargetPID();
 	dTargetP4 = TLorentzVector(TVector3(), ParticleMass(dTargetPID));
-
-	//TARGET X
-	if(locMiscInfoMap->FindObject("Target__CenterX") != NULL)
-	{
-		TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("Target__CenterX");
-		double locTargetPosition;
-
-		istringstream locTargetStream;
-		locTargetStream.str(locObjString->GetName());
-		locTargetStream >> locTargetPosition;
-
-		dTargetCenter.SetX(locTargetPosition);
-	}
-
-	//TARGET Y
-	if(locMiscInfoMap->FindObject("Target__CenterY") != NULL)
-	{
-		TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("Target__CenterY");
-		double locTargetPosition;
-
-		istringstream locTargetStream;
-		locTargetStream.str(locObjString->GetName());
-		locTargetStream >> locTargetPosition;
-
-		dTargetCenter.SetY(locTargetPosition);
-	}
-
-	//TARGET Z
-	if(locMiscInfoMap->FindObject("Target__CenterZ") != NULL)
-	{
-		TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("Target__CenterZ");
-		double locTargetPosition;
-
-		istringstream locTargetStream;
-		locTargetStream.str(locObjString->GetName());
-		locTargetStream >> locTargetPosition;
-
-		dTargetCenter.SetZ(locTargetPosition);
-	}
+	dTargetCenter = dTreeInterface->Get_TargetCenter();
 }
 
 /***************************************************************** PRIMARY FUNCTIONS ******************************************************************/

@@ -33,6 +33,8 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 				locKinematicData = NULL;
 			else if(locParticleName == "ComboBeam")
 				locKinematicData = new DBeamParticle(dTreeInterface, locParticleName, locPID);
+			else if(locParticleName.substr(0, 6) == "Target")
+				locKinematicData = new DKinematicData(dTreeInterface, locParticleName, locPID);
 			else if(locParticleName.substr(0, 8) == "Decaying")
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
@@ -66,20 +68,9 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 		}
 	}
 
-	//Create target particle (if any)
-	TList* locUserInfo = dTreeInterface->Get_UserInfo();
-	TMap* locMiscInfoMap = (TMap*)locUserInfo->FindObject("MiscInfoMap");
-	if(locMiscInfoMap->FindObject("Target__PID") != NULL)
-	{
-		TObjString* locPIDObjString = (TObjString*)locMiscInfoMap->GetValue("Target__PID");
-		int locPDGPID;
-		istringstream locPIDStream;
-		locPIDStream.str(locPIDObjString->GetName());
-		locPIDStream >> locPDGPID;
-		Particle_t locPID = PDGtoPType(locPDGPID);
-		DKinematicData* locKinematicData = new DKinematicData(dTreeInterface, "Target", locPID);
-		locParticleMap[0][-2] = pair<Particle_t, DKinematicData*>(locPID, locKinematicData);
-	}
+	//Set target info directly
+	dTargetPID = dTreeInterface->Get_TargetPID();
+	dTargetCenter = dTreeInterface->Get_TargetCenter();
 
 	//Create steps
 	for(size_t loc_i = 0; loc_i < locNumSteps; ++loc_i)

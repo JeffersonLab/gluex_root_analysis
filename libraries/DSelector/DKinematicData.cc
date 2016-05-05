@@ -44,7 +44,7 @@ void DKinematicData::Setup_Branches(void)
 	//Now, is detected/target combo particle
 
 	//measured index & p4/x4 measured
-	if(dBranchNamePrefix == "Target") //target
+	if(dBranchNamePrefix.substr(0, 6) == "Target") //target
 	{
 		//Fixed P4
 		dFixedP4 = TLorentzVector(TVector3(), ParticleMass(dPID));

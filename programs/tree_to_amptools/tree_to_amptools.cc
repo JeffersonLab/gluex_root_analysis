@@ -30,7 +30,6 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 
 template <typename DType> void Increase_ArraySize(TTree* locTree, string locBranchName, int locNewSize);
 
-double gTargetMass = 0.0; //not yet working!!! (for MCGen only)
 vector<Particle_t> gDesiredPIDOrder; //for MC Gen tree only!!
 
 int main(int argc, char* argv[])
@@ -559,7 +558,16 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 	locInputTree->SetBranchAddress("ThrownBeam__P4", &locBeamP4);
 
 	//target
-	Float_t locTargetMass = gTargetMass;
+	Float_t locTargetMass = 0.0;
+	TList* locUserInfo = locInputTree->GetUserInfo();
+	TMap* locMiscInfoMap = (TMap*)locUserInfo->FindObject("MiscInfoMap");
+	if(locMiscInfoMap->FindObject("Target__Mass") != NULL)
+	{
+		TObjString* locMassString = (TObjString*)locMiscInfoMap->GetValue("Target__Mass");
+		istringstream locMassStream;
+		locMassStream.str(locMassString->GetName());
+		locMassStream >> locTargetMass;
+	}
 
 	//final state p4's
 	TClonesArray* locP4ClonesArray = NULL;
