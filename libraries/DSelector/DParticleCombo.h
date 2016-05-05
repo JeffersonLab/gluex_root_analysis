@@ -51,7 +51,7 @@ class DParticleCombo
 		Bool_t Get_IsBDTSignalCombo(void) const;
 		void Set_IsComboCut(Bool_t locIsComboCut) const;
 
-		// RF:
+		// RF: //Quoted at the center of the target
 		Float_t Get_RFTime_Measured(void) const;
 		Float_t Get_RFTime(void) const; //kinfit if spacetime fit, else measured
 
