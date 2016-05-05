@@ -110,6 +110,8 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locHeaderStream << "		DBeamParticle* dComboBeamWrapper;" << endl;
+			else if(locParticleName.substr(0, 6) == "Target")
+				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
@@ -170,6 +172,8 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locHeaderStream << "	dComboBeamWrapper = static_cast<DBeamParticle*>(dStep" << locStepIndex << "Wrapper->Get_InitialParticle());" << endl;
+			else if(locParticleName.substr(0, 6) == "Target")
+				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
@@ -232,7 +236,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	//DO WHATEVER YOU WANT HERE" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE HISTOGRAM ACTIONS:" << endl;
-	locSourceStream << "	dHistComboKinematics = new DHistogramAction_ParticleComboKinematics(dComboWrapper, dTargetCenter.Z(), false); //false: use measured data" << endl;
+	locSourceStream << "	dHistComboKinematics = new DHistogramAction_ParticleComboKinematics(dComboWrapper, false); //false: use measured data" << endl;
 	locSourceStream << "	dHistComboPID = new DHistogramAction_ParticleID(dComboWrapper, false); //false: use measured data" << endl;
 	locSourceStream << "	//change binning here" << endl;
 	locSourceStream << "	dHistComboKinematics->Initialize();" << endl;
@@ -338,6 +342,8 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locSourceStream << "		Int_t locBeamID = dComboBeamWrapper->Get_BeamID();" << endl;
+			else if(locParticleName.substr(0, 6) == "Target")
+				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 				continue;
 			else if(locParticleName.substr(0, 7) == "Missing")
@@ -372,6 +378,8 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locSourceStream << "		TLorentzVector locBeamP4 = dComboBeamWrapper->Get_P4();" << endl;
+			else if(locParticleName.substr(0, 6) == "Target")
+				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
@@ -408,6 +416,8 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locSourceStream << "		TLorentzVector locBeamP4_Measured = dComboBeamWrapper->Get_P4_Measured();" << endl;
+			else if(locParticleName.substr(0, 6) == "Target")
+				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 				continue;
 			else if(locParticleName.substr(0, 7) == "Missing")
@@ -440,6 +450,8 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 			if(locPID == Unknown)
 				continue;
 			else if(locParticleName == "ComboBeam")
+				continue;
+			else if(locParticleName.substr(0, 6) == "Target")
 				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 				continue;
@@ -500,6 +512,8 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locSourceStream << "		locUsedThisCombo_MissingMass[Unknown].insert(locBeamID); //beam" << endl;
+			else if(locParticleName.substr(0, 6) == "Target")
+				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 				continue;
 			else if(locParticleName.substr(0, 7) == "Missing")

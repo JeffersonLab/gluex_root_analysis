@@ -4,6 +4,8 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 {
 	string locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
 
+	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
+
 	//CREATE MAIN FOLDER
 	string locDirName = "Hist_ParticleComboKinematics";
 	if(dActionUniqueString != "")
@@ -339,6 +341,8 @@ void DHistogramAction_ParticleID::Initialize(void)
 {
 	string locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
 
+	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
+
 	//CREATE MAIN FOLDER
 	string locDirName = "Hist_ParticleID";
 	if(dActionUniqueString != "")
@@ -459,7 +463,6 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepR
 		locHistTitle = locParticleROOTName + string(";Particle Vertex T (ns); Shower Vertex T (ns)");
 		dHistMap_ShowerTVsParticleT[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 200, -100., 100., 200, -100., 100);
 	}
-
 }
 	
 bool DHistogramAction_ParticleID::Perform_Action(void)
@@ -510,7 +513,8 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 		const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
 		if(locChargedTrackHypothesis != NULL) {
 			locBeta_Timing = dUseKinFitFlag ? locChargedTrackHypothesis->Get_Beta_Timing() : locChargedTrackHypothesis->Get_Beta_Timing_Measured();
-			double locDeltaT = locX4.T() - locRFTime;
+			double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
+			double locDeltaT = locX4.T() - locPropagatedRFTime;
 
 			if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_BCAL) {
 				dHistMap_BetaVsP_BCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
@@ -556,7 +560,8 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			
 			//TLorentzVector locX4_Neutral = dUseKinFitFlag ? locKinematicData->Get_X4() : locNeutralParticleHypothesis->Get_X4_Measured();
 			TLorentzVector locX4_Neutral = locNeutralParticleHypothesis->Get_X4_Measured();
-			double locDeltaT = locX4_Neutral.T() - locRFTime;
+			double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
+			double locDeltaT = locX4_Neutral.T() - locPropagatedRFTime;
 
 			TLorentzVector locX4_Shower = locNeutralParticleHypothesis->Get_X4_Shower();
 			//TLorentzVector locX4_Measured = locNeutralParticleHypothesis->Get_X4_Measured();

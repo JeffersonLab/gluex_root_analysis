@@ -77,6 +77,8 @@ void DTreeInterface::Set_TObjectBranchAddress(string locBranchName, string locCl
 		cout << "WARNING: TYPE NOT RECOGNIZED FOR BRANCH: " << locBranchName << endl;
 }
 
+/****************************************************************** BRANCH UTILITIES ******************************************************************/
+
 void DTreeInterface::Parse_BranchTitle(string locBranchTitle, string& locArraySizeString, string& locTypeString)
 {
 	locArraySizeString = "";
@@ -121,6 +123,8 @@ void DTreeInterface::Increase_ArraySize(string locBranchName, string locBranchTy
 	else
 		cout << "WARNING: TYPE NOT RECOGNIZED FOR BRANCH: " << locBranchName << endl;
 }
+
+/****************************************************************** GET BRANCH DATA *******************************************************************/
 
 void DTreeInterface::Get_Entry(Long64_t locEntry)
 {
@@ -192,6 +196,8 @@ void DTreeInterface::Update_GetEntryBranches(void)
 	dGetEntryBranchesModifiedFlag = false;
 }
 
+/************************************************************** READ GLUEX TTREE METADATA *************************************************************/
+
 size_t DTreeInterface::Get_ComboInfo(map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap) const
 {
 	//returns num steps
@@ -249,5 +255,78 @@ size_t DTreeInterface::Get_ComboInfo(map<int, map<int, pair<Particle_t, string> 
 		locKeyObjString = (TObjString*)locMapIterator->Next();
 	}
 
+	//For older trees, the target info was accidentally left out of the PositionToNameMap. Check for it separately:
+	if(locComboInfoMap[0].find(-2) == locComboInfoMap[0].end())
+	{
+		TList* locParticleNameList = (TList*)locUserInfo->FindObject("ParticleNameList");
+		if(locParticleNameList->FindObject("Target") != NULL)
+		{
+			//this problem was only in a very limited time-frame: only proton target used
+			pair<Particle_t, string> locPIDPair(Proton, "Target");
+			locComboInfoMap[0][-2] = locPIDPair;
+		}
+	}
+
 	return locNumSteps;
+}
+
+Particle_t DTreeInterface::Get_TargetPID(void) const
+{
+	TMap* locMiscInfoMap = (TMap*)Get_UserInfo()->FindObject("MiscInfoMap");
+	if(locMiscInfoMap->FindObject("Target__PID") == NULL)
+		return Unknown;
+
+	TObjString* locPIDObjString = (TObjString*)locMiscInfoMap->GetValue("Target__PID");
+	int locPDGPID;
+	istringstream locPIDStream;
+	locPIDStream.str(locPIDObjString->GetName());
+	locPIDStream >> locPDGPID;
+	return PDGtoPType(locPDGPID);
+}
+
+TVector3 DTreeInterface::Get_TargetCenter(void) const
+{
+	TMap* locMiscInfoMap = (TMap*)Get_UserInfo()->FindObject("MiscInfoMap");
+	TVector3 locTargetCenter;
+
+	//TARGET X
+	if(locMiscInfoMap->FindObject("Target__CenterX") != NULL)
+	{
+		TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("Target__CenterX");
+		double locTargetPosition;
+
+		istringstream locTargetStream;
+		locTargetStream.str(locObjString->GetName());
+		locTargetStream >> locTargetPosition;
+
+		locTargetCenter.SetX(locTargetPosition);
+	}
+
+	//TARGET Y
+	if(locMiscInfoMap->FindObject("Target__CenterY") != NULL)
+	{
+		TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("Target__CenterY");
+		double locTargetPosition;
+
+		istringstream locTargetStream;
+		locTargetStream.str(locObjString->GetName());
+		locTargetStream >> locTargetPosition;
+
+		locTargetCenter.SetY(locTargetPosition);
+	}
+
+	//TARGET Z
+	if(locMiscInfoMap->FindObject("Target__CenterZ") != NULL)
+	{
+		TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("Target__CenterZ");
+		double locTargetPosition;
+
+		istringstream locTargetStream;
+		locTargetStream.str(locObjString->GetName());
+		locTargetStream >> locTargetPosition;
+
+		locTargetCenter.SetZ(locTargetPosition);
+	}
+
+	return locTargetCenter;
 }
