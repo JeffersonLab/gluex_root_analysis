@@ -1,5 +1,10 @@
 #include "DCutActions.h"
 
+void DCutAction_PIDDeltaT::Initialize(void)
+{
+	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();	
+}
+
 bool DCutAction_PIDDeltaT::Perform_Action(void)
 {
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
@@ -41,12 +46,10 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 
 			TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
 			double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
-
-			double locDeltaT = locX4.T() - locRFTime;
-			if(fabs(locDeltaT) > dDeltaTCut) {
-				//cout<<locKinematicData->Get_PID()<<" "<<locDeltaT<<endl;
+			double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
+			double locDeltaT = locX4.T() - locPropagatedRFTime;
+			if(fabs(locDeltaT) > dDeltaTCut) 
 				return false;
-			}
 
 		} //end of particle loop
 	} //end of step loop

@@ -30,6 +30,9 @@ class DCutAction_PIDDeltaT
 		dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
 
 	private:
+
+		double dTargetCenterZ;
+		
 		const DParticleCombo* dParticleComboWrapper;
 		bool dUseKinFitFlag;
 		string dActionUniqueString;
@@ -39,6 +42,7 @@ class DCutAction_PIDDeltaT
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
 
+		void Initialize(void);
 		bool Perform_Action(void); // flag to reject combos
 
 };
