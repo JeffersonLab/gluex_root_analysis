@@ -15,7 +15,6 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 	map<int, map<int, pair<Particle_t, DKinematicData*> > > locParticleMap; //1st key is step, 2nd is particle
 	map<int, map<int, pair<Particle_t, string> > >::iterator locStepIterator = locComboInfoMap.begin();
 	map<string, DKinematicData*> locDecayingParticleMap;
-	DKinematicData* locMissingParticle = NULL;
 	for(; locStepIterator != locComboInfoMap.end(); ++locStepIterator)
 	{
 		int locStepIndex = locStepIterator->first;
@@ -54,10 +53,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
 				if(dTreeInterface->Get_Branch(locBranchName) != NULL) //else not reconstructed
-				{
 					locKinematicData = new DKinematicData(dTreeInterface, locParticleName, locPID);
-					locMissingParticle = locKinematicData;
-				}
 				locMissingIndices = pair<int, int>(locStepIndex, locParticleIndex);
 			}
 			else if(ParticleCharge(locPID) != 0)

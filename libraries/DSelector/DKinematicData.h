@@ -28,7 +28,7 @@ class DKinematicData
 
 		//locPID should be set for combo particles, and Unknown otherwise
 		DKinematicData(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = Unknown);
-		~DKinematicData(void){}
+		virtual ~DKinematicData(void){}
 
 		//GET PID & KINEMATIC DATA
 		Particle_t Get_PID(void) const;
