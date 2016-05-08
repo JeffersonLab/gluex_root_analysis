@@ -6,14 +6,14 @@ string gPROOFLiteSandbox = "";
 
 void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
 {
-        TChain* locChain = new TChain(locTreeName.c_str());
-        locChain->Add(locInputFileName.c_str());
-        Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
+	TChain* locChain = new TChain(locTreeName.c_str());
+	locChain->Add(locInputFileName.c_str());
+	Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
 }
 
 void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
 {
-        Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
+	Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
 }
 
 void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
@@ -30,12 +30,12 @@ void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, 
 
 void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
 {
-        Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
+	Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
 }
 
 void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
 {
-        Process_Chain(locChain, locSelectorName, locOutputFileName, "", "", locNumThreads);
+	Process_Chain(locChain, locSelectorName, locOutputFileName, "", "", locNumThreads);
 }
 
 void DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads, unsigned int locNumEntries)
@@ -55,7 +55,7 @@ void DPROOFLiteManager::Set_SandBox(string locPath)
 string DPROOFLiteManager::Get_PackagePath(void)
 {
 	string locAnalysisHome = gSystem->Getenv("ROOT_ANALYSIS_HOME");
-	string locOSName = gSystem->Getenv("OS_NAME");
+	string locOSName = gSystem->Getenv("BMS_OSNAME");
 	return locAnalysisHome + string("/") + locOSName + string("/packages/DSelector.par");
 }
 
