@@ -245,6 +245,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	//EXAMPLE CUT ACTIONS:" << endl;
 	locSourceStream << "	//below: false: measured data, value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
 	locSourceStream << "	dCutPIDDeltaT = new DCutAction_PIDDeltaT(dComboWrapper, false, 2.0, Unknown, SYS_NULL);" << endl;
+	locSourceStream << "	dCutPIDDeltaT->Initialize();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE MANUAL HISTOGRAMS:" << endl;
 	locSourceStream << "	dHist_MissingMassSquared = new TH1I(\"MissingMassSquared\", \";Missing Mass Squared (GeV/c^{2})^{2}\", 600, -0.06, 0.06);" << endl;
