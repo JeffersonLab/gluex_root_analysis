@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# SET ROOT_ANALYSIS_HOME TO $PWD, IF NOT SET ALREADY
-if [[ $ROOT_ANALYSIS_HOME == "" ]]; then
-	export ROOT_ANALYSIS_HOME=${PWD}
+# SET ROOT_ANALYSIS_HOME
+SCRIPT_PATH=${BASH_SOURCE[0]}
+if [[ -h $SCRIPT_PATH ]]; then
+	SCRIPT_PATH=$(readlink $SCRIPT_PATH)
 fi
+export ROOT_ANALYSIS_HOME=$(cd $(dirname $SCRIPT_PATH); pwd)
 
 # SET BMS_OSNAME, IF NOT SET ALREADY # COPIED FROM sim-recon
 if [[ $BMS_OSNAME == "" ]]; then
