@@ -13,6 +13,20 @@ void DKinematicData::Setup_Branches(void)
 		dBranch_PID = dTreeInterface->Get_Branch(locBranchName);
 	}
 
+	//If thrown, p4 & x4
+	if((dBranchNamePrefix == "Thrown") || (dBranchNamePrefix == "ThrownBeam"))
+	{
+		//P4_Measured
+		locBranchName = dBranchNamePrefix + string("__P4");
+		dP4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+
+		//X4_Measured
+		locBranchName = dBranchNamePrefix + string("__X4");
+		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+
+		return;
+	}
+
 	//If non-combo particle, p4 & x4
 	bool locIsNonComboParticle = !Get_IsComboParticle();
 	if(locIsNonComboParticle)

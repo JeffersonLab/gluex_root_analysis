@@ -60,6 +60,9 @@ DKinematicData(locTreeInterface, locBranchNamePrefix, locPID)
 
 inline void DBeamParticle::Setup_Branches(void)
 {
+	if(dBranchNamePrefix == "ThrownBeam")
+		return;
+
 	string locBranchName = dBranchNamePrefix + string("__IsGenerator");
 	dBranch_IsGenerator = dTreeInterface->Get_Branch(locBranchName);
 }
@@ -74,6 +77,8 @@ inline void DBeamParticle::ReInitialize(DTreeInterface* locTreeInterface)
 
 inline Bool_t DBeamParticle::Get_IsGenerator(void) const
 {
+	if(dBranchNamePrefix == "ThrownBeam")
+		return kTRUE;
 	return ((Bool_t*)dBranch_IsGenerator->GetAddress())[dMeasuredArrayIndex];
 }
 
@@ -83,4 +88,3 @@ inline Int_t DBeamParticle::Get_BeamID(void) const
 }
 
 #endif //DBeamParticle_h
-
