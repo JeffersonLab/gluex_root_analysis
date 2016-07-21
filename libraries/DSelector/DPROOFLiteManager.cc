@@ -99,12 +99,16 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(unsigned int locNumThreads, vector
 		gEnv->SetValue("ProofLite.Sandbox", gPROOFLiteSandbox.c_str());
 	TProof* locPROOF = TProof::Open(locNumWorkers.str().c_str());
 
+   locPROOF->ClearInput();
+   locPROOF->ClearPackages();
+   locPROOF->ClearInputData();
+
 	for(size_t loc_i = 0; loc_i < locPackageNames.size(); ++loc_i)
 	{
 		locPROOF->UploadPackage(locPackageNames[loc_i].c_str());
 		locPROOF->EnablePackage(locPackageNames[loc_i].c_str());
 	}
-
+   
 	for(int loc_j = 0; loc_j < locInputObjects->GetEntriesFast(); ++loc_j)
 		locPROOF->AddInput(locInputObjects->At(loc_j));
 
