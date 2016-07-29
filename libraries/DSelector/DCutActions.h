@@ -9,6 +9,7 @@
 
 #include "TLorentzVector.h"
 #include "TVector3.h"
+#include "TF1.h"
 
 #include "particleType.h"
 
@@ -45,6 +46,46 @@ class DCutAction_PIDDeltaT
 		void Initialize(void);
 		bool Perform_Action(void); // flag to reject combos
 
+};
+
+class DCutAction_NoPIDHit
+{
+	public:
+		DCutAction_NoPIDHit(const DParticleCombo* locParticleComboWrapper, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+		dParticleComboWrapper(locParticleComboWrapper),dActionUniqueString(locActionUniqueString),dPID(locPID), dSystem(locSystem) {}
+
+	private:
+
+		const DParticleCombo* dParticleComboWrapper;
+		string dActionUniqueString;
+
+	public:
+		Particle_t dPID;
+		DetectorSystem_t dSystem;
+
+		void Initialize(void);
+		bool Perform_Action(void); // flag to reject combos
+};
+
+class DCutAction_dEdxProton
+{
+	public:
+		DCutAction_dEdxProton(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+		dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),dPID(locPID), dSystem(locSystem) {}
+
+	private:
+
+		const DParticleCombo* dParticleComboWrapper;
+		bool dUseKinFitFlag;
+		string dActionUniqueString;
+		TF1 *f;
+
+	public:
+		Particle_t dPID;
+		DetectorSystem_t dSystem;
+
+		void Initialize(void);
+		bool Perform_Action(void); // flag to reject combos
 };
 
 #endif // _DCutActions_
