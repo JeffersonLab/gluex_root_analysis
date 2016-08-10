@@ -200,11 +200,11 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 {
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
-		DParticleComboStep* locParticleComboStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
 
 		//initial particle
-		Particle_t locInitialPID = locParticleComboStep->Get_InitialPID();
-		DKinematicData* locKinematicData = locParticleComboStep->Get_InitialParticle();
+		Particle_t locInitialPID = locParticleComboStepWrapper->Get_InitialPID();
+		DKinematicData* locKinematicData = locParticleComboStepWrapper->Get_InitialParticle();
 		if(locKinematicData != NULL)
 		{
 			if(locInitialPID == Gamma)
@@ -224,7 +224,7 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 
 		//VERTEX INFORMATION
 		//other than first, skipped if not detached vertex
-		TLorentzVector locStepSpacetimeVertex = locParticleComboStep->Get_X4();
+		TLorentzVector locStepSpacetimeVertex = locParticleComboStepWrapper->Get_X4();
 		if((loc_i == 0) || IsDetachedVertex(locInitialPID))
 		{
 			dHistMap_StepVertexZ[loc_i]->Fill(locStepSpacetimeVertex.Z());
@@ -235,7 +235,7 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 		//DETACHED VERTEX INFORMATION
 		if((loc_i != 0) && IsDetachedVertex(locInitialPID))
 		{
-			int locFromStepIndex = locParticleComboStep->Get_InitDecayFromIndices().first;
+			int locFromStepIndex = locParticleComboStepWrapper->Get_InitDecayFromIndices().first;
 			TLorentzVector locFromSpacetimeVertex = dParticleComboWrapper->Get_ParticleComboStep(locFromStepIndex)->Get_X4();
 			TLorentzVector locDeltaSpacetime = locStepSpacetimeVertex - locFromSpacetimeVertex;
 
@@ -261,14 +261,14 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 		}
 
 		//final particles
-		for(size_t loc_j = 0; loc_j < locParticleComboStep->Get_NumFinalParticles(); ++loc_j)
+		for(size_t loc_j = 0; loc_j < locParticleComboStepWrapper->Get_NumFinalParticles(); ++loc_j)
 		{
-			DKinematicData* locKinematicData = locParticleComboStep->Get_FinalParticle(loc_j);
+			DKinematicData* locKinematicData = locParticleComboStepWrapper->Get_FinalParticle(loc_j);
 			if(locKinematicData == NULL)
 				continue; //e.g. a decaying or missing particle whose params aren't set yet
 
 			//check if measured if not using Kin Fit
-			if(!dUseKinFitFlag && locParticleComboStep->Get_DecayStepIndex(loc_j) != -2)
+			if(!dUseKinFitFlag && locParticleComboStepWrapper->Get_DecayStepIndex(loc_j) != -2)
 				continue; //not measured
 
 			//check if duplicate
@@ -469,17 +469,17 @@ bool DHistogramAction_ParticleID::Perform_Action(void)
 {
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
-		DParticleComboStep* locParticleComboStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
 
 		//final particles
-		for(size_t loc_j = 0; loc_j < locParticleComboStep->Get_NumFinalParticles(); ++loc_j)
+		for(size_t loc_j = 0; loc_j < locParticleComboStepWrapper->Get_NumFinalParticles(); ++loc_j)
 		{
-			DKinematicData* locKinematicData = locParticleComboStep->Get_FinalParticle(loc_j);
+			DKinematicData* locKinematicData = locParticleComboStepWrapper->Get_FinalParticle(loc_j);
 			if(locKinematicData == NULL)
 				continue; //e.g. a decaying or missing particle whose params aren't set yet
 
 			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
-			int locDecayStepIndex = locParticleComboStep->Get_DecayStepIndex(loc_j);
+			int locDecayStepIndex = locParticleComboStepWrapper->Get_DecayStepIndex(loc_j);
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
@@ -578,4 +578,342 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			}
 		}
 	}
+}
+
+void DHistogramAction_InvariantMass::Initialize(void)
+{
+	string locHistName, locHistTitle;
+	double locMassPerBin = 1000.0*(dMaxMass - dMinMass)/((double)dNumMassBins);
+
+	string locParticleNamesForHist = "";
+	if(dInitialPID != Unknown)
+		locParticleNamesForHist = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(dInitialPID, dUseKinFitFlag);
+	else
+	{
+		for(size_t loc_i = 0; loc_i < dToIncludePIDs.size(); ++loc_i)
+			locParticleNamesForHist += ParticleName_ROOT(dToIncludePIDs[loc_i]);
+	}
+
+	//CREATE MAIN FOLDER
+	string locDirName = "Hist_InvariantMass";
+	if(dActionUniqueString != "")
+		locDirName += string("_") + dActionUniqueString;
+	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+
+	locHistName = "InvariantMass";
+	ostringstream locStream;
+	locStream << locMassPerBin;
+	locHistTitle = string(";") + locParticleNamesForHist + string(" Invariant Mass (GeV/c^{2});# Combos / ") + locStream.str() + string(" MeV/c^{2}");
+	dHist_InvaraintMass = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
+
+	//Return to the base directory
+	gDirectory->cd("..");
+}
+
+bool DHistogramAction_InvariantMass::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+		if((dInitialPID != Unknown) && (locParticleComboStepWrapper->Get_InitialPID() != dInitialPID))
+			continue;
+		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
+			continue;
+
+		//build all possible combinations of the included pids
+		set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dToIncludePIDs);
+
+		//loop over them
+		set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
+		for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
+		{
+			map<Particle_t, set<Int_t> > locSourceObjects;
+			TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+
+			if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
+				continue; //dupe: already histed!
+			dPreviouslyHistogrammed.insert(locSourceObjects);
+
+			dHist_InvaraintMass->Fill(locFinalStateP4.M());
+		}
+		//don't break: e.g. if multiple pi0's, histogram invariant mass of each one
+	}
+
+	return true;
+}
+
+void DHistogramAction_MissingMass::Initialize(void)
+{
+	double locMassPerBin = 1000.0*(dMaxMass - dMinMass)/((double)dNumMassBins);
+	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
+	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingMassOffOfStepIndex, dMissingMassOffOfPIDs, dUseKinFitFlag, true);
+
+	//CREATE MAIN FOLDER
+	string locDirName = "Hist_MissingMass";
+	if(dActionUniqueString != "")
+		locDirName += string("_") + dActionUniqueString;
+	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+
+	string locHistName = "MissingMass";
+	ostringstream locStream;
+	locStream << locMassPerBin;
+	string locHistTitle = string(";") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass (GeV/c^{2});# Combos / ") + locStream.str() + string(" MeV/c^{2}");
+	dHist_MissingMass = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
+
+	locHistName = "MissingMassVsBeamE";
+	locMassPerBin *= ((double)dNumMassBins)/((double)dNum2DMassBins);
+	locStream.str("");
+	locStream << locMassPerBin;
+	locHistTitle = string(";Beam Energy (GeV);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass (GeV/c^{2})");
+	dHist_MissingMassVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMassBins, dMinMass, dMaxMass);
+
+	locHistName = "MissingMassVsMissingP";
+	locStream.str("");
+	locStream << locMassPerBin;
+	locHistTitle = string(";Missing P (GeV/c);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass (GeV/c^{2})");
+	dHist_MissingMassVsMissingP = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissPBins, dMinMissP, dMaxMissP, dNum2DMassBins, dMinMass, dMaxMass);
+
+	//Return to the base directory
+	gDirectory->cd("..");
+}
+
+bool DHistogramAction_MissingMass::Perform_Action(void)
+{
+	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+	double locBeamEnergy = 0.0;
+	if(dUseKinFitFlag)
+		locBeamEnergy = locBeamParticle->Get_P4().E();
+	else
+		locBeamEnergy = locBeamParticle->Get_P4_Measured().E();
+
+	//build all possible combinations of the included pids
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(dMissingMassOffOfStepIndex);
+	set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dMissingMassOffOfPIDs);
+
+	//loop over them
+	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
+	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
+	{
+		map<Particle_t, set<Int_t> > locSourceObjects;
+		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingMassOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+
+		if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
+			continue; //dupe: already histed!
+		dPreviouslyHistogrammed.insert(locSourceObjects);
+
+		dHist_MissingMass->Fill(locMissingP4.M());
+		dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M());
+		dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M());
+	}
+
+	return true;
+}
+
+void DHistogramAction_MissingMassSquared::Initialize(void)
+{
+	double locMassSqPerBin = 1000.0*1000.0*(dMaxMass - dMinMass)/((double)dNumMassBins);
+	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
+	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingMassOffOfStepIndex, dMissingMassOffOfPIDs, dUseKinFitFlag, true);
+
+	//CREATE MAIN FOLDER
+	string locDirName = "Hist_MissingMassSquared";
+	if(dActionUniqueString != "")
+		locDirName += string("_") + dActionUniqueString;
+	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+
+	string locHistName = "MissingMassSquared";
+	ostringstream locStream;
+	locStream << locMassSqPerBin;
+	string locHistTitle = string(";") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass Squared (GeV/c^{2})^{2};# Combos / ") + locStream.str() + string(" (MeV/c^{2})^{2}");
+	dHist_MissingMass = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
+
+	locHistName = "MissingMassSquaredVsBeamE";
+	locMassSqPerBin *= ((double)dNumMassBins)/((double)dNum2DMassBins);
+	locStream.str();
+	locStream << locMassSqPerBin;
+	locHistTitle = string(";Beam Energy (GeV);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass Squared (GeV/c^{2})^{2};");
+	dHist_MissingMassVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMassBins, dMinMass, dMaxMass);
+
+	locHistName = "MissingMassSquaredVsMissingP";
+	locStream.str("");
+	locStream << locMassSqPerBin;
+	locHistTitle = string(";Missing P (GeV/c);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass Squared (GeV/c^{2})^{2}");
+	dHist_MissingMassVsMissingP = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissPBins, dMinMissP, dMaxMissP, dNum2DMassBins, dMinMass, dMaxMass);
+
+	//Return to the base directory
+	gDirectory->cd("..");
+}
+
+bool DHistogramAction_MissingMassSquared::Perform_Action(void)
+{
+	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+	double locBeamEnergy = 0.0;
+	if(dUseKinFitFlag)
+		locBeamEnergy = locBeamParticle->Get_P4().E();
+	else
+		locBeamEnergy = locBeamParticle->Get_P4_Measured().E();
+
+	//build all possible combinations of the included pids
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(dMissingMassOffOfStepIndex);
+	set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dMissingMassOffOfPIDs);
+
+	//loop over them
+	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
+	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
+	{
+		map<Particle_t, set<Int_t> > locSourceObjects;
+		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingMassOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+
+		if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
+			continue; //dupe: already histed!
+		dPreviouslyHistogrammed.insert(locSourceObjects);
+
+		dHist_MissingMass->Fill(locMissingP4.M2());
+		dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M2());
+		dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M2());
+	}
+
+	return true;
+}
+
+void DHistogramAction_2DInvariantMass::Initialize(void)
+{
+	string locHistName, locHistTitle;
+
+	string locParticleNamesForHistX = "";
+	for(size_t loc_i = 0; loc_i < dXPIDs.size(); ++loc_i)
+		locParticleNamesForHistX += ParticleName_ROOT(dXPIDs[loc_i]);
+
+	string locParticleNamesForHistY = "";
+	for(size_t loc_i = 0; loc_i < dYPIDs.size(); ++loc_i)
+		locParticleNamesForHistY += ParticleName_ROOT(dYPIDs[loc_i]);
+
+	string locMassString = " Invariant Mass (GeV/c^{2});";
+
+	//CREATE MAIN FOLDER
+	string locDirName = "Hist_2DInvariantMass";
+	if(dActionUniqueString != "")
+		locDirName += string("_") + dActionUniqueString;
+	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+
+	locHistName = "2DInvariantMass";
+	locHistTitle = string(";") + locParticleNamesForHistX + locMassString + locParticleNamesForHistY + locMassString;
+	dHist_2DInvaraintMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
+
+	//Return to the base directory
+	gDirectory->cd("..");
+}
+
+bool DHistogramAction_2DInvariantMass::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
+			continue;
+
+		//build all possible combinations of the included pids
+		set<set<size_t> > locXIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dXPIDs);
+		set<set<size_t> > locYIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dYPIDs);
+
+		//(double) loop over them
+		set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
+		for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
+		{
+			map<Particle_t, set<Int_t> > locXSourceObjects;
+			TLorentzVector locXP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locXComboIterator, locXSourceObjects, dUseKinFitFlag);
+
+			set<set<size_t> >::iterator locYComboIterator = locYIndexCombos.begin();
+			for(; locYComboIterator != locYIndexCombos.end(); ++locYComboIterator)
+			{
+				map<Particle_t, set<Int_t> > locYSourceObjects;
+				TLorentzVector locYP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locYComboIterator, locYSourceObjects, dUseKinFitFlag);
+
+				if(locXSourceObjects == locYSourceObjects)
+					continue; //the same!
+
+				set<map<Particle_t, set<Int_t> > > locAllSourceObjects;
+				locAllSourceObjects.insert(locXSourceObjects);
+				locAllSourceObjects.insert(locYSourceObjects);
+				if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
+					continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
+				dPreviouslyHistogrammed.insert(locAllSourceObjects);
+
+				dHist_2DInvaraintMass->Fill(locXP4.M(), locYP4.M());
+			}
+		}
+	}
+
+	return true;
+}
+
+void DHistogramAction_Dalitz::Initialize(void)
+{
+	string locHistName, locHistTitle;
+
+	string locParticleNamesForHistX = "";
+	for(size_t loc_i = 0; loc_i < dXPIDs.size(); ++loc_i)
+		locParticleNamesForHistX += ParticleName_ROOT(dXPIDs[loc_i]);
+
+	string locParticleNamesForHistY = "";
+	for(size_t loc_i = 0; loc_i < dYPIDs.size(); ++loc_i)
+		locParticleNamesForHistY += ParticleName_ROOT(dYPIDs[loc_i]);
+
+	string locMassString = " Invariant Mass Squared (GeV/c^{2})^{2};";
+
+	//CREATE MAIN FOLDER
+	string locDirName = "Hist_Dalitz";
+	if(dActionUniqueString != "")
+		locDirName += string("_") + dActionUniqueString;
+	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+
+	locHistName = "Dalitz";
+	locHistTitle = string(";") + locParticleNamesForHistX + locMassString + locParticleNamesForHistY + locMassString;
+	dHist_2DInvaraintMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
+
+	//Return to the base directory
+	gDirectory->cd("..");
+}
+
+bool DHistogramAction_Dalitz::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
+			continue;
+
+		//build all possible combinations of the included pids
+		set<set<size_t> > locXIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dXPIDs);
+		set<set<size_t> > locYIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dYPIDs);
+
+		//(double) loop over them
+		set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
+		for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
+		{
+			map<Particle_t, set<Int_t> > locXSourceObjects;
+			TLorentzVector locXP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locXComboIterator, locXSourceObjects, dUseKinFitFlag);
+
+			set<set<size_t> >::iterator locYComboIterator = locYIndexCombos.begin();
+			for(; locYComboIterator != locYIndexCombos.end(); ++locYComboIterator)
+			{
+				map<Particle_t, set<Int_t> > locYSourceObjects;
+				TLorentzVector locYP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locYComboIterator, locYSourceObjects, dUseKinFitFlag);
+
+				if(locXSourceObjects == locYSourceObjects)
+					continue; //the same!
+
+				set<map<Particle_t, set<Int_t> > > locAllSourceObjects;
+				locAllSourceObjects.insert(locXSourceObjects);
+				locAllSourceObjects.insert(locYSourceObjects);
+				if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
+					continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
+				dPreviouslyHistogrammed.insert(locAllSourceObjects);
+
+				dHist_2DInvaraintMass->Fill(locXP4.M2(), locYP4.M2());
+			}
+		}
+	}
+
+	return true;
 }
