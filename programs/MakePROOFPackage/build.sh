@@ -23,6 +23,7 @@ cp ${ROOT_ANALYSIS_HOME}/${BMS_OSNAME}/lib/libDSelector.so ${DIRNAME}/
 #HEADERS
 cp -r ${ROOT_ANALYSIS_HOME}/${BMS_OSNAME}/include/DSelector ${DIRNAME}/
 cp $HALLD_HOME/$BMS_OSNAME/include/particleType.h ${DIRNAME}/
+cp $HALLD_HOME/$BMS_OSNAME/include/GlueX.h ${DIRNAME}/
 
 # build archive
 tar -czf ${PACKAGENAME}.par ${DIRNAME}
