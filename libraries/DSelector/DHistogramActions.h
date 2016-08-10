@@ -23,6 +23,7 @@
 #include "DMCThrown.h"
 #include "DChargedTrackHypothesis.h"
 #include "DNeutralParticleHypothesis.h"
+#include "DAnalysisUtilities.h"
 
 using namespace std;
 
@@ -30,12 +31,12 @@ class DHistogramAction_ParticleComboKinematics
 {
 	public:
 		DHistogramAction_ParticleComboKinematics(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
-		dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumVertexZBins(600), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
-		dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumDeltaTRFBins(500), dNumPathLengthBins(750), dNumLifetimeBins(500),
-		dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
-		dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0), dMinDeltaTRF(-10.0), dMaxDeltaTRF(10.0),
-		dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0) {}
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumVertexZBins(600), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
+			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumDeltaTRFBins(500), dNumPathLengthBins(750), dNumLifetimeBins(500),
+			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
+			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0), dMinDeltaTRF(-10.0), dMaxDeltaTRF(10.0),
+			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0) {}
 
 	private:
 		const DParticleCombo* dParticleComboWrapper;
@@ -50,7 +51,7 @@ class DHistogramAction_ParticleComboKinematics
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
-		bool Perform_Action(void); //if true, will reset uniqueness tracking
+		bool Perform_Action(void);
 
 	private:
 
@@ -96,14 +97,14 @@ class DHistogramAction_ParticleID
 {
 	public:
 		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
-		dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
-		dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
-		dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
-		dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
-		dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
-		dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
-		dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0) {}
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
+			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
+			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
+			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
+			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
+			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
+			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0) {}
 
 	private:
 		const DParticleCombo* dParticleComboWrapper;
@@ -120,7 +121,7 @@ class DHistogramAction_ParticleID
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
-		bool Perform_Action(void); //if true, will reset uniqueness tracking
+		bool Perform_Action(void);
 
 	private:
 
@@ -151,6 +152,234 @@ class DHistogramAction_ParticleID
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerTVsParticleT;
 
 		map<size_t, map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed; //step index, PID, particle indices
+};
+
+class DHistogramAction_InvariantMass
+{
+	public:
+		DHistogramAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locInitialPID, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dInitialPID(locInitialPID), dStepIndex(-1), dToIncludePIDs(deque<Particle_t>()),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass) {}
+
+		//e.g. if g, p -> pi+, pi-, p
+			//call with step = 0, PIDs = pi+, pi-, and will histogram rho mass
+		DHistogramAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass) {}
+
+	private:
+		const DParticleCombo* dParticleComboWrapper;
+		bool dUseKinFitFlag;
+		string dActionUniqueString;
+
+		Particle_t dInitialPID;
+		int dStepIndex;
+		deque<Particle_t> dToIncludePIDs;
+
+		unsigned int dNumMassBins;
+		double dMinMass, dMaxMass;
+
+	public:
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		DAnalysisUtilities dAnalysisUtilities;
+		TH1I* dHist_InvaraintMass;
+
+		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
+		//In general: Multiple PIDs, so multiple sets: Contain within a map
+		//Multiple combos: Contain maps within a set (easier, faster to search)
+		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+};
+
+class DHistogramAction_MissingMass
+{
+	public:
+		DHistogramAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass), dMissingMassOffOfStepIndex(0), dMissingMassOffOfPIDs(deque<Particle_t>()),
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+
+		//E.g. If:
+		//g, p -> K+, K+, Xi-
+		//                Xi- -> pi-, Lambda
+		//                            Lambda -> (p), pi-
+		//And:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+, K+
+		//Then: Will histogram missing-mass: g, p -> K+, K+, (X)
+		//Also:
+		//locMissingMassOffOfStepIndex = 1, locMissingMassOffOfPID = pi-
+		//Then: Will histogram missing-mass: g, p -> K+, K+, pi-
+		//But:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+
+		//Then: Will histogram only missing-mass: g, p -> K+_1, (X)    and NOT K+_2!!!
+		DHistogramAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, deque<Particle_t> locMissingMassOffOfPIDs, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass),
+			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(locMissingMassOffOfPIDs),
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+
+		DHistogramAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, Particle_t locMissingMassOffOfPID, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass),
+			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)),
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+
+	private:
+		const DParticleCombo* dParticleComboWrapper;
+		bool dUseKinFitFlag;
+		string dActionUniqueString;
+
+		unsigned int dNumMassBins;
+		double dMinMass, dMaxMass;
+		int dMissingMassOffOfStepIndex;
+		deque<Particle_t> dMissingMassOffOfPIDs;
+
+	public:
+		unsigned int dNum2DMassBins, dNum2DBeamEBins, dNum2DMissPBins;
+		double dMinBeamE, dMaxBeamE, dMinMissP, dMaxMissP;
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		TH1I* dHist_MissingMass;
+		TH2I* dHist_MissingMassVsBeamE;
+		TH2I* dHist_MissingMassVsMissingP;
+		DAnalysisUtilities dAnalysisUtilities;
+
+		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
+		//In general: Multiple PIDs, so multiple sets: Contain within a map
+		//Multiple combos: Contain maps within a set (easier, faster to search)
+		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+};
+
+class DHistogramAction_MissingMassSquared
+{
+	public:
+		DHistogramAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, unsigned int locNumMassBins, double locMinMassSq, double locMaxMassSq, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMassSq), dMaxMass(locMaxMassSq), dMissingMassOffOfStepIndex(0), dMissingMassOffOfPIDs(deque<Particle_t>()),
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+
+		//E.g. If:
+		//g, p -> K+, K+, Xi-
+		//                Xi- -> pi-, Lambda
+		//                            Lambda -> (p), pi-
+		//And:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+, K+
+		//Then: Will histogram missing-mass: g, p -> K+, K+, (X)
+		//Also:
+		//locMissingMassOffOfStepIndex = 1, locMissingMassOffOfPID = pi-
+		//Then: Will histogram missing-mass: g, p -> K+, K+, pi-
+		//But:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+
+		//Then: Will histogram only missing-mass: g, p -> K+_1, (X)    and NOT K+_2!!!
+		DHistogramAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, deque<Particle_t> locMissingMassOffOfPIDs, unsigned int locNumMassBins, double locMinMassSq, double locMaxMassSq, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMassSq), dMaxMass(locMaxMassSq),
+			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(locMissingMassOffOfPIDs),
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+
+		DHistogramAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, Particle_t locMissingMassOffOfPID, unsigned int locNumMassBins, double locMinMassSq, double locMaxMassSq, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMassSq), dMaxMass(locMaxMassSq),
+			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)),
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+
+	private:
+		const DParticleCombo* dParticleComboWrapper;
+		bool dUseKinFitFlag;
+		string dActionUniqueString;
+
+		unsigned int dNumMassBins;
+		double dMinMass, dMaxMass;
+		int dMissingMassOffOfStepIndex;
+		deque<Particle_t> dMissingMassOffOfPIDs;
+
+	public:
+		unsigned int dNum2DMassBins, dNum2DBeamEBins, dNum2DMissPBins;
+		double dMinBeamE, dMaxBeamE, dMinMissP, dMaxMissP;
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		TH1I* dHist_MissingMass;
+		TH2I* dHist_MissingMassVsBeamE;
+		TH2I* dHist_MissingMassVsMissingP;
+		DAnalysisUtilities dAnalysisUtilities;
+
+		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
+		//In general: Multiple PIDs, so multiple sets: Contain within a map
+		//Multiple combos: Contain maps within a set (easier, faster to search)
+		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+};
+
+class DHistogramAction_2DInvariantMass
+{
+	public:
+		DHistogramAction_2DInvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locXPIDs, deque<Particle_t> locYPIDs, unsigned int locNumXBins, double locMinX, double locMaxX, unsigned int locNumYBins, double locMinY, double locMaxY, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dStepIndex(locStepIndex), dXPIDs(locXPIDs), dYPIDs(locYPIDs), dNumXBins(locNumXBins), dNumYBins(locNumYBins),
+			dMinX(locMinX), dMaxX(locMaxX), dMinY(locMinY), dMaxY(locMaxY) {}
+
+	private:
+		const DParticleCombo* dParticleComboWrapper;
+		bool dUseKinFitFlag;
+		string dActionUniqueString;
+
+		int dStepIndex;
+		deque<Particle_t> dXPIDs, dYPIDs;
+		unsigned int dNumXBins, dNumYBins;
+		double dMinX, dMaxX, dMinY, dMaxY;
+
+	public:
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		DAnalysisUtilities dAnalysisUtilities;
+		TH2I* dHist_2DInvaraintMass;
+
+		set<set<map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed;
+};
+
+class DHistogramAction_Dalitz
+{
+	public:
+	DHistogramAction_Dalitz(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locXPIDs, deque<Particle_t> locYPIDs, unsigned int locNumXBins, double locMinX, double locMaxX, unsigned int locNumYBins, double locMinY, double locMaxY, string locActionUniqueString = "") :
+			dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
+			dStepIndex(locStepIndex), dXPIDs(locXPIDs), dYPIDs(locYPIDs), dNumXBins(locNumXBins), dNumYBins(locNumYBins),
+			dMinX(locMinX), dMaxX(locMaxX), dMinY(locMinY), dMaxY(locMaxY) {}
+
+	private:
+		const DParticleCombo* dParticleComboWrapper;
+		bool dUseKinFitFlag;
+		string dActionUniqueString;
+
+		int dStepIndex;
+		deque<Particle_t> dXPIDs, dYPIDs;
+		unsigned int dNumXBins, dNumYBins;
+		double dMinX, dMaxX, dMinY, dMaxY;
+
+	public:
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		DAnalysisUtilities dAnalysisUtilities;
+		TH2I* dHist_2DInvaraintMass;
+
+		set<set<map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed;
 };
 
 #endif // _DHistogramActions_

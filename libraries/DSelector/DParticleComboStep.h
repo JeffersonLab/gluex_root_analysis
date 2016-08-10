@@ -39,10 +39,19 @@ class DParticleComboStep
 		DKinematicData* Get_FinalParticle(size_t locIndex) const{return dFinalParticles[locIndex];}
 		DKinematicData* Get_MissingParticle(void) const; //NULL if none or not reconstructed
 
+		//GET PARTICLES BY TRAIT
+		deque<DKinematicData*> Get_FinalParticles(bool locOnlyDetectedFlag = false, Particle_t locDesiredPID = Unknown) const;
+		deque<DKinematicData*> Get_FinalParticles_ByCharge(bool locChargedFlag, bool locOnlyDetectedFlag = false) const; //locChargedFlag = false for neutrals
+
 		// GET INDICES
 		int Get_DecayStepIndex(int locParticleIndex) const{return dDecayStepIndices[locParticleIndex];}
 		int Get_MissingParticleIndex(void) const{return dMissingParticleIndex;}
 		pair<int, int> Get_InitDecayFromIndices(void) const{return dInitDecayFromIndices;}
+
+		// GET TRAITS - FINAL PARTICLES:
+		inline bool Is_FinalParticleDetected(size_t locFinalParticleIndex) const{return (Get_DecayStepIndex(locFinalParticleIndex) == -2);}
+		inline bool Is_FinalParticleDecaying(size_t locFinalParticleIndex) const{return (Get_DecayStepIndex(locFinalParticleIndex) >= 0);}
+		inline bool Is_FinalParticleMissing(size_t locFinalParticleIndex) const{return (Get_DecayStepIndex(locFinalParticleIndex) == -1);}
 
 		// GET STEP X4
 		TLorentzVector Get_X4(void) const;
@@ -181,6 +190,38 @@ inline DKinematicData* DParticleComboStep::Get_MissingParticle(void) const
 }
 
 /*********************************************************** GENERIC-CODE HELPER FUNCTIONS ************************************************************/
+
+inline deque<DKinematicData*> DParticleComboStep::Get_FinalParticles(bool locOnlyDetectedFlag, Particle_t locDesiredPID) const
+{
+	deque<DKinematicData*> locParticles;
+	for(size_t loc_i = 0; loc_i < dFinalParticles.size(); ++loc_i)
+	{
+		if(locOnlyDetectedFlag && !Is_FinalParticleDetected(loc_i))
+			continue;
+
+		Particle_t locPID = Get_FinalPID(loc_i);
+		if((locPID == locDesiredPID) || (locDesiredPID == Unknown))
+			locParticles.push_back(dFinalParticles[loc_i]);
+	}
+
+	return locParticles;
+}
+
+inline deque<DKinematicData*> DParticleComboStep::Get_FinalParticles_ByCharge(bool locChargedFlag, bool locOnlyDetectedFlag) const
+{
+	deque<DKinematicData*> locParticles;
+	for(size_t loc_i = 0; loc_i < dFinalParticles.size(); ++loc_i)
+	{
+		if(locOnlyDetectedFlag && !Is_FinalParticleDetected(loc_i))
+			continue;
+
+		int locCharge = ParticleCharge(Get_FinalPID(loc_i));
+		if(((locCharge == 0) && !locChargedFlag) || ((locCharge != 0) && locChargedFlag))
+			locParticles.push_back(dFinalParticles[loc_i]);
+	}
+
+	return locParticles;
+}
 
 inline string DParticleComboStep::Get_InitialParticlesROOTName(void) const
 {

@@ -100,6 +100,8 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 	Print_Reaction();
 }
 
+/****************************************************************** SETUP FUNCTIONS *******************************************************************/
+
 int DParticleCombo::Get_DecayStepIndex(int locStepIndex, int locParticleIndex) const
 {
 	//check if the input particle decays later in the reaction
@@ -222,4 +224,56 @@ void DParticleCombo::Setup_X4Branches(void)
 		locMissingParticle->dX4_Measured = locMissingStep->dX4_Step;
 		locMissingParticle->dBranch_MeasuredIndex = locMissingStep->dBranch_X4MeasuredIndex;
 	}
+}
+
+/***************************************************************** UTILITY FUNCTIONS ******************************************************************/
+
+string DParticleCombo::Get_DecayChainFinalParticlesROOTNames(size_t locStepIndex, int locUpToStepIndex, deque<Particle_t> locUpThroughPIDs, bool locKinFitResultsFlag, bool locExpandDecayingParticlesFlag) const
+{
+	//if locKinFitResultsFlag = true: don't expand decaying particles (through decay chain) that were included in the kinfit (still expand resonances)
+	string locName = "";
+	deque<DKinematicData*> locParticles = dParticleComboSteps[locStepIndex]->Get_FinalParticles();
+	int locMissingParticleIndex = dParticleComboSteps[locStepIndex]->Get_MissingParticleIndex();
+	bool locSearchPIDsFlag = !locUpThroughPIDs.empty();
+	for(size_t loc_j = 0; loc_j < locParticles.size(); ++loc_j)
+	{
+		Particle_t locPID = locParticles[loc_j]->Get_PID();
+		if(int(loc_j) == locMissingParticleIndex)
+			continue; //exclude missing!
+
+		if(locSearchPIDsFlag && (int(locStepIndex) == locUpToStepIndex))
+		{
+			bool locPIDFoundFlag = false;
+			for(deque<Particle_t>::iterator locIterator = locUpThroughPIDs.begin(); locIterator != locUpThroughPIDs.end(); ++locIterator)
+			{
+				if((*locIterator) != locPID)
+					continue;
+				locUpThroughPIDs.erase(locIterator);
+				locPIDFoundFlag = true;
+				break;
+			}
+			if(!locPIDFoundFlag)
+				continue; //skip it: don't want to include it
+		}
+
+		//find all future steps in which this pid is a parent
+		int locDecayingStepIndex = -1;
+		//expand if: not-kinfitting, or not a fixed mass
+		if((!locKinFitResultsFlag) || (!IsFixedMass(locPID)) || locExpandDecayingParticlesFlag)
+		{
+			for(size_t loc_k = locStepIndex + 1; loc_k < dParticleComboSteps.size(); ++loc_k)
+			{
+				if(dParticleComboSteps[loc_k]->Get_InitialPID() != locPID)
+					continue;
+				locDecayingStepIndex = loc_k;
+				break;
+			}
+		}
+
+		if(locDecayingStepIndex == -1)
+			locName += ParticleName_ROOT(locPID);
+		else
+			locName += Get_DecayChainFinalParticlesROOTNames(locDecayingStepIndex, locUpToStepIndex, locUpThroughPIDs, locKinFitResultsFlag, locExpandDecayingParticlesFlag);
+	}
+	return locName;
 }

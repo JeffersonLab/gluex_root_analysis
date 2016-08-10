@@ -68,6 +68,12 @@ class DParticleCombo
 		template <typename DType> DType Get_Fundamental(string locBranchName) const;
 		template <typename DType> DType Get_TObject(string locBranchName) const;
 
+		//UTILITY FUNCTIONS
+		string Get_InitialParticlesROOTName(void) const;
+		string Get_DecayChainFinalParticlesROOTNames(Particle_t locInitialPID, bool locKinFitResultsFlag) const;
+		string Get_DecayChainFinalParticlesROOTNames(Particle_t locInitialPID, int locUpToStepIndex, deque<Particle_t> locUpThroughPIDs, bool locKinFitResultsFlag) const;
+		string Get_DecayChainFinalParticlesROOTNames(size_t locStepIndex, int locUpToStepIndex, deque<Particle_t> locUpThroughPIDs, bool locKinFitResultsFlag, bool locExpandDecayingParticlesFlag) const;
+
 	private:
 		DParticleCombo(void){}; //no default constructor!
 
@@ -246,6 +252,35 @@ template <typename DType> inline DType DParticleCombo::Get_Fundamental(string lo
 template <typename DType> inline DType DParticleCombo::Get_TObject(string locBranchName) const
 {
 	return dTreeInterface->Get_Fundamental<DType>(locBranchName, dComboIndex);
+}
+
+/***************************************************************** UTILITY FUNCTIONS ******************************************************************/
+
+inline string DParticleCombo::Get_DecayChainFinalParticlesROOTNames(Particle_t locInitialPID, bool locKinFitResultsFlag) const
+{
+	//if multiple decay steps have locInitialPID as the parent, only the first listed is used
+	return Get_DecayChainFinalParticlesROOTNames(locInitialPID, -1, deque<Particle_t>(), locKinFitResultsFlag);
+}
+
+inline string DParticleCombo::Get_DecayChainFinalParticlesROOTNames(Particle_t locInitialPID, int locUpToStepIndex, deque<Particle_t> locUpThroughPIDs, bool locKinFitResultsFlag) const
+{
+	//if multiple decay steps have locInitialPID as the parent, only the first listed is used
+	deque<Particle_t> locPIDs;
+	string locName = "";
+	for(size_t loc_i = 0; loc_i < dParticleComboSteps.size(); ++loc_i)
+	{
+		if(dParticleComboSteps[loc_i]->Get_InitialPID() != locInitialPID)
+			continue;
+		return Get_DecayChainFinalParticlesROOTNames(loc_i, locUpToStepIndex, locUpThroughPIDs, locKinFitResultsFlag, false);
+	}
+	return string("");
+}
+
+inline string DParticleCombo::Get_InitialParticlesROOTName(void) const
+{
+	if(dParticleComboSteps.empty())
+		return (string());
+	return dParticleComboSteps[0]->Get_InitialParticlesROOTName();
 }
 
 #endif // _DParticleCombo_
