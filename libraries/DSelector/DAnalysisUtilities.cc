@@ -240,3 +240,99 @@ bool DAnalysisUtilities::Handle_Decursion(int& locParticleIndex, deque<size_t>& 
 
 	return true;
 }
+
+double DAnalysisUtilities::Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, TLorentzVector& locMesonP4, bool locIsPARAFlag) const
+{
+	//Returns angle in degrees!!
+
+	//Polarization plane:
+		//Beam is in the lab z-direction
+		//The polarization vector is perpendicular to the direction of the photon
+		//Linearly polarized photon beam: Polarization is confined to a plane along the direction of the photon
+			//Plane defined by z-direction & some angle phi. Thus, polarization vector defined by phi.
+			//PARA: Polarization plane parallel to the floor: The XZ plane. Polarization Vector = +/- x-axis
+			//PERP: Polarization plane perpendicular to the floor: The YZ plane. Polarization Vector = +/- y-axis
+		//(FYI) Circularly polarized photon beam: Polarization rotates through the plane perpendicular to the direction of the photon: The XY Plane
+
+	//Production CM frame: The center-of-mass frame of the production step.
+		//In general, the beam energy is measured more accurately than the combination of all of the final-state particles
+		//So define the production CM frame using the initial state
+	TLorentzVector locBeamP4(0.0, 0.0, locBeamEnergy, locBeamEnergy);
+	TLorentzVector locTargetP4(TVector3(), ParticleMass(locTargetPID));
+	TLorentzVector locInitialStateP4 = locBeamP4 + locTargetP4;
+	TVector3 locBoostVector_ProdCM = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
+
+	//Boost beam & KPlus to production CM frame
+	TLorentzVector locBeamP4_ProdCM(locBeamP4);
+	locBeamP4_ProdCM.Boost(locBoostVector_ProdCM);
+	TLorentzVector locMesonP4_ProdCM(locMesonP4);
+	locMesonP4_ProdCM.Boost(locBoostVector_ProdCM);
+
+	//Production plane:
+		//The production plane is the plane containing the produced particles.
+		//However, when you boost to the production CM frame, the production plane is no longer well defined: the particles are back-to-back
+		//So, by convention, define the production plane in the production CM frame by the beam and the meson.
+
+	//Production CM frame axes: "HELICITY SYSTEM"
+		//The z-axis is defined as the direction of the meson: z = meson
+		//The y-axis is defined by the vector cross product: y = Beam X meson
+		//The x-axis is defined by the vector cross product: x = y cross z
+		//Thus the production plane in the production frame is the XZ plane, and the normal vector is the Y-axis
+
+	//Define production CM frame helicity axes
+	TVector3 locHelicityZAxis_ProdCM = locMesonP4_ProdCM.Vect().Unit();
+	TVector3 locHelicityYAxis_ProdCM = locBeamP4_ProdCM.Vect().Cross(locMesonP4_ProdCM.Vect()).Unit();
+	TVector3 locHelicityXAxis_ProdCM = locHelicityYAxis_ProdCM.Cross(locHelicityZAxis_ProdCM).Unit();
+
+	//In the production CM frame, locProdPlanePhi is the angle between the production plane and the floor
+		// We could have chosen any other fixed plane besides the floor. The point is that it must be a fixed reference
+	TVector3 locFloorUnit(0.0, 1.0, 0.0);
+	double locCosProdPlanePhi = locBeamP4_ProdCM.Vect().Unit().Dot(locFloorUnit.Cross(locHelicityYAxis_ProdCM));
+	double locProdPlanePhi = acos(locCosProdPlanePhi); //reports phi between 0 and pi: sign ambiguity
+
+	//Resolve the sign ambiguity
+	double locSinProdPlanePhi = locFloorUnit.Dot(locHelicityYAxis_ProdCM);
+	if(locSinProdPlanePhi < 0.0)
+		locProdPlanePhi *= -1.0;
+
+	return 180.0*locProdPlanePhi/TMath::Pi();
+}
+
+bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const
+{
+	//RCDB environment must be setup!!
+
+	//Pipe the current constant into this function
+	ostringstream locCommandStream;
+	locCommandStream << "rcnd " << locRunNumber << " polarization_direction";
+	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+	if(locInputFile == NULL)
+		return false;
+
+	//get the first line
+	char buff[1024]; // I HATE char buffers
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+		return 0;
+	istringstream locStringStream(buff);
+
+	//Close the pipe
+	gSystem->ClosePipe(locInputFile);
+
+	//extract it
+	string locPolarizationDirection;
+	if(!(locStringStream >> locPolarizationDirection))
+		return false;
+
+	if(locPolarizationDirection == "PARA")
+	{
+		locIsPARAFlag = true;
+		return true;
+	}
+	else if(locPolarizationDirection == "PERP")
+	{
+		locIsPARAFlag = false;
+		return true;
+	}
+
+	return false;
+}

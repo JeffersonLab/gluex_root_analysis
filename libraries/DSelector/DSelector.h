@@ -26,6 +26,7 @@
 #include "DChargedTrackHypothesis.h"
 #include "DNeutralParticleHypothesis.h"
 #include "DParticleCombo.h"
+#include "DAnalysisUtilities.h"
 
 class DSelector : public TSelector
 {
@@ -49,6 +50,9 @@ class DSelector : public TSelector
 		TString dOption;
 		string dOutputFileName;
 		string dOutputTreeFileName;
+
+		//ANALYSIS UTILITIES
+		DAnalysisUtilities dAnalysisUtilities;
 
 		// TARGET INFORMATION
 		TVector3 dTargetCenter;
