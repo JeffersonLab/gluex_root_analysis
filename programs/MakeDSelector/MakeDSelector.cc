@@ -10,8 +10,8 @@
 
 //function declarations
 void Print_Usage(void);
-void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
-void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
+void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
+void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
 
 int main(int argc, char* argv[])
 {
@@ -34,9 +34,8 @@ int main(int argc, char* argv[])
 	map<int, map<int, pair<Particle_t, string> > > locComboInfoMap;
 	locTreeInterface->Get_ComboInfo(locComboInfoMap);
 
-	string locSelectorName = string("DSelector_") + locSelectorBaseName;
-	Print_HeaderFile(locSelectorName, locTreeInterface, locComboInfoMap);
-	Print_SourceFile(locSelectorName, locTreeInterface, locComboInfoMap);
+	Print_HeaderFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
+	Print_SourceFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
 
 	cout << "Selector files " << locSelectorName << ".* generated." << endl;
 
@@ -54,8 +53,9 @@ void Print_Usage(void)
 	cout << endl;
 }
 
-void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
 {
+	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	string locHeaderName = locSelectorName + string(".h");
 	ofstream locHeaderStream;
 	locHeaderStream.open(locHeaderName.c_str());
@@ -206,8 +206,9 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locHeaderStream.close();
 }
 
-void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
 {
+	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	string locSourceName = locSelectorName + string(".C");
 	ofstream locSourceStream;
 	locSourceStream.open(locSourceName.c_str());
@@ -221,7 +222,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	// Init() will be called many times when running on PROOF (once per file to be processed)." << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//SET OUTPUT FILE NAME //can be overriden by user in PROOF" << endl;
-	locSourceStream << "	dOutputFileName = \"myfile.root\"; //\"\" for none" << endl;
+	locSourceStream << "	dOutputFileName = \"" << locSelectorBaseName << ".root\"; //\"\" for none" << endl;
 	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//DO THIS NEXT" << endl;
@@ -244,7 +245,9 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	//EXAMPLE HISTOGRAM ACTIONS:" << endl;
 	locSourceStream << "	dHistComboKinematics = new DHistogramAction_ParticleComboKinematics(dComboWrapper, false); //false: use measured data" << endl;
 	locSourceStream << "	dHistComboPID = new DHistogramAction_ParticleID(dComboWrapper, false); //false: use measured data" << endl;
-	locSourceStream << "	//change binning here" << endl;
+	locSourceStream << "	//change histogram binning here" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//INITIALIZE ACTIONS" << endl;
 	locSourceStream << "	dHistComboKinematics->Initialize();" << endl;
 	locSourceStream << "	dHistComboPID->Initialize();" << endl;
 	locSourceStream << endl;
