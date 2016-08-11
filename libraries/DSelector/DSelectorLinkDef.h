@@ -23,6 +23,9 @@
 #include "DNeutralParticleHypothesis.h"
 #include "DParticleCombo.h"
 #include "DParticleComboStep.h"
+#include "DAnalysisUtilities.h"
+#include "DHistogramActions.h"
+#include "DCutActions.h"
 #include "DSelector.h"
 #include "DTreeInterface.h"
 #include "DPROOFLiteManager.h"
@@ -37,6 +40,7 @@
 #pragma link C++ class DNeutralParticleHypothesis-!;
 #pragma link C++ class DParticleCombo-!;
 #pragma link C++ class DParticleComboStep-!;
+#pragma link C++ class DAnalysisUtilities-!;
 #pragma link C++ class DTreeInterface-!;
 #pragma link C++ class DPROOFLiteManager-!;
 #pragma link C++ class DSelector+;
