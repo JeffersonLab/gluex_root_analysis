@@ -87,6 +87,11 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locHeaderStream << "		void Get_ComboWrappers(void);" << endl;
 	locHeaderStream << "		void Finalize(void);" << endl;
 	locHeaderStream << endl;
+	locHeaderStream << "		// BEAM POLARIZATION INFORMATION" << endl;
+	locHeaderStream << "		UInt_t dPreviousRunNumber;" << endl;
+	locHeaderStream << "		bool dIsPolarizedFlag; //else is AMO" << endl;
+	locHeaderStream << "		bool dIsPARAFlag; //else is PERP or AMO" << endl;
+	locHeaderStream << endl;
 	locHeaderStream << "		//CREATE REACTION-SPECIFIC PARTICLE ARRAYS" << endl;
 	locHeaderStream << endl;
 
@@ -230,6 +235,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << endl;
 	locSourceStream << "	//THEN THIS" << endl;
 	locSourceStream << "	Get_ComboWrappers();" << endl;
+	locSourceStream << "	dPreviousRunNumber = 0;" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/******************************************** EXAMPLE USER INITIALIZATION *******************************************/" << endl;
 	locSourceStream << endl;
@@ -279,6 +285,17 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	//CALL THIS FIRST" << endl;
 	locSourceStream << "	DSelector::Process(locEntry); //Gets the data from the tree for the entry" << endl;
 	locSourceStream << "	//cout << \"RUN \" << Get_RunNumber() << \", EVENT \" << Get_EventNumber() << endl;" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/******************************************** GET POLARIZATION ORIENTATION ******************************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//Only if the run number changes" << endl;
+	locSourceStream << "	//RCDB environment must be setup in order for this to work! (Will return false otherwise)" << endl;
+	locSourceStream << "	UInt_t locRunNumber = Get_RunNumber();" << endl;
+	locSourceStream << "	if(locRunNumber != dPreviousRunNumber)" << endl;
+	locSourceStream << "	{" << endl;
+	locSourceStream << "		dIsPolarizedFlag = dAnalysisUtilities.Get_IsPolarizedBeam(locRunNumber, dIsPARAFlag);" << endl;
+	locSourceStream << "		dPreviousRunNumber = locRunNumber;" << endl;
+	locSourceStream << "	}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/**************************************** SETUP AUTOMATIC UNIQUENESS TRACKING ***************************************/" << endl;
 	locSourceStream << endl;
