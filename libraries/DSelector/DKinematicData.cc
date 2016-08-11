@@ -6,6 +6,14 @@ void DKinematicData::Setup_Branches(void)
 {
 	string locBranchName;
 
+	//Initialize to nullptr
+	dBranch_MeasuredIndex = nullptr;
+	dBranch_PID = nullptr;
+	dP4_KinFit = nullptr;
+	dP4_Measured = nullptr;
+	dX4_KinFit = nullptr;
+	dX4_Measured = nullptr;
+
 	//PID
 	if(dPID == Unknown)
 	{
