@@ -210,6 +210,8 @@ void DSelector::Terminate()
 
 void DSelector::Finalize()
 {
+	Fill_NumCombosSurvivedHists(); //for the last event
+
 	if(dFile != NULL)
 	{
 		dFile->Write();
@@ -274,10 +276,37 @@ map<Particle_t, UInt_t> DSelector::Get_NumFinalStateThrown(void) const
 
 void DSelector::FillOutputTree()
 {
-        // The FillOutputTree() function is called for events in the tree which pass
+	// The FillOutputTree() function is called for events in the tree which pass
 	// the user-defined analysis cuts.  The output file then contains the TTree 
 	// with these events that can be used for higher-level analysis (eg. AmptTools fit,
 	// PWA, etc.)
 
-        dTreeInterface->FillOutputTree();
+	dTreeInterface->FillOutputTree();
+}
+
+void DSelector::Create_ComboSurvivalHists(void)
+{
+	vector<string> locActionNames;
+	size_t locNumActions = dAnalysisActions.size();
+	for(size_t loc_j = 0; loc_j < locNumActions; ++loc_j)
+		locActionNames.push_back(dAnalysisActions[loc_j]->Get_ActionName());
+
+	gDirectory->cd("/");
+
+	dHist_NumEventsSurvivedAction = new TH1D("NumEventsSurvivedAction", ";;# Events Survived Action", locNumActions + 1, -0.5, locNumActions + 1.0 - 0.5); //+1 for input
+	dHist_NumEventsSurvivedAction->GetXaxis()->SetBinLabel(1, "Input"); // a new event
+	for(size_t loc_j = 0; loc_j < locActionNames.size(); ++loc_j)
+		dHist_NumEventsSurvivedAction->GetXaxis()->SetBinLabel(2 + loc_j, locActionNames[loc_j].c_str());
+
+	dHist_NumCombosSurvivedAction = new TH2D("NumCombosSurvivedAction", ";;# Particle Combos Survived Action", locNumActions + 1, -0.5, locNumActions + 1 - 0.5, 101, -0.5, 100.5); //+1 for input
+	dHist_NumCombosSurvivedAction->GetXaxis()->SetBinLabel(1, "Input");
+	for(size_t loc_j = 0; loc_j < locActionNames.size(); ++loc_j)
+		dHist_NumCombosSurvivedAction->GetXaxis()->SetBinLabel(2 + loc_j, locActionNames[loc_j].c_str());
+
+	dHist_NumCombosSurvivedAction1D = new TH1D("NumCombosSurvivedAction1D", ";;# Particle Combos Survived Action", locNumActions + 1, -0.5, locNumActions + 1 - 0.5); //+1 for # tracks
+	dHist_NumCombosSurvivedAction1D->GetXaxis()->SetBinLabel(1, "Input");
+	for(size_t loc_j = 0; loc_j < locActionNames.size(); ++loc_j)
+		dHist_NumCombosSurvivedAction1D->GetXaxis()->SetBinLabel(2 + loc_j, locActionNames[loc_j].c_str());
+
+	dNumCombosSurvivedAction.assign(locNumActions + 1, 0);
 }

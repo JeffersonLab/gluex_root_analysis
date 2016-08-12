@@ -350,7 +350,7 @@ class DHistogramAction_KinFitResults : public DAnalysisAction
 	public:
 	DHistogramAction_KinFitResults(const DParticleCombo* locParticleComboWrapper, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_KinFitResults", true, locActionUniqueString),
-			dNumChiSqPerDFBins(10), dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-12), dMaxChiSqPerDF(500) {}
+			dNumChiSqPerDFBins(1000), dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-20), dMaxChiSqPerDF(500) {}
 
 		void Reset_NewEvent(void){}
 		void Initialize(void);

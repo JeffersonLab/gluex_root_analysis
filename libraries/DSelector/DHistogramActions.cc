@@ -906,7 +906,7 @@ void DHistogramAction_KinFitResults::Initialize(void)
 	dHist_ConfidenceLevel = new TH1I("ConfidenceLevel", ";Kinematic Fit Confidence Level", dNumConLevBins, 0.0, 1.0);
 
 	int locNumBins = 0;
-	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 1, dNumBinsPerConLevPower, locNumBins);
+	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
 	if(locConLevLogBinning != NULL)
 		dHist_ConfidenceLevel_LogX = new TH1I("ConfidenceLevel_LogX", ";Kinematic Fit Confidence Level", locNumBins, locConLevLogBinning);
 	else

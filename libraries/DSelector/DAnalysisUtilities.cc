@@ -355,11 +355,11 @@ double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHig
 		double locCurrent10Power = double(locLowest10Power + loc_j);
 		for(unsigned int loc_k = 0; loc_k < locNumBinsPerPower; ++loc_k)
 		{
-			double locMultiplier = 9*double(loc_k)/locNumBinsPerPower + 1.0;
+			double locMultiplier = 9.0*double(loc_k)/locNumBinsPerPower + 1.0;
 			locBinArray[loc_j*locNumBinsPerPower + loc_k] = locMultiplier*pow(10.0, locCurrent10Power);
 		}
 	}
 
-	locBinArray[locNumBins] = locHighest10Power;
+	locBinArray[locNumBins] = pow(10.0, locHighest10Power);
 	return locBinArray;
 }
