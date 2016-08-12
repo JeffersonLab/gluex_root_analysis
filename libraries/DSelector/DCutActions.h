@@ -184,7 +184,7 @@ class DCutAction_MissingMassSquared : public DAnalysisAction
 class DCutAction_InvariantMass : public DAnalysisAction
 {
 	public:
-		DCutAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, Particle_t locInitialPID, bool locUseKinFitFlag, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+		DCutAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locInitialPID, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMass", locUseKinFitFlag, locActionUniqueString),
 			dInitialPID(locInitialPID), dStepIndex(-1), dToIncludePIDs(deque<Particle_t>()), dMinMass(locMinMass), dMaxMass(locMaxMass){}
 

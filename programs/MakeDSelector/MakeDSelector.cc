@@ -139,13 +139,6 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	}
 
 	//resume
-	locHeaderStream << "		// DEFINE YOUR HISTOGRAM ACTIONS HERE" << endl;
-	locHeaderStream << "		// EXAMPLE HISTOGRAM ACTIONS:" << endl;
-	locHeaderStream << "		DHistogramAction_ParticleComboKinematics* dHistComboKinematics;" << endl;
-	locHeaderStream << "		DHistogramAction_ParticleID* dHistComboPID;" << endl;
-	locHeaderStream << "		// EXAMPLE CUT ACTIONS:" << endl;
-	locHeaderStream << "		DCutAction_PIDDeltaT* dCutPIDDeltaT;" << endl;
-	locHeaderStream << endl;
 	locHeaderStream << "		// DEFINE YOUR HISTOGRAMS HERE" << endl;
 	locHeaderStream << "		// EXAMPLES:" << endl;
 	locHeaderStream << "		TH1I* dHist_MissingMassSquared;" << endl;
@@ -599,7 +592,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
 	locSourceStream << "	}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//Loop over charged track hypotheses (all are present, even those not in any combos)" << endl;
+	locSourceStream << "	//Loop over charged track hypotheses" << endl;
 	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumChargedHypos(); ++loc_i)" << endl;
 	locSourceStream << "	{" << endl;
 	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
@@ -608,7 +601,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
 	locSourceStream << "	}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//Loop over neutral particle hypotheses (all are present, even those not in any combos)" << endl;
+	locSourceStream << "	//Loop over neutral particle hypotheses" << endl;
 	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumNeutralHypos(); ++loc_i)" << endl;
 	locSourceStream << "	{" << endl;
 	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
