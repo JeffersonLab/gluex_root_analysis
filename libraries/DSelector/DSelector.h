@@ -262,8 +262,6 @@ inline void DSelector::Initialize_Actions(void)
 
 inline void DSelector::Reset_Actions_NewEvent(void)
 {
-	Fill_NumCombosSurvivedHists(); //Does nothing if on first event
-
 	dNumCombosSurvivedAction[0] = 0;
 	for(size_t loc_i = 0; loc_i < dAnalysisActions.size(); ++loc_i)
 	{

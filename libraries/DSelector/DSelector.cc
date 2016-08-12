@@ -210,8 +210,6 @@ void DSelector::Terminate()
 
 void DSelector::Finalize()
 {
-	Fill_NumCombosSurvivedHists(); //for the last event
-
 	if(dFile != NULL)
 	{
 		dFile->Write();

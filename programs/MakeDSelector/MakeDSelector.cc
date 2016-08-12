@@ -566,6 +566,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	} // end of combo loop" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	//FILL HISTOGRAMS: Num combos / events surviving actions" << endl;
+	locSourceStream << "	Fill_NumCombosSurvivedHists();" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	/******************************************* LOOP OVER THROWN DATA (OPTIONAL) ***************************************/" << endl;
 	locSourceStream << "/*" << endl;
 	locSourceStream << "	//Thrown beam: just use directly" << endl;
