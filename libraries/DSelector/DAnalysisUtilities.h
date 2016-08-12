@@ -27,6 +27,7 @@ class DAnalysisUtilities
 		double Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, TLorentzVector& locMesonP4, bool locIsPARAFlag) const;
 
 		set<set<size_t> > Build_IndexCombos(const DParticleComboStep* locParticleComboStepWrapper, deque<Particle_t> locToIncludePIDs) const;
+		double* Generate_LogBinning(int locLowest10Power, int locHighest10Power, unsigned int locNumBinsPerPower, int& locNumBins) const;
 
 	private:
 

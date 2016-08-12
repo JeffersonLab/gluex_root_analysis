@@ -24,8 +24,6 @@
 #include "DParticleCombo.h"
 #include "DParticleComboStep.h"
 #include "DAnalysisUtilities.h"
-#include "DHistogramActions.h"
-#include "DCutActions.h"
 #include "DSelector.h"
 #include "DTreeInterface.h"
 #include "DPROOFLiteManager.h"

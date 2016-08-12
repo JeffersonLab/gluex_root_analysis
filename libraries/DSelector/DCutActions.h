@@ -20,72 +20,209 @@
 #include "DMCThrown.h"
 #include "DChargedTrackHypothesis.h"
 #include "DNeutralParticleHypothesis.h"
+#include "DAnalysisUtilities.h"
+#include "DAnalysisAction.h"
 
 using namespace std;
 
-class DCutAction_PIDDeltaT
+class DCutAction_PIDDeltaT : public DAnalysisAction
 {
 	public:
-                DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),
-		dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
+		DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_PIDDeltaT", locUseKinFitFlag, locActionUniqueString),
+			dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
+
+		void Initialize(void);
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
 
 	private:
-
-		double dTargetCenterZ;
-		
-		const DParticleCombo* dParticleComboWrapper;
-		bool dUseKinFitFlag;
-		string dActionUniqueString;
-
-	public:
 		double dDeltaTCut;
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
 
-		void Initialize(void);
-		bool Perform_Action(void); // flag to reject combos
-
+		double dTargetCenterZ;
 };
 
-class DCutAction_NoPIDHit
+class DCutAction_NoPIDHit : public DAnalysisAction
 {
 	public:
 		DCutAction_NoPIDHit(const DParticleCombo* locParticleComboWrapper, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper),dActionUniqueString(locActionUniqueString),dPID(locPID), dSystem(locSystem) {}
+			DAnalysisAction(locParticleComboWrapper, "Cut_NoPIDHit", false, locActionUniqueString),
+			dPID(locPID), dSystem(locSystem) {}
+
+		void Initialize(void){}
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
 
 	private:
-
-		const DParticleCombo* dParticleComboWrapper;
-		string dActionUniqueString;
-
-	public:
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
-
-		void Initialize(void);
-		bool Perform_Action(void); // flag to reject combos
 };
 
-class DCutAction_dEdxProton
+class DCutAction_dEdxProton : public DAnalysisAction
 {
 	public:
-		DCutAction_dEdxProton(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
-		dParticleComboWrapper(locParticleComboWrapper), dUseKinFitFlag(locUseKinFitFlag), dActionUniqueString(locActionUniqueString),dPID(locPID), dSystem(locSystem) {}
+		DCutAction_dEdxProton(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag = false, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_dEdxProton", locUseKinFitFlag, locActionUniqueString),
+			dPID(locPID), dSystem(locSystem) {}
+
+		void Initialize(void);
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
 
 	private:
 
-		const DParticleCombo* dParticleComboWrapper;
-		bool dUseKinFitFlag;
-		string dActionUniqueString;
-		TF1 *f;
-
-	public:
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
+		TF1 *f;
+};
 
-		void Initialize(void);
+class DCutAction_KinFitFOM : public DAnalysisAction
+{
+	public:
+		DCutAction_KinFitFOM(const DParticleCombo* locParticleComboWrapper, double locMinimumConfidenceLevel, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_KinFitFOM", true, locActionUniqueString), dMinimumConfidenceLevel(locMinimumConfidenceLevel){}
+
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
+
+	private:
+		const string dKinFitName;
+		double dMinimumConfidenceLevel;
+};
+
+class DCutAction_MissingMass : public DAnalysisAction
+{
+	public:
+		DCutAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locMinimumMissingMass, double locMaximumMissingMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingMass", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingMass(locMinimumMissingMass), dMaximumMissingMass(locMaximumMissingMass), dMissingMassOffOfStepIndex(0){}
+
+		//E.g. If:
+		//g, p -> K+, K+, Xi-
+		//                Xi- -> pi-, Lambda
+		//                            Lambda -> (p), pi-
+		//And:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+, K+
+		//Then: Will cut missing-mass: g, p -> K+, K+, (X)
+		//Also:
+		//locMissingMassOffOfStepIndex = 1, locMissingMassOffOfPID = pi-
+		//Then: Will cut missing-mass: g, p -> K+, K+, pi- (from Xi- decay)
+		//But:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+
+		//Then: Will cut only missing-mass: g, p -> K+_1, (X)    and NOT K+_2!!!
+		DCutAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, deque<Particle_t> locMissingMassOffOfPIDs, double locMinimumMissingMass, double locMaximumMissingMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingMass", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingMass(locMinimumMissingMass), dMaximumMissingMass(locMaximumMissingMass), dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex),
+			dMissingMassOffOfPIDs(locMissingMassOffOfPIDs) {}
+
+		DCutAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, Particle_t locMissingMassOffOfPID, double locMinimumMissingMass, double locMaximumMissingMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingMass", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingMass(locMinimumMissingMass), dMaximumMissingMass(locMaximumMissingMass), dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex),
+			dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)) {}
+
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
+
+	private:
+
+		double dMinimumMissingMass;
+		double dMaximumMissingMass;
+		int dMissingMassOffOfStepIndex;
+		deque<Particle_t> dMissingMassOffOfPIDs;
+
+		DAnalysisUtilities dAnalysisUtilities;
+};
+
+class DCutAction_MissingMassSquared : public DAnalysisAction
+{
+	public:
+		DCutAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locMinimumMissingMassSq, double locMaximumMissingMassSq, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingMassSquared", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingMassSq(locMinimumMissingMassSq), dMaximumMissingMassSq(locMaximumMissingMassSq), dMissingMassOffOfStepIndex(0){}
+
+		//E.g. If:
+		//g, p -> K+, K+, Xi-
+		//                Xi- -> pi-, Lambda
+		//                            Lambda -> (p), pi-
+		//And:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+, K+
+		//Then: Will cut missing-mass: g, p -> K+, K+, (X)
+		//Also:
+		//locMissingMassOffOfStepIndex = 1, locMissingMassOffOfPID = pi-
+		//Then: Will cut missing-mass: g, p -> K+, K+, pi-
+		//But:
+		//locMissingMassOffOfStepIndex = 0, locMissingMassOffOfPIDs = K+
+		//Then: Will cut only if BOTH missing-mass: g, p -> K+_1, (X)   AND   g, p -> K+_2, (X) fail.
+		DCutAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, deque<Particle_t> locMissingMassOffOfPIDs, double locMinimumMissingMassSq, double locMaximumMissingMassSq, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingMassSquared", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingMassSq(locMinimumMissingMassSq), dMaximumMissingMassSq(locMaximumMissingMassSq), dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex),
+			dMissingMassOffOfPIDs(locMissingMassOffOfPIDs) {}
+
+		DCutAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, Particle_t locMissingMassOffOfPID, double locMinimumMissingMassSq, double locMaximumMissingMassSq, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingMassSquared", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingMassSq(locMinimumMissingMassSq), dMaximumMissingMassSq(locMaximumMissingMassSq), dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex),
+			dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)) {}
+
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
+
+	private:
+
+		double dMinimumMissingMassSq;
+		double dMaximumMissingMassSq;
+		int dMissingMassOffOfStepIndex;
+		deque<Particle_t> dMissingMassOffOfPIDs;
+
+		DAnalysisUtilities dAnalysisUtilities;
+};
+
+class DCutAction_InvariantMass : public DAnalysisAction
+{
+	public:
+		DCutAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, Particle_t locInitialPID, bool locUseKinFitFlag, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMass", locUseKinFitFlag, locActionUniqueString),
+			dInitialPID(locInitialPID), dStepIndex(-1), dToIncludePIDs(deque<Particle_t>()), dMinMass(locMinMass), dMaxMass(locMaxMass){}
+
+		//e.g. if g, p -> pi+, pi-, p
+			//call with step = 0, PIDs = pi+, pi-, and will histogram rho mass
+		DCutAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMass", locUseKinFitFlag, locActionUniqueString),
+			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs), dMinMass(locMinMass), dMaxMass(locMaxMass){}
+
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
+
+	private:
+		Particle_t dInitialPID;
+		int dStepIndex;
+		deque<Particle_t> dToIncludePIDs;
+
+		double dMinMass;
+		double dMaxMass;
+		DAnalysisUtilities dAnalysisUtilities;
+};
+
+class DCutAction_BeamEnergy : public DAnalysisAction
+{
+	public:
+		DCutAction_BeamEnergy(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locMinBeamEnergy, double locMaxBeamEnergy, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_BeamEnergy", locUseKinFitFlag, locActionUniqueString),
+			dMinBeamEnergy(locMinBeamEnergy), dMaxBeamEnergy(locMaxBeamEnergy){}
+
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
+
+	private:
+
+		double dMinBeamEnergy;
+		double dMaxBeamEnergy;
 };
 
 #endif // _DCutActions_

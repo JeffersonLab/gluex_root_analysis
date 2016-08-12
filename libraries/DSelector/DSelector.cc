@@ -57,8 +57,6 @@ void DSelector::Init(TTree *locTree)
 		dFile->cd();
 	}
 
-	
-
 	dInitializedFlag = true;
 }
 

@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 	Print_HeaderFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
 	Print_SourceFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
 
+	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	cout << "Selector files " << locSelectorName << ".* generated." << endl;
 
 	return 0;

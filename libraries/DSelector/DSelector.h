@@ -27,6 +27,7 @@
 #include "DNeutralParticleHypothesis.h"
 #include "DParticleCombo.h"
 #include "DAnalysisUtilities.h"
+#include "DAnalysisAction.h"
 
 class DSelector : public TSelector
 {
@@ -95,6 +96,13 @@ class DSelector : public TSelector
 		template <typename DType> DType Get_Fundamental(string locBranchName, UInt_t locArrayIndex) const;
 		template <typename DType> DType Get_TObject(string locBranchName) const;
 		template <typename DType> DType Get_TObject(string locBranchName, UInt_t locArrayIndex) const;
+
+		// ANALYSIS ACTIONS
+		void Initialize_Actions(void) const;
+		void Reset_Actions_NewEvent(void) const;
+		bool Execute_Actions(void) const;
+
+		vector<DAnalysisAction*> dAnalysisActions;
 
 	private:
 
@@ -230,6 +238,31 @@ template <typename DType> inline DType DSelector::Get_TObject(string locBranchNa
 template <typename DType> inline DType DSelector::Get_TObject(string locBranchName, UInt_t locArrayIndex) const
 {
 	return dTreeInterface->Get_TObject<DType>(locBranchName, locArrayIndex);
+}
+
+/***************************************************************** ANALYSIS ACTIONS *******************************************************************/
+
+inline void DSelector::Initialize_Actions(void) const
+{
+	for(size_t loc_i = 0; loc_i < dAnalysisActions.size(); ++loc_i)
+		dAnalysisActions[loc_i]->Initialize();
+}
+
+inline void DSelector::Reset_Actions_NewEvent(void) const
+{
+	for(size_t loc_i = 0; loc_i < dAnalysisActions.size(); ++loc_i)
+		dAnalysisActions[loc_i]->Reset_NewEvent();
+}
+
+inline bool DSelector::Execute_Actions(void) const
+{
+	for(size_t loc_i = 0; loc_i < dAnalysisActions.size(); ++loc_i)
+	{
+		if(dAnalysisActions[loc_i]->Perform_Action())
+			continue;
+		dComboWrapper->Set_IsComboCut(true);
+		return false;
+	}
 }
 
 #endif // #ifdef DSelector_h

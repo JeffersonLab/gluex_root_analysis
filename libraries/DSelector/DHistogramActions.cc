@@ -2,15 +2,12 @@
 
 void DHistogramAction_ParticleComboKinematics::Initialize(void)
 {
-	string locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
+	string locDirName, locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
 
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
 
-	//CREATE MAIN FOLDER
-	string locDirName = "Hist_ParticleComboKinematics";
-	if(dActionUniqueString != "")
-		locDirName += string("_") + dActionUniqueString;
-	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
 
 	//Steps
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
@@ -27,12 +24,12 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 		bool locIsBeamFlag = (locInitialPID == Gamma);
 		if((locStep->Get_InitialParticle() != NULL) && (dUseKinFitFlag || locIsBeamFlag))
 		{
-			(new TDirectoryFile(locStepName.str().c_str(), locStepName.str().c_str()))->cd();
+			CreateAndChangeTo_Directory(locStepName.str());
 			locStepDirectoryCreatedFlag = true;
 
 			locParticleName = ParticleType(locInitialPID);
 			locDirName = locIsBeamFlag ? "Beam" : locParticleName;
-			(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+			CreateAndChangeTo_Directory(locDirName);
 			Create_Hists(loc_i, locStepROOTName, locInitialPID, locIsBeamFlag);
 			gDirectory->cd("..");
 		}
@@ -54,12 +51,12 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 
 			if(!locStepDirectoryCreatedFlag)
 			{
-				(new TDirectoryFile(locStepName.str().c_str(), locStepName.str().c_str()))->cd();
+				CreateAndChangeTo_Directory(locStepName.str());
 				locStepDirectoryCreatedFlag = true;
 			}
 
 			locParticleName = ParticleType(locPID);
-			(new TDirectoryFile(locParticleName.c_str(), locParticleName.c_str()))->cd();
+			CreateAndChangeTo_Directory(locParticleName);
 
 			Create_Hists(loc_i, locStepROOTName, locPID);
 			gDirectory->cd("..");
@@ -72,7 +69,7 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 		{
 			if(!locStepDirectoryCreatedFlag)
 			{
-				(new TDirectoryFile(locStepName.str().c_str(), locStepName.str().c_str()))->cd();
+				CreateAndChangeTo_Directory(locStepName.str());
 				locStepDirectoryCreatedFlag = true;
 			}
 
@@ -94,7 +91,7 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 		{
 			if(!locStepDirectoryCreatedFlag)
 			{
-				(new TDirectoryFile(locStepName.str().c_str(), locStepName.str().c_str()))->cd();
+				CreateAndChangeTo_Directory(locStepName.str());
 				locStepDirectoryCreatedFlag = true;
 			}
 
@@ -116,7 +113,7 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 	} //end of step loop
 
 	//Return to the base directory
-	gDirectory->cd("..");
+	ChangeTo_BaseDirectory();
 }
 
 void DHistogramAction_ParticleComboKinematics::Create_Hists(int locStepIndex, string locStepROOTName, Particle_t locPID, bool locIsBeamFlag)
@@ -339,15 +336,12 @@ void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicDa
 
 void DHistogramAction_ParticleID::Initialize(void)
 {
-	string locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
+	string locDirName, locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
 
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
 
-	//CREATE MAIN FOLDER
-	string locDirName = "Hist_ParticleID";
-	if(dActionUniqueString != "")
-		locDirName += string("_") + dActionUniqueString;
-	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
 
 	//Steps
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
@@ -376,12 +370,12 @@ void DHistogramAction_ParticleID::Initialize(void)
 
 			if(!locStepDirectoryCreatedFlag)
 			{
-				(new TDirectoryFile(locStepName.str().c_str(), locStepName.str().c_str()))->cd();
+				CreateAndChangeTo_Directory(locStepName.str());
 				locStepDirectoryCreatedFlag = true;
 			}
 
 			locParticleName = ParticleType(locPID);
-			(new TDirectoryFile(locParticleName.c_str(), locParticleName.c_str()))->cd();
+			CreateAndChangeTo_Directory(locParticleName);
 
 			Create_Hists(loc_i, locStepROOTName, locPID);
 			gDirectory->cd("..");
@@ -391,7 +385,7 @@ void DHistogramAction_ParticleID::Initialize(void)
 	} //end of step loop
 
 	//Return to the base directory
-	gDirectory->cd("..");
+	ChangeTo_BaseDirectory();
 }
 
 void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepROOTName, Particle_t locPID)
@@ -594,11 +588,8 @@ void DHistogramAction_InvariantMass::Initialize(void)
 			locParticleNamesForHist += ParticleName_ROOT(dToIncludePIDs[loc_i]);
 	}
 
-	//CREATE MAIN FOLDER
-	string locDirName = "Hist_InvariantMass";
-	if(dActionUniqueString != "")
-		locDirName += string("_") + dActionUniqueString;
-	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
 
 	locHistName = "InvariantMass";
 	ostringstream locStream;
@@ -607,7 +598,7 @@ void DHistogramAction_InvariantMass::Initialize(void)
 	dHist_InvaraintMass = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
 
 	//Return to the base directory
-	gDirectory->cd("..");
+	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_InvariantMass::Perform_Action(void)
@@ -648,11 +639,8 @@ void DHistogramAction_MissingMass::Initialize(void)
 	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
 	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingMassOffOfStepIndex, dMissingMassOffOfPIDs, dUseKinFitFlag, true);
 
-	//CREATE MAIN FOLDER
-	string locDirName = "Hist_MissingMass";
-	if(dActionUniqueString != "")
-		locDirName += string("_") + dActionUniqueString;
-	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
 
 	string locHistName = "MissingMass";
 	ostringstream locStream;
@@ -674,7 +662,7 @@ void DHistogramAction_MissingMass::Initialize(void)
 	dHist_MissingMassVsMissingP = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissPBins, dMinMissP, dMaxMissP, dNum2DMassBins, dMinMass, dMaxMass);
 
 	//Return to the base directory
-	gDirectory->cd("..");
+	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_MissingMass::Perform_Action(void)
@@ -715,11 +703,8 @@ void DHistogramAction_MissingMassSquared::Initialize(void)
 	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
 	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingMassOffOfStepIndex, dMissingMassOffOfPIDs, dUseKinFitFlag, true);
 
-	//CREATE MAIN FOLDER
-	string locDirName = "Hist_MissingMassSquared";
-	if(dActionUniqueString != "")
-		locDirName += string("_") + dActionUniqueString;
-	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
 
 	string locHistName = "MissingMassSquared";
 	ostringstream locStream;
@@ -741,7 +726,7 @@ void DHistogramAction_MissingMassSquared::Initialize(void)
 	dHist_MissingMassVsMissingP = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissPBins, dMinMissP, dMaxMissP, dNum2DMassBins, dMinMass, dMaxMass);
 
 	//Return to the base directory
-	gDirectory->cd("..");
+	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_MissingMassSquared::Perform_Action(void)
@@ -790,18 +775,15 @@ void DHistogramAction_2DInvariantMass::Initialize(void)
 
 	string locMassString = " Invariant Mass (GeV/c^{2});";
 
-	//CREATE MAIN FOLDER
-	string locDirName = "Hist_2DInvariantMass";
-	if(dActionUniqueString != "")
-		locDirName += string("_") + dActionUniqueString;
-	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
 
 	locHistName = "2DInvariantMass";
 	locHistTitle = string(";") + locParticleNamesForHistX + locMassString + locParticleNamesForHistY + locMassString;
 	dHist_2DInvaraintMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
 
 	//Return to the base directory
-	gDirectory->cd("..");
+	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_2DInvariantMass::Perform_Action(void)
@@ -861,18 +843,15 @@ void DHistogramAction_Dalitz::Initialize(void)
 
 	string locMassString = " Invariant Mass Squared (GeV/c^{2})^{2};";
 
-	//CREATE MAIN FOLDER
-	string locDirName = "Hist_Dalitz";
-	if(dActionUniqueString != "")
-		locDirName += string("_") + dActionUniqueString;
-	(new TDirectoryFile(locDirName.c_str(), locDirName.c_str()))->cd();
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
 
 	locHistName = "Dalitz";
 	locHistTitle = string(";") + locParticleNamesForHistX + locMassString + locParticleNamesForHistY + locMassString;
 	dHist_2DInvaraintMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
 
 	//Return to the base directory
-	gDirectory->cd("..");
+	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_Dalitz::Perform_Action(void)
@@ -914,6 +893,71 @@ bool DHistogramAction_Dalitz::Perform_Action(void)
 			}
 		}
 	}
+
+	return true;
+}
+
+void DHistogramAction_KinFitResults::Initialize(void)
+{
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	dHist_ChiSqPerDF = new TH1I("ChiSqPerDF", ";Kinematic Fit #chi^{2}/NDF", dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+	dHist_ConfidenceLevel = new TH1I("ConfidenceLevel", ";Kinematic Fit Confidence Level", dNumConLevBins, 0.0, 1.0);
+
+	int locNumBins = 0;
+	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 1, dNumBinsPerConLevPower, locNumBins);
+	if(locConLevLogBinning != NULL)
+		dHist_ConfidenceLevel_LogX = new TH1I("ConfidenceLevel_LogX", ";Kinematic Fit Confidence Level", locNumBins, locConLevLogBinning);
+	else
+		dHist_ConfidenceLevel_LogX = NULL;
+
+	//Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+bool DHistogramAction_KinFitResults::Perform_Action(void)
+{
+	double locKinFitChiSqPerNDF = dParticleComboWrapper->Get_ChiSq_KinFit()/dParticleComboWrapper->Get_NDF_KinFit();
+	dHist_ChiSqPerDF->Fill(locKinFitChiSqPerNDF);
+
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+	dHist_ConfidenceLevel->Fill(locConfidenceLevel);
+	if(dHist_ConfidenceLevel_LogX != NULL)
+		dHist_ConfidenceLevel_LogX->Fill(locConfidenceLevel);
+
+	return true;
+}
+
+void DHistogramAction_BeamEnergy::Initialize(void)
+{
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	dHist_BeamEnergy = new TH1I("BeamEnergy", ";Beam Energy (GeV)", dNumBeamEnergyBins, dMinBeamEnergy, dMaxBeamEnergy);
+
+	//Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+bool DHistogramAction_BeamEnergy::Perform_Action(void)
+{
+	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+	if(locBeamParticle == NULL)
+		return true;
+
+	Int_t locBeamID = locBeamParticle->Get_ID();
+	if(dPreviouslyHistogrammed.find(locBeamID) != dPreviouslyHistogrammed.end())
+		return true; //previously histogrammed
+
+	double locBeamEnergy = 0.0;
+	if(dUseKinFitFlag)
+		locBeamEnergy = locBeamParticle->Get_P4().E();
+	else
+		locBeamEnergy = locBeamParticle->Get_P4_Measured().E();
+
+	dHist_BeamEnergy->Fill(locBeamEnergy);
+	dPreviouslyHistogrammed.insert(locBeamID);
 
 	return true;
 }
