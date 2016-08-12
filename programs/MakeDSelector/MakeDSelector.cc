@@ -10,8 +10,8 @@
 
 //function declarations
 void Print_Usage(void);
-void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
-void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
+void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
+void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
 
 int main(int argc, char* argv[])
 {
@@ -34,10 +34,10 @@ int main(int argc, char* argv[])
 	map<int, map<int, pair<Particle_t, string> > > locComboInfoMap;
 	locTreeInterface->Get_ComboInfo(locComboInfoMap);
 
-	string locSelectorName = string("DSelector_") + locSelectorBaseName;
-	Print_HeaderFile(locSelectorName, locTreeInterface, locComboInfoMap);
-	Print_SourceFile(locSelectorName, locTreeInterface, locComboInfoMap);
+	Print_HeaderFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
+	Print_SourceFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
 
+	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	cout << "Selector files " << locSelectorName << ".* generated." << endl;
 
 	return 0;
@@ -54,8 +54,9 @@ void Print_Usage(void)
 	cout << endl;
 }
 
-void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
 {
+	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	string locHeaderName = locSelectorName + string(".h");
 	ofstream locHeaderStream;
 	locHeaderStream.open(locHeaderName.c_str());
@@ -86,6 +87,11 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locHeaderStream << endl;
 	locHeaderStream << "		void Get_ComboWrappers(void);" << endl;
 	locHeaderStream << "		void Finalize(void);" << endl;
+	locHeaderStream << endl;
+	locHeaderStream << "		// BEAM POLARIZATION INFORMATION" << endl;
+	locHeaderStream << "		UInt_t dPreviousRunNumber;" << endl;
+	locHeaderStream << "		bool dIsPolarizedFlag; //else is AMO" << endl;
+	locHeaderStream << "		bool dIsPARAFlag; //else is PERP or AMO" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "		//CREATE REACTION-SPECIFIC PARTICLE ARRAYS" << endl;
 	locHeaderStream << endl;
@@ -133,13 +139,6 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	}
 
 	//resume
-	locHeaderStream << "		// DEFINE YOUR HISTOGRAM ACTIONS HERE" << endl;
-	locHeaderStream << "		// EXAMPLE HISTOGRAM ACTIONS:" << endl;
-	locHeaderStream << "		DHistogramAction_ParticleComboKinematics* dHistComboKinematics;" << endl;
-	locHeaderStream << "		DHistogramAction_ParticleID* dHistComboPID;" << endl;
-	locHeaderStream << "		// EXAMPLE CUT ACTIONS:" << endl;
-	locHeaderStream << "		DCutAction_PIDDeltaT* dCutPIDDeltaT;" << endl;
-	locHeaderStream << endl;
 	locHeaderStream << "		// DEFINE YOUR HISTOGRAMS HERE" << endl;
 	locHeaderStream << "		// EXAMPLES:" << endl;
 	locHeaderStream << "		TH1I* dHist_MissingMassSquared;" << endl;
@@ -201,8 +200,9 @@ void Print_HeaderFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locHeaderStream.close();
 }
 
-void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
 {
+	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	string locSourceName = locSelectorName + string(".C");
 	ofstream locSourceStream;
 	locSourceStream.open(locSourceName.c_str());
@@ -216,7 +216,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	// Init() will be called many times when running on PROOF (once per file to be processed)." << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//SET OUTPUT FILE NAME //can be overriden by user in PROOF" << endl;
-	locSourceStream << "	dOutputFileName = \"myfile.root\"; //\"\" for none" << endl;
+	locSourceStream << "	dOutputFileName = \"" << locSelectorBaseName << ".root\"; //\"\" for none" << endl;
 	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//DO THIS NEXT" << endl;
@@ -230,22 +230,40 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << endl;
 	locSourceStream << "	//THEN THIS" << endl;
 	locSourceStream << "	Get_ComboWrappers();" << endl;
+	locSourceStream << "	dPreviousRunNumber = 0;" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	/******************************************** EXAMPLE USER INITIALIZATION *******************************************/" << endl;
+	locSourceStream << "	/*********************************** EXAMPLE USER INITIALIZATION: ANALYSIS ACTIONS **********************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//DO WHATEVER YOU WANT HERE" << endl;
+	locSourceStream << "	//ANALYSIS ACTIONS: //Executed in order if added to dAnalysisActions" << endl;
+	locSourceStream << "	//false/true below: use measured/kinfit data" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//EXAMPLE HISTOGRAM ACTIONS:" << endl;
-	locSourceStream << "	dHistComboKinematics = new DHistogramAction_ParticleComboKinematics(dComboWrapper, false); //false: use measured data" << endl;
-	locSourceStream << "	dHistComboPID = new DHistogramAction_ParticleID(dComboWrapper, false); //false: use measured data" << endl;
-	locSourceStream << "	//change binning here" << endl;
-	locSourceStream << "	dHistComboKinematics->Initialize();" << endl;
-	locSourceStream << "	dHistComboPID->Initialize();" << endl;
+	locSourceStream << "	//PID" << endl;
+	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleID(dComboWrapper, false));" << endl;
+	locSourceStream << "	//below: value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDDeltaT(dComboWrapper, false, 0.5, KPlus, SYS_BCAL));" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//EXAMPLE CUT ACTIONS:" << endl;
-	locSourceStream << "	//below: false: measured data, value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
-	locSourceStream << "	dCutPIDDeltaT = new DCutAction_PIDDeltaT(dComboWrapper, false, 2.0, Unknown, SYS_NULL);" << endl;
-	locSourceStream << "	dCutPIDDeltaT->Initialize();" << endl;
+	locSourceStream << "	//MASSES" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_InvariantMass(dComboWrapper, false, Lambda, 1000, 1.0, 1.2, \"Lambda\"));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_MissingMassSquared(dComboWrapper, false, 1000, -0.1, 0.1));" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//KINFIT RESULTS" << endl;
+	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_KinFitResults(dComboWrapper));" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//CUT MISSING MASS" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_MissingMassSquared(dComboWrapper, false, -0.03, 0.02));" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//BEAM ENERGY" << endl;
+	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_BeamEnergy(dComboWrapper, false));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, false, 8.4, 9.05));" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//KINEMATICS" << endl;
+	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleComboKinematics(dComboWrapper, false));" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//INITIALIZE ACTIONS" << endl;
+	locSourceStream << "	//If you create any actions that you want to run manually (i.e. don't add to dAnalysisActions), be sure to initialize them here as well" << endl;
+	locSourceStream << "	Initialize_Actions();" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/******************************** EXAMPLE USER INITIALIZATION: STAND-ALONE HISTOGRAMS *******************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE MANUAL HISTOGRAMS:" << endl;
 	locSourceStream << "	dHist_MissingMassSquared = new TH1I(\"MissingMassSquared\", \";Missing Mass Squared (GeV/c^{2})^{2}\", 600, -0.06, 0.06);" << endl;
@@ -280,15 +298,22 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "	DSelector::Process(locEntry); //Gets the data from the tree for the entry" << endl;
 	locSourceStream << "	//cout << \"RUN \" << Get_RunNumber() << \", EVENT \" << Get_EventNumber() << endl;" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	/**************************************** SETUP AUTOMATIC UNIQUENESS TRACKING ***************************************/" << endl;
+	locSourceStream << "	/******************************************** GET POLARIZATION ORIENTATION ******************************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//Reset uniqueness tracking for each action" << endl;
-	locSourceStream << "	dHistComboKinematics->Reset_NewEvent();" << endl;
-	locSourceStream << "	dHistComboPID->Reset_NewEvent();" << endl;
+	locSourceStream << "	//Only if the run number changes" << endl;
+	locSourceStream << "	//RCDB environment must be setup in order for this to work! (Will return false otherwise)" << endl;
+	locSourceStream << "	UInt_t locRunNumber = Get_RunNumber();" << endl;
+	locSourceStream << "	if(locRunNumber != dPreviousRunNumber)" << endl;
+	locSourceStream << "	{" << endl;
+	locSourceStream << "		dIsPolarizedFlag = dAnalysisUtilities.Get_IsPolarizedBeam(locRunNumber, dIsPARAFlag);" << endl;
+	locSourceStream << "		dPreviousRunNumber = locRunNumber;" << endl;
+	locSourceStream << "	}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//INSERT OTHER USER ACTIONS HERE" << endl;
+	locSourceStream << "	/********************************************* SETUP UNIQUENESS TRACKING ********************************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	/***************************************** SETUP MANUAL UNIQUENESS TRACKING *****************************************/" << endl;
+	locSourceStream << "	//ANALYSIS ACTIONS: Reset uniqueness tracking for each action" << endl;
+	locSourceStream << "	//For any actions that you are executing manually, be sure to call Reset_NewEvent() on them here" << endl;
+	locSourceStream << "	Reset_Actions_NewEvent();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//PREVENT-DOUBLE COUNTING WHEN HISTOGRAMMING" << endl;
 	locSourceStream << "		//Sometimes, some content is the exact same between one combo and the next" << endl;
@@ -468,18 +493,15 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	}
 	locSourceStream << ";" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/**************************************** EXAMPLE: HISTOGRAM KINEMATICS ******************************************/" << endl;
+	locSourceStream << "		/******************************************** EXECUTE ANALYSIS ACTIONS *******************************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		dHistComboKinematics->Perform_Action();" << endl;
-	locSourceStream << "		dHistComboPID->Perform_Action();" << endl;
-	locSourceStream << endl;
-	locSourceStream << "		/**************************************** EXAMPLE: PID CUT ACTION ************************************************/" << endl;
-	locSourceStream << "/*" << endl;
-	locSourceStream << "		if(!dCutPIDDeltaT->Perform_Action()) {" << endl;
-	locSourceStream << "			dComboWrapper->Set_IsComboCut(true);" << endl;
+	locSourceStream << "		// Loop through the analysis actions, executing them in order for the active particle combo" << endl;
+	locSourceStream << "		if(!Execute_Actions()) //if the active combo fails a cut, IsComboCutFlag automatically set" << endl;
 	locSourceStream << "			continue;" << endl;
-	locSourceStream << "		}" << endl;
-	locSourceStream << "*/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		//if you manually execute any actions, and it fails a cut, be sure to call:" << endl;
+	locSourceStream << "			//dComboWrapper->Set_IsComboCut(true);" << endl;
+	locSourceStream << endl;
 	locSourceStream << "		/**************************************** EXAMPLE: HISTOGRAM BEAM ENERGY *****************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//Histogram beam energy (if haven\'t already)" << endl;
@@ -537,8 +559,15 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << endl;
 	locSourceStream << "		//E.g. Cut" << endl;
 	locSourceStream << "		//if((locMissingMassSquared < -0.04) || (locMissingMassSquared > 0.04))" << endl;
-	locSourceStream << "		//	continue; //could also mark combo as cut, then save cut results to a new TTree" << endl;
-	locSourceStream << "	}" << endl;
+	locSourceStream << "		//{" << endl;
+	locSourceStream << "		//	dComboWrapper->Set_IsComboCut(true);" << endl;
+	locSourceStream << "		//	continue;" << endl;
+	locSourceStream << "		//}" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	} // end of combo loop" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//FILL HISTOGRAMS: Num combos / events surviving actions" << endl;
+	locSourceStream << "	Fill_NumCombosSurvivedHists();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/******************************************* LOOP OVER THROWN DATA (OPTIONAL) ***************************************/" << endl;
 	locSourceStream << "/*" << endl;
@@ -566,7 +595,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
 	locSourceStream << "	}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//Loop over charged track hypotheses (all are present, even those not in any combos)" << endl;
+	locSourceStream << "	//Loop over charged track hypotheses" << endl;
 	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumChargedHypos(); ++loc_i)" << endl;
 	locSourceStream << "	{" << endl;
 	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
@@ -575,7 +604,7 @@ void Print_SourceFile(string locSelectorName, DTreeInterface* locTreeInterface, 
 	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
 	locSourceStream << "	}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//Loop over neutral particle hypotheses (all are present, even those not in any combos)" << endl;
+	locSourceStream << "	//Loop over neutral particle hypotheses" << endl;
 	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumNeutralHypos(); ++loc_i)" << endl;
 	locSourceStream << "	{" << endl;
 	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;

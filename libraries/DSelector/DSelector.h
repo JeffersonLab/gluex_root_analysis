@@ -12,6 +12,8 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TSelector.h>
+#include <TH1D.h>
+#include <TH2D.h>
 
 #include <TProofOutputFile.h>
 #include <TProof.h>
@@ -26,6 +28,8 @@
 #include "DChargedTrackHypothesis.h"
 #include "DNeutralParticleHypothesis.h"
 #include "DParticleCombo.h"
+#include "DAnalysisUtilities.h"
+#include "DAnalysisAction.h"
 
 class DSelector : public TSelector
 {
@@ -49,6 +53,9 @@ class DSelector : public TSelector
 		TString dOption;
 		string dOutputFileName;
 		string dOutputTreeFileName;
+
+		//ANALYSIS UTILITIES
+		DAnalysisUtilities dAnalysisUtilities;
 
 		// TARGET INFORMATION
 		TVector3 dTargetCenter;
@@ -92,6 +99,14 @@ class DSelector : public TSelector
 		template <typename DType> DType Get_TObject(string locBranchName) const;
 		template <typename DType> DType Get_TObject(string locBranchName, UInt_t locArrayIndex) const;
 
+		// ANALYSIS ACTIONS
+		void Initialize_Actions(void);
+		void Create_ComboSurvivalHists(void);
+		void Reset_Actions_NewEvent(void);
+		bool Execute_Actions(void);
+
+		vector<DAnalysisAction*> dAnalysisActions;
+
 	private:
 
 		void Setup_Branches(void);
@@ -99,6 +114,8 @@ class DSelector : public TSelector
 		void Setup_Output(void);
 		void Create_Wrappers(void);
 		void ReInitialize_Wrappers(void);
+
+		void Fill_NumCombosSurvivedHists(void);
 
 		TFile* dFile;
 		TFile* dOutputTreeFile;
@@ -133,6 +150,11 @@ class DSelector : public TSelector
 		//not the quantity of each, just whether or not they were present (1 or 0)
 		//binary power of a PID is given by ParticleMultiplexPower() (defined in libraries/include/particleType.h)
 		//types: most Particle_t's 
+
+		TH1D* dHist_NumEventsSurvivedAction;
+		TH2D* dHist_NumCombosSurvivedAction;
+		TH1D* dHist_NumCombosSurvivedAction1D;
+		vector<size_t> dNumCombosSurvivedAction;
 
 	ClassDef(DSelector, 0);
 };
@@ -226,6 +248,61 @@ template <typename DType> inline DType DSelector::Get_TObject(string locBranchNa
 template <typename DType> inline DType DSelector::Get_TObject(string locBranchName, UInt_t locArrayIndex) const
 {
 	return dTreeInterface->Get_TObject<DType>(locBranchName, locArrayIndex);
+}
+
+/***************************************************************** ANALYSIS ACTIONS *******************************************************************/
+
+inline void DSelector::Initialize_Actions(void)
+{
+	for(size_t loc_i = 0; loc_i < dAnalysisActions.size(); ++loc_i)
+		dAnalysisActions[loc_i]->Initialize();
+
+	Create_ComboSurvivalHists();
+}
+
+inline void DSelector::Reset_Actions_NewEvent(void)
+{
+	dNumCombosSurvivedAction[0] = 0;
+	for(size_t loc_i = 0; loc_i < dAnalysisActions.size(); ++loc_i)
+	{
+		dAnalysisActions[loc_i]->Reset_NewEvent();
+		dNumCombosSurvivedAction[loc_i + 1] = 0;
+	}
+}
+
+inline bool DSelector::Execute_Actions(void)
+{
+	++dNumCombosSurvivedAction[0];
+	for(size_t loc_i = 0; loc_i < dAnalysisActions.size(); ++loc_i)
+	{
+		if(dAnalysisActions[loc_i]->Perform_Action())
+			++dNumCombosSurvivedAction[loc_i + 1];
+		else
+		{
+			dComboWrapper->Set_IsComboCut(true);
+			return false;
+		}
+
+	}
+
+	return true;
+}
+
+inline void DSelector::Fill_NumCombosSurvivedHists(void)
+{
+	if(dNumCombosSurvivedAction[0] == 0)
+		return;
+
+	for(size_t loc_i = 0; loc_i < dNumCombosSurvivedAction.size(); ++loc_i)
+	{
+		if(dNumCombosSurvivedAction[loc_i] > 0)
+			dHist_NumEventsSurvivedAction->Fill(loc_i);
+
+		dHist_NumCombosSurvivedAction->Fill(loc_i, dNumCombosSurvivedAction[loc_i]);
+
+		Double_t locNum1DCombos = dHist_NumCombosSurvivedAction1D->GetBinContent(loc_i + 1) + dNumCombosSurvivedAction[loc_i];
+		dHist_NumCombosSurvivedAction1D->SetBinContent(loc_i + 1, locNum1DCombos);
+	}
 }
 
 #endif // #ifdef DSelector_h
