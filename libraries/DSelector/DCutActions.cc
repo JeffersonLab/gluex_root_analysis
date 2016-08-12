@@ -1,5 +1,12 @@
 #include "DCutActions.h"
 
+string DCutAction_PIDDeltaT::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dSystem << "_" << dDeltaTCut;
+	return locStream.str();
+}
+
 void DCutAction_PIDDeltaT::Initialize(void)
 {
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();	
@@ -55,6 +62,13 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 	} //end of step loop
 
 	return true;
+}
+
+string DCutAction_NoPIDHit::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dPID;
+	return locStream.str();
 }
 
 bool DCutAction_NoPIDHit::Perform_Action(void)
@@ -146,6 +160,13 @@ bool DCutAction_dEdxProton::Perform_Action(void)
 	return true;
 }
 
+string DCutAction_MissingMass::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinimumMissingMass << "_" << dMaximumMissingMass;
+	return locStream.str();
+}
+
 bool DCutAction_MissingMass::Perform_Action(void)
 {
 	//build all possible combinations of the included pids
@@ -165,6 +186,13 @@ bool DCutAction_MissingMass::Perform_Action(void)
 	return false; //all failed
 }
 
+string DCutAction_MissingMassSquared::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinimumMissingMassSq << "_" << dMaximumMissingMassSq;
+	return locStream.str();
+}
+
 bool DCutAction_MissingMassSquared::Perform_Action(void)
 {
 	//build all possible combinations of the included pids
@@ -182,6 +210,13 @@ bool DCutAction_MissingMassSquared::Perform_Action(void)
 	}
 
 	return false; //all failed
+}
+
+string DCutAction_InvariantMass::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinMass << "_" << dMaxMass;
+	return locStream.str();
 }
 
 bool DCutAction_InvariantMass::Perform_Action(void)
@@ -216,10 +251,24 @@ bool DCutAction_InvariantMass::Perform_Action(void)
 	return true;
 }
 
+string DCutAction_KinFitFOM::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinimumConfidenceLevel;
+	return locStream.str();
+}
+
 bool DCutAction_KinFitFOM::Perform_Action(void)
 {
 	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
 	return (locConfidenceLevel > dMinimumConfidenceLevel);
+}
+
+string DCutAction_BeamEnergy::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinBeamEnergy << "_" << dMaxBeamEnergy;
+	return locStream.str();
 }
 
 bool DCutAction_BeamEnergy::Perform_Action(void)

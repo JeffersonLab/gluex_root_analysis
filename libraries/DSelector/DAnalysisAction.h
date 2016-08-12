@@ -14,7 +14,7 @@ class DAnalysisAction
 	public:
 		DAnalysisAction(const DParticleCombo* locParticleComboWrapper, string locActionBaseName, bool locUseKinFitFlag = false, string locActionUniqueString = "");
 
-		virtual string Get_ActionName(void){return dActionName;}
+		virtual string Get_ActionName(void) const{return dActionName;}
 
 		virtual void Initialize(void) = 0;
 		virtual void Reset_NewEvent(void) = 0;

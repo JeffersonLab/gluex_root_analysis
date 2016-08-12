@@ -32,6 +32,7 @@ class DCutAction_PIDDeltaT : public DAnalysisAction
 			DAnalysisAction(locParticleComboWrapper, "Cut_PIDDeltaT", locUseKinFitFlag, locActionUniqueString),
 			dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
 
+		string Get_ActionName(void) const;
 		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
@@ -51,6 +52,7 @@ class DCutAction_NoPIDHit : public DAnalysisAction
 			DAnalysisAction(locParticleComboWrapper, "Cut_NoPIDHit", false, locActionUniqueString),
 			dPID(locPID), dSystem(locSystem) {}
 
+		string Get_ActionName(void) const;
 		void Initialize(void){}
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
@@ -84,6 +86,7 @@ class DCutAction_KinFitFOM : public DAnalysisAction
 		DCutAction_KinFitFOM(const DParticleCombo* locParticleComboWrapper, double locMinimumConfidenceLevel, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_KinFitFOM", true, locActionUniqueString), dMinimumConfidenceLevel(locMinimumConfidenceLevel){}
 
+		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
@@ -123,6 +126,7 @@ class DCutAction_MissingMass : public DAnalysisAction
 			dMinimumMissingMass(locMinimumMissingMass), dMaximumMissingMass(locMaximumMissingMass), dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex),
 			dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)) {}
 
+		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
@@ -167,6 +171,7 @@ class DCutAction_MissingMassSquared : public DAnalysisAction
 			dMinimumMissingMassSq(locMinimumMissingMassSq), dMaximumMissingMassSq(locMaximumMissingMassSq), dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex),
 			dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)) {}
 
+		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
@@ -194,6 +199,7 @@ class DCutAction_InvariantMass : public DAnalysisAction
 			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMass", locUseKinFitFlag, locActionUniqueString),
 			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs), dMinMass(locMinMass), dMaxMass(locMaxMass){}
 
+		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
@@ -215,6 +221,7 @@ class DCutAction_BeamEnergy : public DAnalysisAction
 			DAnalysisAction(locParticleComboWrapper, "Cut_BeamEnergy", locUseKinFitFlag, locActionUniqueString),
 			dMinBeamEnergy(locMinBeamEnergy), dMaxBeamEnergy(locMaxBeamEnergy){}
 
+		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void); // flag to reject combos
