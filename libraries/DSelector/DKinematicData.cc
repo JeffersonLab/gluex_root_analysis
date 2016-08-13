@@ -56,7 +56,10 @@ void DKinematicData::Setup_Branches(void)
 	dP4_KinFit = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
 
 	//X4_KinFit
-	locBranchName = dBranchNamePrefix + string("__X4_KinFit");
+	if(dBranchNamePrefix.substr(0, 8) == "Decaying")
+		locBranchName = dBranchNamePrefix + string("__X4");
+	else
+		locBranchName = dBranchNamePrefix + string("__X4_KinFit");
 	dX4_KinFit = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
 
 	//if decaying/missing, return
