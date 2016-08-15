@@ -381,7 +381,8 @@ void DHistogramAction_ParticleID::Initialize(void)
 			gDirectory->cd("..");
 		} //end of particle loop
 
-		gDirectory->cd("..");
+		if(locStepDirectoryCreatedFlag)
+			gDirectory->cd("..");
 	} //end of step loop
 
 	//Return to the base directory
