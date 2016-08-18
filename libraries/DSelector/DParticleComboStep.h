@@ -31,6 +31,7 @@ class DParticleComboStep
 		Particle_t Get_InitialPID(void) const{return dInitialPID;}
 		Particle_t Get_TargetPID(void) const{return ((dTargetParticle != NULL) ? dTargetParticle->Get_PID() : Unknown);}
 		Particle_t Get_FinalPID(size_t locIndex) const{return dFinalStatePIDs[locIndex];}
+		deque<Particle_t> Get_FinalPIDs(void) const{return dFinalStatePIDs;}
 
 		// GET PARTICLES:
 		DKinematicData* Get_InitialParticle(void) const{return dInitialParticle;}

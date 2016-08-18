@@ -232,12 +232,12 @@ string DParticleCombo::Get_DecayChainFinalParticlesROOTNames(size_t locStepIndex
 {
 	//if locKinFitResultsFlag = true: don't expand decaying particles (through decay chain) that were included in the kinfit (still expand resonances)
 	string locName = "";
-	deque<DKinematicData*> locParticles = dParticleComboSteps[locStepIndex]->Get_FinalParticles();
+	deque<Particle_t> locFinalPIDs = dParticleComboSteps[locStepIndex]->Get_FinalPIDs();
 	int locMissingParticleIndex = dParticleComboSteps[locStepIndex]->Get_MissingParticleIndex();
 	bool locSearchPIDsFlag = !locUpThroughPIDs.empty();
-	for(size_t loc_j = 0; loc_j < locParticles.size(); ++loc_j)
+	for(size_t loc_j = 0; loc_j < locFinalPIDs.size(); ++loc_j)
 	{
-		Particle_t locPID = locParticles[loc_j]->Get_PID();
+		Particle_t locPID = locFinalPIDs[loc_j];
 		if(int(loc_j) == locMissingParticleIndex)
 			continue; //exclude missing!
 
