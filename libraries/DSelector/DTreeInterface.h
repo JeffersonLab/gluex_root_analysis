@@ -304,6 +304,7 @@ template <typename DType> inline void DTreeInterface::Increase_ArraySize(string 
 	DType* locOldBranchAddress = Get_Pointer_Fundamental<DType>(locBranchName);
 	dTree->SetBranchAddress(locBranchName.c_str(), new DType[locNewArraySize]);
 	delete[] locOldBranchAddress;
+	dFundamentalArraySizeMap[locBranchName] = locNewArraySize;
 }
 
 /************************************************************* CREATE & FILL NEW BRANCHES *************************************************************/
@@ -414,6 +415,8 @@ template <typename DType> inline void DTreeInterface::Fill_Fundamental(string lo
 template <typename DType> inline void DTreeInterface::Fill_TObject(string locBranchName, DType& locObject, unsigned int locArrayIndex)
 {
 	TClonesArray* locClonesArray = Get_Pointer_TClonesArray(locBranchName);
+	if(locArrayIndex == 0) //ASSUMES FILLED IN ORDER!!!
+		locClonesArray->Clear(); //empties array
 	*(DType*)locClonesArray->ConstructedAt(locArrayIndex) = locObject;
 }
 
