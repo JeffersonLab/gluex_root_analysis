@@ -77,6 +77,7 @@ class DSelector : public TSelector
 		// EVENT DATA
 		UInt_t Get_RunNumber(void) const;
 		ULong64_t Get_EventNumber(void) const;
+		UInt_t Get_L1TriggerBits(void) const;
 		Bool_t Get_IsThrownTopology(void) const;
 		Float_t Get_MCWeight(void) const;
 
@@ -126,6 +127,7 @@ class DSelector : public TSelector
 		// EVENT DATA
 		UInt_t* dRunNumber;
 		ULong64_t* dEventNumber;
+		UInt_t* dL1TriggerBits;
 		Float_t* dMCWeight; //only present if simulated data
 		Bool_t* dIsThrownTopology; //only present if simulated data
 
@@ -165,7 +167,7 @@ inline DSelector::DSelector(TTree* locTree) :
 		dInitializedFlag(false), dOutputFileName(""),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dTreeInterface(NULL),
-		dRunNumber(NULL), dEventNumber(NULL), dMCWeight(NULL), dIsThrownTopology(NULL),
+		dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
 
@@ -180,6 +182,11 @@ inline UInt_t DSelector::Get_RunNumber(void) const
 inline ULong64_t DSelector::Get_EventNumber(void) const
 {
 	return *dEventNumber;
+}
+
+inline UInt_t DSelector::Get_L1TriggerBits(void) const
+{
+	return *dL1TriggerBits;
 }
 
 inline Bool_t DSelector::Get_IsThrownTopology(void) const
