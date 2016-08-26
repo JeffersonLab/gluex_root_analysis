@@ -70,6 +70,7 @@ void DSelector::Setup_Branches(void)
 	// EVENT DATA
 	dRunNumber = (UInt_t*)dTreeInterface->Get_Branch("RunNumber")->GetAddress();
 	dEventNumber = (ULong64_t*)dTreeInterface->Get_Branch("EventNumber")->GetAddress();
+	dL1TriggerBits = (UInt_t*)dTreeInterface->Get_Branch("L1TriggerBits")->GetAddress();
 
 	// MC-ONLY
 	if(locIsMCFlag)
