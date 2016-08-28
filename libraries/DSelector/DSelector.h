@@ -105,6 +105,7 @@ class DSelector : public TSelector
 		void Create_ComboSurvivalHists(void);
 		void Reset_Actions_NewEvent(void);
 		bool Execute_Actions(void);
+		void Fill_NumCombosSurvivedHists(void);
 
 		vector<DAnalysisAction*> dAnalysisActions;
 
@@ -115,8 +116,6 @@ class DSelector : public TSelector
 		void Setup_Output(void);
 		void Create_Wrappers(void);
 		void ReInitialize_Wrappers(void);
-
-		void Fill_NumCombosSurvivedHists(void);
 
 		TFile* dFile;
 		TFile* dOutputTreeFile;
