@@ -598,12 +598,26 @@ void DHistogramAction_InvariantMass::Initialize(void)
 	locHistTitle = string(";") + locParticleNamesForHist + string(" Invariant Mass (GeV/c^{2});# Combos / ") + locStream.str() + string(" MeV/c^{2}");
 	dHist_InvaraintMass = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
 
+	locHistName = "InvariantMassVsConfidenceLevel";
+	locHistTitle = string(";Kinematic Fit Confidence Level;") + locParticleNamesForHist + string(" Invariant Mass (GeV/c^{2})");
+	dHist_InvaraintMassVsConfidenceLevel = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumConLevBins, 0.0, 1.0, dNum2DMassBins, dMinMass, dMaxMass);
+
+	locHistName = "InvariantMassVsConfidenceLevel_LogX";
+	int locNumBins = 0;
+	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
+	if(locConLevLogBinning != NULL)
+		dHist_InvaraintMassVsConfidenceLevel_LogX = new TH2I(locHistName.c_str(), locHistTitle.c_str(), locNumBins, locConLevLogBinning, dNum2DMassBins, dMinMass, dMaxMass);
+	else
+		dHist_InvaraintMassVsConfidenceLevel_LogX = NULL;
+
 	//Return to the base directory
 	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_InvariantMass::Perform_Action(void)
 {
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
 		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
@@ -627,6 +641,8 @@ bool DHistogramAction_InvariantMass::Perform_Action(void)
 			dPreviouslyHistogrammed.insert(locSourceObjects);
 
 			dHist_InvaraintMass->Fill(locFinalStateP4.M());
+			dHist_InvaraintMassVsConfidenceLevel->Fill(locConfidenceLevel, locFinalStateP4.M());
+			dHist_InvaraintMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locFinalStateP4.M());
 		}
 		//don't break: e.g. if multiple pi0's, histogram invariant mass of each one
 	}
@@ -662,12 +678,26 @@ void DHistogramAction_MissingMass::Initialize(void)
 	locHistTitle = string(";Missing P (GeV/c);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass (GeV/c^{2})");
 	dHist_MissingMassVsMissingP = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissPBins, dMinMissP, dMaxMissP, dNum2DMassBins, dMinMass, dMaxMass);
 
+	locHistName = "MissingMassVsConfidenceLevel";
+	locHistTitle = string(";Kinematic Fit Confidence Level;") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass (GeV/c^{2})");
+	dHist_MissingMassVsConfidenceLevel = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumConLevBins, 0.0, 1.0, dNum2DMassBins, dMinMass, dMaxMass);
+
+	locHistName = "MissingMassVsConfidenceLevel_LogX";
+	int locNumBins = 0;
+	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
+	if(locConLevLogBinning != NULL)
+		dHist_MissingMassVsConfidenceLevel_LogX = new TH2I(locHistName.c_str(), locHistTitle.c_str(), locNumBins, locConLevLogBinning, dNum2DMassBins, dMinMass, dMaxMass);
+	else
+		dHist_MissingMassVsConfidenceLevel_LogX = NULL;
+
 	//Return to the base directory
 	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_MissingMass::Perform_Action(void)
 {
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
 	double locBeamEnergy = 0.0;
 	if(dUseKinFitFlag)
@@ -693,6 +723,8 @@ bool DHistogramAction_MissingMass::Perform_Action(void)
 		dHist_MissingMass->Fill(locMissingP4.M());
 		dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M());
 		dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M());
+		dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M());
+		dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M());
 	}
 
 	return true;
@@ -726,12 +758,26 @@ void DHistogramAction_MissingMassSquared::Initialize(void)
 	locHistTitle = string(";Missing P (GeV/c);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass Squared (GeV/c^{2})^{2}");
 	dHist_MissingMassVsMissingP = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissPBins, dMinMissP, dMaxMissP, dNum2DMassBins, dMinMass, dMaxMass);
 
+	locHistName = "MissingMassSquaredVsConfidenceLevel";
+	locHistTitle = string(";Kinematic Fit Confidence Level;") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Mass Squared (GeV/c^{2})^{2}");
+	dHist_MissingMassVsConfidenceLevel = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumConLevBins, 0.0, 1.0, dNum2DMassBins, dMinMass, dMaxMass);
+
+	locHistName = "MissingMassSquaredVsConfidenceLevel_LogX";
+	int locNumBins = 0;
+	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
+	if(locConLevLogBinning != NULL)
+		dHist_MissingMassVsConfidenceLevel_LogX = new TH2I(locHistName.c_str(), locHistTitle.c_str(), locNumBins, locConLevLogBinning, dNum2DMassBins, dMinMass, dMaxMass);
+	else
+		dHist_MissingMassVsConfidenceLevel_LogX = NULL;
+
 	//Return to the base directory
 	ChangeTo_BaseDirectory();
 }
 
 bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 {
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
 	double locBeamEnergy = 0.0;
 	if(dUseKinFitFlag)
@@ -757,6 +803,8 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 		dHist_MissingMass->Fill(locMissingP4.M2());
 		dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M2());
 		dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M2());
+		dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M());
+		dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M());
 	}
 
 	return true;

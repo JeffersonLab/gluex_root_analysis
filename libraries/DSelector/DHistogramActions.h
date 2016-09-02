@@ -149,14 +149,16 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 		DHistogramAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locInitialPID, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_InvariantMass", locUseKinFitFlag, locActionUniqueString),
 			dInitialPID(locInitialPID), dStepIndex(-1), dToIncludePIDs(deque<Particle_t>()),
-			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass) {}
+			dNumMassBins(locNumMassBins), dNum2DMassBins(locNumMassBins/2), dMinMass(locMinMass), dMaxMass(locMaxMass),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		//e.g. if g, p -> pi+, pi-, p
 			//call with step = 0, PIDs = pi+, pi-, and will histogram rho mass
 		DHistogramAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_InvariantMass", locUseKinFitFlag, locActionUniqueString),
 			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
-			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass) {}
+			dNumMassBins(locNumMassBins), dNum2DMassBins(locNumMassBins/2), dMinMass(locMinMass), dMaxMass(locMaxMass),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
@@ -167,11 +169,18 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 		int dStepIndex;
 		deque<Particle_t> dToIncludePIDs;
 
-		unsigned int dNumMassBins;
+		unsigned int dNumMassBins, dNum2DMassBins;
 		double dMinMass, dMaxMass;
 
+	public:
+		unsigned int dNumConLevBins, dNumBinsPerConLevPower;
+		int dConLevLowest10Power;
+
+	private:
 		DAnalysisUtilities dAnalysisUtilities;
 		TH1I* dHist_InvaraintMass;
+		TH2I* dHist_InvaraintMassVsConfidenceLevel;
+		TH2I* dHist_InvaraintMassVsConfidenceLevel_LogX;
 
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
@@ -185,7 +194,8 @@ class DHistogramAction_MissingMass : public DAnalysisAction
 		DHistogramAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_MissingMass", locUseKinFitFlag, locActionUniqueString),
 			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass), dMissingMassOffOfStepIndex(0), dMissingMassOffOfPIDs(deque<Particle_t>()),
-			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		//E.g. If:
 		//g, p -> K+, K+, Xi-
@@ -204,13 +214,15 @@ class DHistogramAction_MissingMass : public DAnalysisAction
 			DAnalysisAction(locParticleComboWrapper, "Hist_MissingMass", locUseKinFitFlag, locActionUniqueString),
 			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass),
 			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(locMissingMassOffOfPIDs),
-			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		DHistogramAction_MissingMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, Particle_t locMissingMassOffOfPID, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_MissingMass", locUseKinFitFlag, locActionUniqueString),
 			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass),
 			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)),
-			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
@@ -226,10 +238,15 @@ class DHistogramAction_MissingMass : public DAnalysisAction
 		unsigned int dNum2DMassBins, dNum2DBeamEBins, dNum2DMissPBins;
 		double dMinBeamE, dMaxBeamE, dMinMissP, dMaxMissP;
 
+		unsigned int dNumConLevBins, dNumBinsPerConLevPower;
+		int dConLevLowest10Power;
+
 	private:
 		TH1I* dHist_MissingMass;
 		TH2I* dHist_MissingMassVsBeamE;
 		TH2I* dHist_MissingMassVsMissingP;
+		TH2I* dHist_MissingMassVsConfidenceLevel;
+		TH2I* dHist_MissingMassVsConfidenceLevel_LogX;
 		DAnalysisUtilities dAnalysisUtilities;
 
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
@@ -244,7 +261,8 @@ class DHistogramAction_MissingMassSquared : public DAnalysisAction
 		DHistogramAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, unsigned int locNumMassBins, double locMinMassSq, double locMaxMassSq, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_MissingMassSquared", locUseKinFitFlag, locActionUniqueString),
 			dNumMassBins(locNumMassBins), dMinMass(locMinMassSq), dMaxMass(locMaxMassSq), dMissingMassOffOfStepIndex(0), dMissingMassOffOfPIDs(deque<Particle_t>()),
-			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		//E.g. If:
 		//g, p -> K+, K+, Xi-
@@ -263,13 +281,15 @@ class DHistogramAction_MissingMassSquared : public DAnalysisAction
 			DAnalysisAction(locParticleComboWrapper, "Hist_MissingMassSquared", locUseKinFitFlag, locActionUniqueString),
 			dNumMassBins(locNumMassBins), dMinMass(locMinMassSq), dMaxMass(locMaxMassSq),
 			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(locMissingMassOffOfPIDs),
-			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		DHistogramAction_MissingMassSquared(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingMassOffOfStepIndex, Particle_t locMissingMassOffOfPID, unsigned int locNumMassBins, double locMinMassSq, double locMaxMassSq, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_MissingMassSquared", locUseKinFitFlag, locActionUniqueString),
 			dNumMassBins(locNumMassBins), dMinMass(locMinMassSq), dMaxMass(locMaxMassSq),
 			dMissingMassOffOfStepIndex(locMissingMassOffOfStepIndex), dMissingMassOffOfPIDs(deque<Particle_t>(1, locMissingMassOffOfPID)),
-			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0) {}
+			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
@@ -285,10 +305,15 @@ class DHistogramAction_MissingMassSquared : public DAnalysisAction
 		unsigned int dNum2DMassBins, dNum2DBeamEBins, dNum2DMissPBins;
 		double dMinBeamE, dMaxBeamE, dMinMissP, dMaxMissP;
 
+		unsigned int dNumConLevBins, dNumBinsPerConLevPower;
+		int dConLevLowest10Power;
+
 	private:
 		TH1I* dHist_MissingMass;
 		TH2I* dHist_MissingMassVsBeamE;
 		TH2I* dHist_MissingMassVsMissingP;
+		TH2I* dHist_MissingMassVsConfidenceLevel;
+		TH2I* dHist_MissingMassVsConfidenceLevel_LogX;
 		DAnalysisUtilities dAnalysisUtilities;
 
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's

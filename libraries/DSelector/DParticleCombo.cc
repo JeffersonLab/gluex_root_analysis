@@ -29,7 +29,10 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 			//Create particle
 			DKinematicData* locKinematicData = NULL;
 			if(locPID == Unknown)
+			{
 				locKinematicData = NULL;
+				locMissingIndices = pair<int, int>(locStepIndex, locParticleIndex);
+			}
 			else if(locParticleName == "ComboBeam")
 				locKinematicData = new DBeamParticle(dTreeInterface, locParticleName, locPID);
 			else if(locParticleName.substr(0, 6) == "Target")
