@@ -212,6 +212,32 @@ bool DCutAction_MissingMassSquared::Perform_Action(void)
 	return false; //all failed
 }
 
+string DCutAction_MissingEnergy::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinimumMissingEnergy << "_" << dMaximumMissingEnergy;
+	return locStream.str();
+}
+
+bool DCutAction_MissingEnergy::Perform_Action(void)
+{
+	//build all possible combinations of the included pids
+	const DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(dMissingEnergyOffOfStepIndex);
+	set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locComboWrapperStep, dMissingEnergyOffOfPIDs);
+
+	//loop over them: Must fail ALL to fail. if any succeed, return true
+	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
+	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
+	{
+		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingEnergyOffOfStepIndex, *locComboIterator, dUseKinFitFlag);
+		double locMissingEnergy = locMissingP4.E();
+		if((locMissingEnergy >= dMinimumMissingEnergy) && (locMissingEnergy <= dMaximumMissingEnergy))
+			return true;
+	}
+
+	return false; //all failed
+}
+
 string DCutAction_InvariantMass::Get_ActionName(void) const
 {
 	ostringstream locStream;

@@ -322,6 +322,60 @@ class DHistogramAction_MissingMassSquared : public DAnalysisAction
 		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
 };
 
+class DHistogramAction_MissingEnergy : public DAnalysisAction
+{
+	public:
+		DHistogramAction_MissingEnergy(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, unsigned int locNumEnergyBins, double locMinEnergy, double locMaxEnergy, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_MissingEnergy", locUseKinFitFlag, locActionUniqueString),
+			dNumEnergyBins(locNumEnergyBins), dMinEnergy(locMinEnergy), dMaxEnergy(locMaxEnergy), dMissingEnergyOffOfStepIndex(0), dMissingEnergyOffOfPIDs(deque<Particle_t>()),
+			dNum2DEnergyBins(locNumEnergyBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
+
+		DHistogramAction_MissingEnergy(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingEnergyOffOfStepIndex, deque<Particle_t> locMissingEnergyOffOfPIDs, unsigned int locNumEnergyBins, double locMinEnergy, double locMaxEnergy, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_MissingEnergy", locUseKinFitFlag, locActionUniqueString),
+			dNumEnergyBins(locNumEnergyBins), dMinEnergy(locMinEnergy), dMaxEnergy(locMaxEnergy),
+			dMissingEnergyOffOfStepIndex(locMissingEnergyOffOfStepIndex), dMissingEnergyOffOfPIDs(locMissingEnergyOffOfPIDs),
+			dNum2DEnergyBins(locNumEnergyBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
+
+		DHistogramAction_MissingEnergy(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingEnergyOffOfStepIndex, Particle_t locMissingEnergyOffOfPID, unsigned int locNumEnergyBins, double locMinEnergy, double locMaxEnergy, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_MissingEnergy", locUseKinFitFlag, locActionUniqueString),
+			dNumEnergyBins(locNumEnergyBins), dMinEnergy(locMinEnergy), dMaxEnergy(locMaxEnergy),
+			dMissingEnergyOffOfStepIndex(locMissingEnergyOffOfStepIndex), dMissingEnergyOffOfPIDs(deque<Particle_t>(1, locMissingEnergyOffOfPID)),
+			dNum2DEnergyBins(locNumEnergyBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
+			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		unsigned int dNumEnergyBins;
+		double dMinEnergy, dMaxEnergy;
+		int dMissingEnergyOffOfStepIndex;
+		deque<Particle_t> dMissingEnergyOffOfPIDs;
+
+	public:
+		unsigned int dNum2DEnergyBins, dNum2DBeamEBins, dNum2DMissPBins;
+		double dMinBeamE, dMaxBeamE, dMinMissP, dMaxMissP;
+
+		unsigned int dNumConLevBins, dNumBinsPerConLevPower;
+		int dConLevLowest10Power;
+
+	private:
+		TH1I* dHist_MissingEnergy;
+		TH2I* dHist_MissingEnergyVsBeamE;
+		TH2I* dHist_MissingEnergyVsMissingP;
+		TH2I* dHist_MissingEnergyVsConfidenceLevel;
+		TH2I* dHist_MissingEnergyVsConfidenceLevel_LogX;
+		DAnalysisUtilities dAnalysisUtilities;
+
+		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
+		//In general: Multiple PIDs, so multiple sets: Contain within a map
+		//Multiple combos: Contain maps within a set (easier, faster to search)
+		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+};
+
 class DHistogramAction_2DInvariantMass : public DAnalysisAction
 {
 	public:
