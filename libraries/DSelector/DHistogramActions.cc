@@ -803,8 +803,8 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 		dHist_MissingMass->Fill(locMissingP4.M2());
 		dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M2());
 		dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M2());
-		dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M());
-		dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M());
+		dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M2());
+		dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M2());
 	}
 
 	return true;
