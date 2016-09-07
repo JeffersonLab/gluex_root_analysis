@@ -186,6 +186,38 @@ class DCutAction_MissingMassSquared : public DAnalysisAction
 		DAnalysisUtilities dAnalysisUtilities;
 };
 
+class DCutAction_MissingEnergy : public DAnalysisAction
+{
+	public:
+		DCutAction_MissingEnergy(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locMinimumMissingEnergy, double locMaximumMissingEnergy, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingEnergy", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingEnergy(locMinimumMissingEnergy), dMaximumMissingEnergy(locMaximumMissingEnergy), dMissingEnergyOffOfStepIndex(0){}
+
+		DCutAction_MissingEnergy(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingEnergyOffOfStepIndex, deque<Particle_t> locMissingEnergyOffOfPIDs, double locMinimumMissingEnergy, double locMaximumMissingEnergy, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingEnergy", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingEnergy(locMinimumMissingEnergy), dMaximumMissingEnergy(locMaximumMissingEnergy), dMissingEnergyOffOfStepIndex(locMissingEnergyOffOfStepIndex),
+			dMissingEnergyOffOfPIDs(locMissingEnergyOffOfPIDs) {}
+
+		DCutAction_MissingEnergy(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, int locMissingEnergyOffOfStepIndex, Particle_t locMissingEnergyOffOfPID, double locMinimumMissingEnergy, double locMaximumMissingEnergy, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_MissingEnergy", locUseKinFitFlag, locActionUniqueString),
+			dMinimumMissingEnergy(locMinimumMissingEnergy), dMaximumMissingEnergy(locMaximumMissingEnergy), dMissingEnergyOffOfStepIndex(locMissingEnergyOffOfStepIndex),
+			dMissingEnergyOffOfPIDs(deque<Particle_t>(1, locMissingEnergyOffOfPID)) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void); // flag to reject combos
+
+	private:
+
+		double dMinimumMissingEnergy;
+		double dMaximumMissingEnergy;
+		int dMissingEnergyOffOfStepIndex;
+		deque<Particle_t> dMissingEnergyOffOfPIDs;
+
+		DAnalysisUtilities dAnalysisUtilities;
+};
+
 class DCutAction_InvariantMass : public DAnalysisAction
 {
 	public:

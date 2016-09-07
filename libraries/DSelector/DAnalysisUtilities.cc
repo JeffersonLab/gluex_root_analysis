@@ -339,7 +339,6 @@ bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFl
 
 double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHighest10Power, unsigned int locNumBinsPerPower, int& locNumBins) const
 {
-	//locNumBinsPerPower should ideally be multiple of 9!! //1 -> 2, 2 -> 3, ... 9 -> 10
 	if(locHighest10Power <= locLowest10Power)
 	{
 		locNumBins = -1;
@@ -350,16 +349,16 @@ double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHig
 	locNumBins = locNumBinsPerPower*locNumPowerRanges;
 
 	double* locBinArray = new double[locNumBins + 1];
+	locBinArray[0] = pow(10.0, locLowest10Power);
 	for(int loc_j = 0; loc_j < locNumPowerRanges; ++loc_j)
 	{
 		double locCurrent10Power = double(locLowest10Power + loc_j);
 		for(unsigned int loc_k = 0; loc_k < locNumBinsPerPower; ++loc_k)
 		{
-			double locMultiplier = 9.0*double(loc_k)/locNumBinsPerPower + 1.0;
-			locBinArray[loc_j*locNumBinsPerPower + loc_k] = locMultiplier*pow(10.0, locCurrent10Power);
+		  double locMultiplier = (double(loc_k) + 1.0) / locNumBinsPerPower;
+		  locBinArray[loc_j*locNumBinsPerPower + loc_k + 1] = pow(10,locMultiplier) * pow(10.0, locCurrent10Power);
 		}
 	}
 
-	locBinArray[locNumBins] = pow(10.0, locHighest10Power);
 	return locBinArray;
 }

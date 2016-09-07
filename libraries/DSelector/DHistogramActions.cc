@@ -810,6 +810,79 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 	return true;
 }
 
+void DHistogramAction_MissingEnergy::Initialize(void)
+{
+	double locEnergyPerBin = 1000.0*(dMaxEnergy - dMinEnergy)/((double)dNumEnergyBins);
+	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
+	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingEnergyOffOfStepIndex, dMissingEnergyOffOfPIDs, dUseKinFitFlag, true);
+
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	string locHistName = "MissingEnergy";
+	ostringstream locStream;
+	locStream << locEnergyPerBin;
+	string locHistTitle = string(";") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Energy (GeV);# Combos / ") + locStream.str() + string(" MeV");
+	dHist_MissingEnergy = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumEnergyBins, dMinEnergy, dMaxEnergy);
+
+	locHistName = "MissingEnergyVsBeamE";
+	locEnergyPerBin *= ((double)dNumEnergyBins)/((double)dNum2DEnergyBins);
+	locStream.str("");
+	locStream << locEnergyPerBin;
+	locHistTitle = string(";Beam Energy (GeV);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Energy (GeV)");
+	dHist_MissingEnergyVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DEnergyBins, dMinEnergy, dMaxEnergy);
+
+	locHistName = "MissingEnergyVsConfidenceLevel";
+	locHistTitle = string(";Kinematic Fit Confidence Level;") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Energy (GeV)");
+	dHist_MissingEnergyVsConfidenceLevel = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumConLevBins, 0.0, 1.0, dNum2DEnergyBins, dMinEnergy, dMaxEnergy);
+
+	locHistName = "MissingEnergyVsConfidenceLevel_LogX";
+	int locNumBins = 0;
+	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
+	if(locConLevLogBinning != NULL)
+		dHist_MissingEnergyVsConfidenceLevel_LogX = new TH2I(locHistName.c_str(), locHistTitle.c_str(), locNumBins, locConLevLogBinning, dNum2DEnergyBins, dMinEnergy, dMaxEnergy);
+	else
+		dHist_MissingEnergyVsConfidenceLevel_LogX = NULL;
+
+	//Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+bool DHistogramAction_MissingEnergy::Perform_Action(void)
+{
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+
+	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+	double locBeamEnergy = 0.0;
+	if(dUseKinFitFlag)
+		locBeamEnergy = locBeamParticle->Get_P4().E();
+	else
+		locBeamEnergy = locBeamParticle->Get_P4_Measured().E();
+
+	//build all possible combinations of the included pids
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(dMissingEnergyOffOfStepIndex);
+	set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dMissingEnergyOffOfPIDs);
+
+	//loop over them
+	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
+	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
+	{
+		map<Particle_t, set<Int_t> > locSourceObjects;
+		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingEnergyOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+
+		if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
+			continue; //dupe: already histed!
+		dPreviouslyHistogrammed.insert(locSourceObjects);
+
+		dHist_MissingEnergy->Fill(locMissingP4.E());
+		dHist_MissingEnergyVsBeamE->Fill(locBeamEnergy, locMissingP4.E());
+		dHist_MissingEnergyVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.E());
+		dHist_MissingEnergyVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.E());
+	}
+
+	return true;
+}
+
 void DHistogramAction_2DInvariantMass::Initialize(void)
 {
 	string locHistName, locHistTitle;
