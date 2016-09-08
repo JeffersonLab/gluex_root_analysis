@@ -241,7 +241,7 @@ bool DAnalysisUtilities::Handle_Decursion(int& locParticleIndex, deque<size_t>& 
 	return true;
 }
 
-double DAnalysisUtilities::Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, TLorentzVector& locMesonP4, bool locIsPARAFlag) const
+double DAnalysisUtilities::Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locMesonP4) const
 {
 	//Returns angle in degrees!!
 
@@ -262,7 +262,7 @@ double DAnalysisUtilities::Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, 
 	TLorentzVector locInitialStateP4 = locBeamP4 + locTargetP4;
 	TVector3 locBoostVector_ProdCM = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
 
-	//Boost beam & KPlus to production CM frame
+	//Boost beam & meson to production CM frame
 	TLorentzVector locBeamP4_ProdCM(locBeamP4);
 	locBeamP4_ProdCM.Boost(locBoostVector_ProdCM);
 	TLorentzVector locMesonP4_ProdCM(locMesonP4);
@@ -296,6 +296,112 @@ double DAnalysisUtilities::Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, 
 		locProdPlanePhi *= -1.0;
 
 	return 180.0*locProdPlanePhi/TMath::Pi();
+}
+
+double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_3BodyDecay(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locBaryonP4, const TLorentzVector& locMesonP4, const TLorentzVector& locMesonProduct1P4, const TLorentzVector& locMesonProduct2P4, double& locDecayPlaneTheta) const
+{
+	//Returns angles in degrees!!
+
+	//Polarization plane:
+		//Beam is in the lab z-direction
+		//The polarization vector is perpendicular to the direction of the photon
+		//Linearly polarized photon beam: Polarization is confined to a plane along the direction of the photon
+			//Plane defined by z-direction & some angle phi. Thus, polarization vector defined by phi.
+			//PARA: Polarization plane parallel to the floor: The XZ plane. Polarization Vector = +/- x-axis
+			//PERP: Polarization plane perpendicular to the floor: The YZ plane. Polarization Vector = +/- y-axis
+		//(FYI) Circularly polarized photon beam: Polarization rotates through the plane perpendicular to the direction of the photon: The XY Plane
+
+	//Production CM frame: The center-of-mass frame of the production step.
+		//In general, the beam energy is measured more accurately than the combination of all of the final-state particles
+		//So define the production CM frame using the initial state
+	TLorentzVector locBeamP4(0.0, 0.0, locBeamEnergy, locBeamEnergy);
+	TLorentzVector locTargetP4(TVector3(), ParticleMass(locTargetPID));
+	TLorentzVector locInitialStateP4 = locBeamP4 + locTargetP4;
+	TVector3 locBoostVector_ProdCM = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
+
+	//boost beam & baryon to production CM frame
+		//Baryon P4: Is in general known better than meson p4 (many decay products)
+	TLorentzVector locBeamP4_ProdCM(locBeamP4);
+	locBeamP4_ProdCM.Boost(locBoostVector_ProdCM);
+	TLorentzVector locBaryonP4_ProdCM(locBaryonP4);
+	locBaryonP4_ProdCM.Boost(locBoostVector_ProdCM);
+
+	//Production plane:
+		//The production plane is the plane containing the produced particles.
+		//However, when you boost to the production CM frame, the production plane is no longer well defined: the particles are back-to-back
+		//So, by convention, define the production plane in the production CM frame by the beam and the vector meson
+		//However, instead of the meson, use the negative momentum of the baryon (better resolution)
+
+	//Production CM frame axes: "HELICITY SYSTEM"
+		//The z-axis is defined as the direction of the meson: z = meson
+		//The y-axis is defined by the vector cross product: y = Beam X meson
+		//The x-axis is defined by the vector cross product: x = y cross z
+		//Thus the production plane in the production frame is the XZ plane, and the normal vector is the Y-axis
+		//Except, instead of meson, use (-1*baruon)
+
+	//Define production CM frame helicity axes
+	TVector3 locHelicityZAxis_ProdCM = -1.0*locBaryonP4_ProdCM.Vect().Unit();
+	TVector3 locHelicityYAxis_ProdCM = -1.0*locBeamP4_ProdCM.Vect().Cross(locBaryonP4_ProdCM.Vect()).Unit();
+	TVector3 locHelicityXAxis_ProdCM = locHelicityYAxis_ProdCM.Cross(locHelicityZAxis_ProdCM).Unit();
+
+	//In the production CM frame, locProdPlanePhi is the angle between the production plane and the floor
+		// We could have chosen any other fixed plane besides the floor. The point is that it must be a fixed reference
+	TVector3 locFloorUnit(0.0, 1.0, 0.0);
+	double locCosProdPlanePhi = locBeamP4_ProdCM.Vect().Unit().Dot(locFloorUnit.Cross(locHelicityYAxis_ProdCM));
+	double locProdPlanePhi = acos(locCosProdPlanePhi); //reports phi between 0 and pi: sign ambiguity
+	//Resolve the sign ambiguity
+	double locSinProdPlanePhi = locFloorUnit.Dot(locHelicityYAxis_ProdCM);
+	if(locSinProdPlanePhi < 0.0)
+		locProdPlanePhi *= -1.0;
+
+	//Now, we need the theta, phi angles between the meson decay plane and the production plane
+	//The meson decay plane is defined by decay products in the meson CM frame
+		//2 particles (vectors) define a plane.
+		//However, to conserve momentum, the third particle cannot be out of that plane (so must also be in it)
+		//So, use any 2 of the decay products to define the plane
+
+	//boost to meson CM frame
+	TVector3 locBoostVector_MesonCM = -1.0*(locMesonP4.BoostVector()); //negative due to coordinate system convention
+	TLorentzVector locBeamP4_MesonCM(locBeamP4);
+	locBeamP4_MesonCM.Boost(locBoostVector_MesonCM);
+	TLorentzVector locBaryonP4_MesonCM(locBaryonP4);
+	locBaryonP4_MesonCM.Boost(locBoostVector_MesonCM);
+	TLorentzVector locMesonProduct1P4_MesonCM(locMesonProduct1P4);
+	locMesonProduct1P4_MesonCM.Boost(locBoostVector_MesonCM);
+	TLorentzVector locMesonProduct2P4_MesonCM(locMesonProduct2P4);
+	locMesonProduct2P4_MesonCM.Boost(locBoostVector_MesonCM);
+
+	//Define meson CM frame helicity axes
+		//These are defined the same way as before, but with the boost, the direction of the x & y axes has changed
+	TVector3 locHelicityZAxis_MesonCM = -1.0*locBaryonP4_MesonCM.Vect().Unit();
+	TVector3 locHelicityYAxis_MesonCM = -1.0*locBeamP4_MesonCM.Vect().Cross(locBaryonP4_MesonCM.Vect()).Unit();
+	TVector3 locHelicityXAxis_MesonCM = locHelicityYAxis_MesonCM.Cross(locHelicityZAxis_MesonCM).Unit();
+
+	//Compute the normal vector to the 2 mesons to define the decay plane
+	TVector3 locDecayPlaneNormal = (locMesonProduct1P4_MesonCM.Vect().Cross(locMesonProduct2P4_MesonCM.Vect()));
+
+	//Compute the theta angle to the Meson decay plane
+	double locCosDecayPlaneTheta = locDecayPlaneNormal.Dot(locHelicityZAxis_MesonCM)/locDecayPlaneNormal.Mag();
+	locDecayPlaneTheta = acos(locCosDecayPlaneTheta)*180.0/TMath::Pi();
+
+	//Compute the phi angle to the Meson decay plane
+	TVector3 locZCrossMesonNormal = locHelicityZAxis_MesonCM.Cross(locDecayPlaneNormal);
+	double locZCrossMesonNormalMag = locZCrossMesonNormal.Mag();
+	double locCosDecayPlanePhi = locHelicityYAxis_MesonCM.Dot(locZCrossMesonNormal)/locZCrossMesonNormalMag;
+	double locDecayPlanePhi = acos(locCosDecayPlanePhi); //reports phi between 0 and pi: sign ambiguity
+	//Resolve the sign ambiguity
+	double locSinDecayPlanePhi = -1.0*locHelicityXAxis_MesonCM.Dot(locZCrossMesonNormal)/locZCrossMesonNormalMag;
+	if(locSinDecayPlanePhi < 0.0)
+		locDecayPlanePhi *= -1.0;
+
+	//Compute delta-phi
+	double locDeltaPhi = locDecayPlanePhi - locProdPlanePhi;
+	while(locDeltaPhi < -1.0*TMath::Pi())
+		locDeltaPhi += 2.0*TMath::Pi();
+	while(locDeltaPhi > TMath::Pi())
+		locDeltaPhi -= 2.0*TMath::Pi();
+
+	return 180.0*locDeltaPhi/TMath::Pi();
 }
 
 bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const
@@ -339,6 +445,7 @@ bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFl
 
 double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHighest10Power, unsigned int locNumBinsPerPower, int& locNumBins) const
 {
+	//locNumBinsPerPower should ideally be multiple of 9!! //1 -> 2, 2 -> 3, ... 9 -> 10
 	if(locHighest10Power <= locLowest10Power)
 	{
 		locNumBins = -1;
@@ -349,16 +456,16 @@ double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHig
 	locNumBins = locNumBinsPerPower*locNumPowerRanges;
 
 	double* locBinArray = new double[locNumBins + 1];
-	locBinArray[0] = pow(10.0, locLowest10Power);
 	for(int loc_j = 0; loc_j < locNumPowerRanges; ++loc_j)
 	{
 		double locCurrent10Power = double(locLowest10Power + loc_j);
 		for(unsigned int loc_k = 0; loc_k < locNumBinsPerPower; ++loc_k)
 		{
-		  double locMultiplier = (double(loc_k) + 1.0) / locNumBinsPerPower;
-		  locBinArray[loc_j*locNumBinsPerPower + loc_k + 1] = pow(10,locMultiplier) * pow(10.0, locCurrent10Power);
+			double locMultiplier = 9.0*double(loc_k)/locNumBinsPerPower + 1.0;
+			locBinArray[loc_j*locNumBinsPerPower + loc_k] = locMultiplier*pow(10.0, locCurrent10Power);
 		}
 	}
 
+	locBinArray[locNumBins] = pow(10.0, locHighest10Power);
 	return locBinArray;
 }
