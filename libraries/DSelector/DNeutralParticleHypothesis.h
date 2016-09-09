@@ -49,6 +49,7 @@ class DNeutralParticleHypothesis : public DKinematicData
 
 		//SHOWER INFO
 		Float_t Get_Energy_BCAL(void) const;
+		Float_t Get_Energy_BCALPreshower(void) const;
 		Float_t Get_Energy_FCAL(void) const;
 		TLorentzVector Get_X4_Shower(void) const;
 
@@ -85,6 +86,7 @@ class DNeutralParticleHypothesis : public DKinematicData
  
 		//SHOWER INFO
 		TBranch* dBranch_Energy_BCAL;
+		TBranch* dBranch_Energy_BCALPreshower;
 		TBranch* dBranch_Energy_FCAL;
 		TClonesArray* dX4_Shower;
 
@@ -140,6 +142,9 @@ inline void DNeutralParticleHypothesis::Setup_Branches(void)
 	//SHOWER INFO
 	locBranchName = "NeutralHypo__Energy_BCAL";
 	dBranch_Energy_BCAL = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "NeutralHypo__Energy_BCALPreshower";
+	dBranch_Energy_BCALPreshower = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "NeutralHypo__Energy_FCAL";
 	dBranch_Energy_FCAL = dTreeInterface->Get_Branch(locBranchName);
@@ -247,6 +252,11 @@ inline DetectorSystem_t DNeutralParticleHypothesis::Get_Detector_System_Timing(v
 inline Float_t DNeutralParticleHypothesis::Get_Energy_BCAL(void) const
 {
 	return ((Float_t*)dBranch_Energy_BCAL->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DNeutralParticleHypothesis::Get_Energy_BCALPreshower(void) const
+{
+	return ((Float_t*)dBranch_Energy_BCALPreshower->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DNeutralParticleHypothesis::Get_Energy_FCAL(void) const

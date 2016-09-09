@@ -58,6 +58,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_dEdx_TOF(void) const;
 		Float_t Get_dEdx_ST(void) const;
 		Float_t Get_Energy_BCAL(void) const;
+		Float_t Get_Energy_BCALPreshower(void) const;
 		Float_t Get_Energy_FCAL(void) const;
 
 		//SHOWER MATCHING
@@ -103,6 +104,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_dEdx_TOF;
 		TBranch* dBranch_dEdx_ST;
 		TBranch* dBranch_Energy_BCAL;
+		TBranch* dBranch_Energy_BCALPreshower;
 		TBranch* dBranch_Energy_FCAL;
  
 		//SHOWER MATCHING
@@ -182,6 +184,9 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "ChargedHypo__Energy_BCAL";
 	dBranch_Energy_BCAL = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__Energy_BCALPreshower";
+	dBranch_Energy_BCALPreshower = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "ChargedHypo__Energy_FCAL";
 	dBranch_Energy_FCAL = dTreeInterface->Get_Branch(locBranchName);
@@ -329,6 +334,11 @@ inline Float_t DChargedTrackHypothesis::Get_dEdx_ST(void) const
 inline Float_t DChargedTrackHypothesis::Get_Energy_BCAL(void) const
 {
 	return ((Float_t*)dBranch_Energy_BCAL->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Energy_BCALPreshower(void) const
+{
+	return ((Float_t*)dBranch_Energy_BCALPreshower->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DChargedTrackHypothesis::Get_Energy_FCAL(void) const
