@@ -443,6 +443,33 @@ bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFl
 	return false;
 }
 
+double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) const
+{
+	//CCDB environment must be setup!!
+
+	//Pipe the current constant into this function
+	ostringstream locCommandStream;
+	locCommandStream << "ccdb dump PHOTON_BEAM/RF/beam_period -r " << locRunNumber;
+	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+	if(locInputFile == NULL)
+		return -1.0;
+
+	//get the first line
+	char buff[1024]; // I HATE char buffers
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+		return -1.0;
+	istringstream locStringStream(buff);
+
+	//Close the pipe
+	gSystem->ClosePipe(locInputFile);
+
+	//extract it
+	double locBeamBunchPeriod = 0.0;
+	if(!(locStringStream >> locBeamBunchPeriod))
+		return -1.0;
+	return locBeamBunchPeriod;
+}
+
 double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHighest10Power, unsigned int locNumBinsPerPower, int& locNumBins) const
 {
 	if(locHighest10Power <= locLowest10Power)
