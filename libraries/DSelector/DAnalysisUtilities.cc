@@ -350,7 +350,7 @@ double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_2BodyDecay(double locBeamEn
 	// Angle between the floor and production normal y, perpendicular to beam direction p
 	        // y * floor, i.e. projection of y on floor
 		// p * (floor x y) = floor * (y x p) = y * (p x floor) , i.e. projection of y on axis perpendicular to floor and beam
-	        // Angle is defined by the two legs of the triangle
+	        // Angle is defined by the arctan of two legs of the right triangle
 	double locProdPlanePhi = atan2(locHelicityYAxis_ProdCM.Dot(locFloorUnit), locBeamP4_ProdCM.Vect().Unit().Dot(locFloorUnit.Cross(locHelicityYAxis_ProdCM)));
 
 	//Now, we need the theta, phi angles between the meson decay plane and the production plane
