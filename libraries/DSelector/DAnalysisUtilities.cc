@@ -298,6 +298,98 @@ double DAnalysisUtilities::Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, 
 	return 180.0*locProdPlanePhi/TMath::Pi();
 }
 
+double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_2BodyDecay(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locBaryonP4, const TLorentzVector& locMesonP4, const TLorentzVector& locMesonProduct1P4, double& locDecayPlaneTheta) const
+{
+	//Returns angles in degrees!!
+
+	//Polarization plane:
+		//Beam is in the lab z-direction
+		//The polarization vector is perpendicular to the direction of the photon
+		//Linearly polarized photon beam: Polarization is confined to a plane along the direction of the photon
+			//Plane defined by z-direction & some angle phi. Thus, polarization vector defined by phi.
+			//PARA: Polarization plane parallel to the floor: The XZ plane. Polarization Vector = +/- x-axis
+			//PERP: Polarization plane perpendicular to the floor: The YZ plane. Polarization Vector = +/- y-axis
+		//(FYI) Circularly polarized photon beam: Polarization rotates through the plane perpendicular to the direction of the photon: The XY Plane
+
+	//Production CM frame: The center-of-mass frame of the production step.
+		//In general, the beam energy is measured more accurately than the combination of all of the final-state particles
+		//So define the production CM frame using the initial state
+	TLorentzVector locBeamP4(0.0, 0.0, locBeamEnergy, locBeamEnergy);
+	TLorentzVector locTargetP4(TVector3(), ParticleMass(locTargetPID));
+	TLorentzVector locInitialStateP4 = locBeamP4 + locTargetP4;
+	TVector3 locBoostVector_ProdCM = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
+
+	//boost beam & baryon to production CM frame
+		//Baryon P4: Is in general known better than meson p4 (many decay products)
+	TLorentzVector locBeamP4_ProdCM(locBeamP4);
+	locBeamP4_ProdCM.Boost(locBoostVector_ProdCM);
+	TLorentzVector locBaryonP4_ProdCM(locBaryonP4);
+	locBaryonP4_ProdCM.Boost(locBoostVector_ProdCM);
+
+	//Production plane:
+		//The production plane is the plane containing the produced particles.
+		//However, when you boost to the production CM frame, the production plane is no longer well defined: the particles are back-to-back
+		//So, by convention, define the production plane in the production CM frame by the beam and the vector meson
+		//However, instead of the meson, use the negative momentum of the baryon (better resolution)
+
+	//Production CM frame axes: "HELICITY SYSTEM"
+		//The z-axis is defined as the direction of the meson: z = meson
+		//The y-axis is defined by the vector cross product: y = Beam X meson
+		//The x-axis is defined by the vector cross product: x = y cross z
+		//Thus the production plane in the production frame is the XZ plane, and the normal vector is the Y-axis
+		//Except, instead of meson, use (-1*baryon)
+
+	//Define production CM frame helicity axes
+	TVector3 locHelicityZAxis_ProdCM = -1.0*locBaryonP4_ProdCM.Vect().Unit();
+	TVector3 locHelicityYAxis_ProdCM = -1.0*locBeamP4_ProdCM.Vect().Cross(locBaryonP4_ProdCM.Vect()).Unit();
+	TVector3 locHelicityXAxis_ProdCM = locHelicityYAxis_ProdCM.Cross(locHelicityZAxis_ProdCM).Unit();
+
+	//In the production CM frame, locProdPlanePhi is the angle between the production plane and the floor
+		// We could have chosen any other fixed plane besides the floor. The point is that it must be a fixed reference
+	TVector3 locFloorUnit(0.0, 1.0, 0.0);
+	// Angle between the floor and production normal y, perpendicular to beam direction p
+	        // y * floor, i.e. projection of y on floor
+		// p * (floor x y) = floor * (y x p) = y * (p x floor) , i.e. projection of y on axis perpendicular to floor and beam
+	        // Angle is defined by the two legs of the triangle
+	double locProdPlanePhi = atan2(locHelicityYAxis_ProdCM.Dot(locFloorUnit), locBeamP4_ProdCM.Vect().Unit().Dot(locFloorUnit.Cross(locHelicityYAxis_ProdCM)));
+
+	//Now, we need the theta, phi angles between the meson decay plane and the production plane
+	//The meson decay plane is defined by decay products in the meson CM frame
+		// (FYI) GlueX Convention: angles defined by positive decay product
+
+	//boost to meson CM frame
+	TVector3 locBoostVector_MesonCM = -1.0*(locMesonP4.BoostVector()); //negative due to coordinate system convention
+	TLorentzVector locBeamP4_MesonCM(locBeamP4);
+	locBeamP4_MesonCM.Boost(locBoostVector_MesonCM);
+	TLorentzVector locBaryonP4_MesonCM(locBaryonP4);
+	locBaryonP4_MesonCM.Boost(locBoostVector_MesonCM);
+	TLorentzVector locMesonProduct1P4_MesonCM(locMesonProduct1P4);
+	locMesonProduct1P4_MesonCM.Boost(locBoostVector_MesonCM);
+
+	//Define meson CM frame helicity axes
+		//These are defined the same way as before, but with the boost, the direction of the x & y axes has changed
+	TVector3 locHelicityZAxis_MesonCM = -1.0*locBaryonP4_MesonCM.Vect().Unit();
+	TVector3 locHelicityYAxis_MesonCM = -1.0*locBeamP4_MesonCM.Vect().Cross(locBaryonP4_MesonCM.Vect()).Unit();
+	TVector3 locHelicityXAxis_MesonCM = locHelicityYAxis_MesonCM.Cross(locHelicityZAxis_MesonCM).Unit();
+
+	//Project the fs particle momentum onto these axes and read off the angles
+	TVector3 locMesonProduct1P4_Angles(locMesonProduct1P4_MesonCM.Vect()*locHelicityXAxis_MesonCM,
+					   locMesonProduct1P4_MesonCM.Vect()*locHelicityYAxis_MesonCM,
+					   locMesonProduct1P4_MesonCM.Vect()*locHelicityZAxis_MesonCM);
+	double locCosDecayPlaneTheta = locMesonProduct1P4_Angles.CosTheta();
+	locDecayPlaneTheta = acos(locCosDecayPlaneTheta)*TMath::RadToDeg();
+	double locDecayPlanePhi = locMesonProduct1P4_Angles.Phi();
+
+	//Compute delta-phi
+	double locDeltaPhi = locDecayPlanePhi - locProdPlanePhi;
+	while(locDeltaPhi < -1.0*TMath::Pi())
+		locDeltaPhi += 2.0*TMath::Pi();
+	while(locDeltaPhi > TMath::Pi())
+		locDeltaPhi -= 2.0*TMath::Pi();
+
+	return locDeltaPhi*TMath::RadToDeg();
+}
+
 double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_3BodyDecay(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locBaryonP4, const TLorentzVector& locMesonP4, const TLorentzVector& locMesonProduct1P4, const TLorentzVector& locMesonProduct2P4, double& locDecayPlaneTheta) const
 {
 	//Returns angles in degrees!!
@@ -337,7 +429,7 @@ double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_3BodyDecay(double locBeamEn
 		//The y-axis is defined by the vector cross product: y = Beam X meson
 		//The x-axis is defined by the vector cross product: x = y cross z
 		//Thus the production plane in the production frame is the XZ plane, and the normal vector is the Y-axis
-		//Except, instead of meson, use (-1*baruon)
+		//Except, instead of meson, use (-1*baryon)
 
 	//Define production CM frame helicity axes
 	TVector3 locHelicityZAxis_ProdCM = -1.0*locBaryonP4_ProdCM.Vect().Unit();
