@@ -636,13 +636,19 @@ bool DHistogramAction_InvariantMass::Perform_Action(void)
 			map<Particle_t, set<Int_t> > locSourceObjects;
 			TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locComboIterator, locSourceObjects, dUseKinFitFlag);
 
-			if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
-				continue; //dupe: already histed!
-			dPreviouslyHistogrammed.insert(locSourceObjects);
+			if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
+			{
+				dPreviouslyHistogrammed.insert(locSourceObjects);
+				dHist_InvaraintMass->Fill(locFinalStateP4.M());
+			}
 
-			dHist_InvaraintMass->Fill(locFinalStateP4.M());
-			dHist_InvaraintMassVsConfidenceLevel->Fill(locConfidenceLevel, locFinalStateP4.M());
-			dHist_InvaraintMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locFinalStateP4.M());
+			pair<Int_t, map<Particle_t, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
+			if(dPreviouslyHistogrammed_ConLev.find(locSourceObjects_ConLev) == dPreviouslyHistogrammed_ConLev.end())
+			{
+				dPreviouslyHistogrammed_ConLev.insert(locSourceObjects_ConLev);
+				dHist_InvaraintMassVsConfidenceLevel->Fill(locConfidenceLevel, locFinalStateP4.M());
+				dHist_InvaraintMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locFinalStateP4.M());
+			}
 		}
 		//don't break: e.g. if multiple pi0's, histogram invariant mass of each one
 	}
