@@ -35,6 +35,7 @@ class DParticleCombo
 		DParticleCombo(DTreeInterface* locTreeInterface);
 
 		void Set_ComboIndex(UInt_t locComboIndex);
+		UInt_t Get_ComboIndex(void) const{return dComboIndex;}
 		void Print_Reaction(void) const;
 
 		// STEPS:

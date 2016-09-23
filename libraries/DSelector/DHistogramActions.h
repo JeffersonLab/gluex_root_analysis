@@ -160,7 +160,11 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 			dNumMassBins(locNumMassBins), dNum2DMassBins(locNumMassBins/2), dMinMass(locMinMass), dMaxMass(locMaxMass),
 			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
-		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Reset_NewEvent(void) //reset uniqueness tracking
+		{
+			dPreviouslyHistogrammed.clear();
+			dPreviouslyHistogrammed_ConLev.clear();
+		}
 		void Initialize(void);
 		bool Perform_Action(void);
 
@@ -186,6 +190,7 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
 		//Multiple combos: Contain maps within a set (easier, faster to search)
 		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+		set<pair<Int_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
 };
 
 class DHistogramAction_MissingMass : public DAnalysisAction
