@@ -160,7 +160,11 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 			dNumMassBins(locNumMassBins), dNum2DMassBins(locNumMassBins/2), dMinMass(locMinMass), dMaxMass(locMaxMass),
 			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
-		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Reset_NewEvent(void) //reset uniqueness tracking
+		{
+			dPreviouslyHistogrammed.clear();
+			dPreviouslyHistogrammed_ConLev.clear();
+		}
 		void Initialize(void);
 		bool Perform_Action(void);
 
