@@ -229,7 +229,11 @@ class DHistogramAction_MissingMass : public DAnalysisAction
 			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
 			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
-		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+                void Reset_NewEvent(void) //reset uniqueness tracking
+                {
+                        dPreviouslyHistogrammed.clear();
+                        dPreviouslyHistogrammed_ConLev.clear();
+                }
 		void Initialize(void);
 		bool Perform_Action(void);
 
@@ -258,6 +262,7 @@ class DHistogramAction_MissingMass : public DAnalysisAction
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
 		//Multiple combos: Contain maps within a set (easier, faster to search)
 		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+                set<pair<Int_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
 };
 
 class DHistogramAction_MissingMassSquared : public DAnalysisAction
@@ -296,7 +301,11 @@ class DHistogramAction_MissingMassSquared : public DAnalysisAction
 			dNum2DMassBins(locNumMassBins/2), dNum2DBeamEBins(600), dNum2DMissPBins(450), dMinBeamE(0.0), dMaxBeamE(12.0), dMinMissP(0.0), dMaxMissP(9.0),
 			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}
 
-		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+                void Reset_NewEvent(void) //reset uniqueness tracking
+                {
+                        dPreviouslyHistogrammed.clear();
+                        dPreviouslyHistogrammed_ConLev.clear();
+                }
 		void Initialize(void);
 		bool Perform_Action(void);
 
@@ -325,6 +334,7 @@ class DHistogramAction_MissingMassSquared : public DAnalysisAction
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
 		//Multiple combos: Contain maps within a set (easier, faster to search)
 		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+                set<pair<Int_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
 };
 
 class DHistogramAction_MissingEnergy : public DAnalysisAction

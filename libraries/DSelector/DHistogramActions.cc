@@ -721,16 +721,21 @@ bool DHistogramAction_MissingMass::Perform_Action(void)
 	{
 		map<Particle_t, set<Int_t> > locSourceObjects;
 		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingMassOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+		pair<Int_t, map<Particle_t, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
 
-		if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
-			continue; //dupe: already histed!
-		dPreviouslyHistogrammed.insert(locSourceObjects);
-
-		dHist_MissingMass->Fill(locMissingP4.M());
-		dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M());
-		dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M());
-		dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M());
-		dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M());
+		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
+		{
+			dPreviouslyHistogrammed.insert(locSourceObjects);
+			dHist_MissingMass->Fill(locMissingP4.M());
+			dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M());
+			dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M());
+		}
+                if(dPreviouslyHistogrammed_ConLev.find(locSourceObjects_ConLev) == dPreviouslyHistogrammed_ConLev.end())
+                {
+                        dPreviouslyHistogrammed_ConLev.insert(locSourceObjects_ConLev);
+			dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M());
+			dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M());
+		}
 	}
 
 	return true;
@@ -801,16 +806,21 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 	{
 		map<Particle_t, set<Int_t> > locSourceObjects;
 		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingMassOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+		pair<Int_t, map<Particle_t, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
 
-		if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
-			continue; //dupe: already histed!
-		dPreviouslyHistogrammed.insert(locSourceObjects);
-
-		dHist_MissingMass->Fill(locMissingP4.M2());
-		dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M2());
-		dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M2());
-		dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M2());
-		dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M2());
+		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
+		{
+			dPreviouslyHistogrammed.insert(locSourceObjects);
+			dHist_MissingMass->Fill(locMissingP4.M2());
+			dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M2());
+			dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M2());
+		}
+		if(dPreviouslyHistogrammed_ConLev.find(locSourceObjects_ConLev) == dPreviouslyHistogrammed_ConLev.end())
+		{
+			dPreviouslyHistogrammed_ConLev.insert(locSourceObjects_ConLev);
+			dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M2());
+			dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M2());
+		}
 	}
 
 	return true;
