@@ -53,13 +53,12 @@
 	dStyle->SetTitleSize(0.075, "t"); //"t": could be anything that is not "x" "y" or "z"
 
 	//Palette
-	dStyle->SetNumberContours(50);
-//#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
-//	dStyle->SetPalette(kBird); //57
-//#else
+	dStyle->SetNumberContours(200);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+	dStyle->SetPalette(kBird); //57
+#else
 	dStyle->SetPalette(55); //rainbow
-//#endif
-
+#endif
 	dStyle->cd();
 }
 

@@ -32,6 +32,10 @@ void DKinematicData::Setup_Branches(void)
 		locBranchName = dBranchNamePrefix + string("__X4");
 		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
 
+		//ARRAY SIZE
+		if(dBranchNamePrefix == "Thrown") //else NULL (not an array)
+			dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumThrown")->GetAddress();
+
 		return;
 	}
 
@@ -47,8 +51,19 @@ void DKinematicData::Setup_Branches(void)
 		locBranchName = dBranchNamePrefix + string("__X4_Measured");
 		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
 
+		//ARRAY SIZE
+		if(dBranchNamePrefix == "Beam")
+			dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumBeam")->GetAddress();
+		else if(dBranchNamePrefix == "ChargedHypo")
+			dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumChargedHypos")->GetAddress();
+		else if (dBranchNamePrefix == "NeutralHypo")
+			dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumNeutralHypos")->GetAddress();
+
 		return;
 	}
+
+	//ARRAY SIZE
+	dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumCombos")->GetAddress();
 
 	//Now, is combo particle
 	//P4_KinFit

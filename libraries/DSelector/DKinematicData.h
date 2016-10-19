@@ -49,6 +49,8 @@ class DKinematicData
 		//GET ID //To be overloaded by deriving classes: Get_TrackID(), Get_NeutralID(), etc.
 		virtual Int_t Get_ID(void) const{return 0;}
 
+		//ARRAY
+		UInt_t Get_ArraySize(void) const;
 		void Set_ArrayIndex(UInt_t locArrayIndex);
 
 	protected:
@@ -66,7 +68,8 @@ class DKinematicData
 		string dBranchNamePrefix;
 		string dMeasuredBranchNamePrefix;
 
-		//Branch Indices
+		//Branch Indices/Size
+		UInt_t* dArraySize; //size of the main array: measured if measured, #combos if combo-specific
 		UInt_t dArrayIndex; //the index in the particle-data arrays to use to grab particle data (e.g. corresponding to this combo)
 		UInt_t dMeasuredArrayIndex; //the index in the measured-particle data arrays to use to grab particle data
 
@@ -104,7 +107,7 @@ class DKinematicData
 
 inline DKinematicData::DKinematicData(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID) : 
 dTreeInterface(locTreeInterface), dBranchNamePrefix(locBranchNamePrefix), dMeasuredBranchNamePrefix(locBranchNamePrefix), 
-dArrayIndex(0), dMeasuredArrayIndex(0), dBranch_MeasuredIndex(NULL), dPID(locPID), dBranch_PID(NULL),
+dArraySize(NULL), dArrayIndex(0), dMeasuredArrayIndex(0), dBranch_MeasuredIndex(NULL), dPID(locPID), dBranch_PID(NULL),
 dP4_KinFit(NULL), dP4_Measured(NULL), dFixedP4(TLorentzVector(0.0, 0.0, 0.0, 0.0)), dX4_KinFit(NULL), dX4_Measured(NULL)
 {
 	//locPID should be set for combo particles, and Unknown otherwise
@@ -112,6 +115,11 @@ dP4_KinFit(NULL), dP4_Measured(NULL), dFixedP4(TLorentzVector(0.0, 0.0, 0.0, 0.0
 }
 
 /***************************************************************** SETUP DATA ACCESS ******************************************************************/
+
+inline UInt_t DKinematicData::Get_ArraySize(void) const
+{
+	return (dArraySize != NULL) ? *dArraySize : 1;
+}
 
 inline void DKinematicData::Set_ArrayIndex(UInt_t locArrayIndex)
 {

@@ -4,7 +4,7 @@ using namespace std;
 
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
-DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterface(locTreeInterface), dComboIndex(0)
+DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterface(locTreeInterface), dNumCombos(NULL), dComboIndex(0)
 {
 	//get combo info
 	map<int, map<int, pair<Particle_t, string> > > locComboInfoMap;

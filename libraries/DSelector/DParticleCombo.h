@@ -36,6 +36,7 @@ class DParticleCombo
 
 		void Set_ComboIndex(UInt_t locComboIndex);
 		UInt_t Get_ComboIndex(void) const{return dComboIndex;}
+		UInt_t Get_NumCombos(void) const;
 		void Print_Reaction(void) const;
 
 		// STEPS:
@@ -88,6 +89,7 @@ class DParticleCombo
 		void ReInitialize(DTreeInterface* locTreeInterface);
 
 		DTreeInterface* dTreeInterface;
+		UInt_t* dNumCombos;
 		UInt_t dComboIndex; //the index in the particle-data arrays to use to grab particle data (e.g. corresponding to this combo)
 
 		deque<DParticleComboStep*> dParticleComboSteps;
@@ -120,16 +122,10 @@ inline void DParticleCombo::Print_Reaction(void) const
 
 /***************************************************************** SETUP DATA ACCESS ******************************************************************/
 
-inline void DParticleCombo::Set_ComboIndex(UInt_t locComboIndex)
-{
-	dComboIndex = locComboIndex;
-	for(size_t loc_i = 0; loc_i < dParticleComboSteps.size(); ++loc_i)
-		dParticleComboSteps[loc_i]->Set_ComboIndex(locComboIndex);
-}
-
 inline void DParticleCombo::Setup_Branches(void)
 {
 	// COMBO INFO:
+	dNumCombos = (UInt_t*)dTreeInterface->Get_Branch("NumCombos")->GetAddress();
 	dBranch_IsComboCut = dTreeInterface->Get_Branch("IsComboCut");
 	dBranch_IsTrueCombo = dTreeInterface->Get_Branch("IsTrueCombo");
 	dBranch_IsBDTSignalCombo = dTreeInterface->Get_Branch("IsBDTSignalCombo");
@@ -141,6 +137,18 @@ inline void DParticleCombo::Setup_Branches(void)
 	// KINFIT:
 	dBranch_ChiSq_KinFit = dTreeInterface->Get_Branch("ChiSq_KinFit");
 	dBranch_NDF_KinFit = dTreeInterface->Get_Branch("NDF_KinFit");
+}
+
+inline UInt_t DParticleCombo::Get_NumCombos(void) const
+{
+	return *dNumCombos;
+}
+
+inline void DParticleCombo::Set_ComboIndex(UInt_t locComboIndex)
+{
+	dComboIndex = locComboIndex;
+	for(size_t loc_i = 0; loc_i < dParticleComboSteps.size(); ++loc_i)
+		dParticleComboSteps[loc_i]->Set_ComboIndex(locComboIndex);
 }
 
 inline void DParticleCombo::ReInitialize(DTreeInterface* locTreeInterface)
