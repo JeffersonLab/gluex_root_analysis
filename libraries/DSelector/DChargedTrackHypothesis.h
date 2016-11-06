@@ -181,13 +181,13 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	if(dBranchNamePrefix != "ChargedHypo")
 	{
-		locBranchName = dBranchNamePrefix + string("__Beta_ChiSq_Measured");
-		dBranch_Beta_ChiSq_Measured = dTreeInterface->Get_Branch(locBranchName);
-		if(dBranch_Beta_ChiSq_Measured == NULL) //for backwards compatibility
-			dBranch_Beta_ChiSq_Measured = dTreeInterface->Get_Branch("ChargedHypo__ChiSq_Timing");
+		locBranchName = dBranchNamePrefix + string("__ChiSq_Timing_Measured");
+		dBranch_ChiSq_Timing_Measured = dTreeInterface->Get_Branch(locBranchName);
+		if(dBranch_ChiSq_Timing_Measured == NULL) //for backwards compatibility
+			dBranch_ChiSq_Timing_Measured = dTreeInterface->Get_Branch("ChargedHypo__ChiSq_Timing");
 	}
 	else
-		dBranch_Beta_ChiSq_Measured = dTreeInterface->Get_Branch("ChargedHypo__ChiSq_Timing");
+		dBranch_ChiSq_Timing_Measured = dTreeInterface->Get_Branch("ChargedHypo__ChiSq_Timing");
 
 	//HIT ENERGY
 	locBranchName = "ChargedHypo__dEdx_TOF";
