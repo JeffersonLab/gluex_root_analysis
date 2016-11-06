@@ -174,9 +174,9 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerTVsParticleT;
 
 		//background histograms
-		map<size_t, map<Particle_t, TH2I*> > dBackgroundHistMap_DeltaTVsP_BCAL;	
-		map<size_t, map<Particle_t, TH2I*> > dBackgroundHistMap_DeltaTVsP_TOF;
-		map<size_t, map<Particle_t, TH2I*> > dBackgroundHistMap_DeltaTVsP_FCAL;
+		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_BCAL;	
+		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_TOF;
+		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_FCAL;
 
 		map<size_t, map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed; //step index, PID, particle indices
 		map<size_t, map<Particle_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_Background; //step index, PID, background PID, particle indices

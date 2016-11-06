@@ -384,7 +384,7 @@ void DHistogramAction_ParticleID::Initialize(void)
 				for(; locIterator != dBackgroundPIDs.end(); ++locIterator)
 				{
 					// Make sure only particle of the same charge are in the same directory
-					Particle_t locBackgroundPID = *locIterator
+					Particle_t locBackgroundPID = *locIterator;
 					if(ParticleCharge(locBackgroundPID) != ParticleCharge(locFinalStatePID))
 						continue;
 					if(locBackgroundPID == locFinalStatePID)
@@ -393,7 +393,7 @@ void DHistogramAction_ParticleID::Initialize(void)
 					string locBackgroundDirName = string(ParticleType(locBackgroundPID)) + string("_Background");
 					CreateAndChangeTo_Directory(locBackgroundDirName);
 
-					Create_BackgroundHists(loc_i, locFinalStatePID, locBackgroundPID, locStepROOTName)
+					Create_BackgroundHists(loc_i, locFinalStatePID, locBackgroundPID, locStepROOTName);
 					gDirectory->cd("..");
 				}
 			} //end background
@@ -484,7 +484,7 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 
 void DHistogramAction_ParticleID::Create_BackgroundHists(int locStepIndex, Particle_t locFinalStatePID, Particle_t locBackgroundPID, string locStepROOTName)
 {
-	string locParticleROOTName = ParticleName_ROOT(locPID);
+	string locParticleROOTName = ParticleName_ROOT(locBackgroundPID);
 	string locHistName, locHistTitle;
 	
 	// deltaT and beta vs p
