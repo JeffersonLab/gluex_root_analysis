@@ -538,7 +538,7 @@ bool DHistogramAction_ParticleID::Perform_Action(void)
 			for(; locIterator != dBackgroundPIDs.end(); ++locIterator)
 			{
 				// Make sure has same charge
-				Particle_t locBackgroundPID = *locIterator
+				Particle_t locBackgroundPID = *locIterator;
 				if(ParticleCharge(locBackgroundPID) != ParticleCharge(locFinalStatePID))
 					continue;
 				if(locBackgroundPID == locFinalStatePID)
@@ -671,11 +671,11 @@ void DHistogramAction_ParticleID::Fill_BackgroundHists(size_t locStepIndex, Part
 	double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
 	double locDeltaT = locX4.T() - locPropagatedRFTime;
 
-	if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_BCAL)
+	if(dChargedHypoWrapper->Get_Detector_System_Timing() == SYS_BCAL)
 		dBackgroundHistMap_DeltaTVsP_BCAL[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
-	else if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_TOF)
+	else if(dChargedHypoWrapper->Get_Detector_System_Timing() == SYS_TOF)
 		dBackgroundHistMap_DeltaTVsP_TOF[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
-	else if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_FCAL)
+	else if(dChargedHypoWrapper->Get_Detector_System_Timing() == SYS_FCAL)
 		dBackgroundHistMap_DeltaTVsP_FCAL[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
 }
 
