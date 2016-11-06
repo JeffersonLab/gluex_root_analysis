@@ -80,6 +80,7 @@ class DSelector : public TSelector
 		UInt_t Get_L1TriggerBits(void) const;
 		Bool_t Get_IsThrownTopology(void) const;
 		Float_t Get_MCWeight(void) const;
+		TLorentzVector Get_X4_Production(void) const;
 
 		// ARRAY SIZES
 		UInt_t Get_NumBeam(void) const;
@@ -129,6 +130,7 @@ class DSelector : public TSelector
 		UInt_t* dL1TriggerBits;
 		Float_t* dMCWeight; //only present if simulated data
 		Bool_t* dIsThrownTopology; //only present if simulated data
+		TLorentzVector* dX4_Production;
 
 		// ARRAY SIZES
 		UInt_t* dNumBeam;
@@ -166,7 +168,7 @@ inline DSelector::DSelector(TTree* locTree) :
 		dInitializedFlag(false), dOutputFileName(""),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dTreeInterface(NULL),
-		dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL),
+		dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
 
@@ -196,6 +198,11 @@ inline Bool_t DSelector::Get_IsThrownTopology(void) const
 inline Float_t DSelector::Get_MCWeight(void) const
 {
 	return ((dMCWeight != NULL) ? *dMCWeight : 0.0);
+}
+
+inline TLorentzVector DSelector::Get_X4_Production(void) const
+{
+	return ((dX4_Production != NULL) ? *dX4_Production : TLorentzVector());
 }
 
 // ARRAY SIZES
