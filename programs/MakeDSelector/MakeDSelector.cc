@@ -297,6 +297,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//CALL THIS FIRST" << endl;
 	locSourceStream << "	DSelector::Process(locEntry); //Gets the data from the tree for the entry" << endl;
 	locSourceStream << "	//cout << \"RUN \" << Get_RunNumber() << \", EVENT \" << Get_EventNumber() << endl;" << endl;
+	locSourceStream << "	//TLorentzVector locProductionX4 = Get_X4_Production();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/******************************************** GET POLARIZATION ORIENTATION ******************************************/" << endl;
 	locSourceStream << endl;
