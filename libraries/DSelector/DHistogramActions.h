@@ -122,9 +122,14 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
 			}
 
-		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
 		bool Perform_Action(void);
+		void Reset_NewEvent(void)
+		{
+			//reset uniqueness tracking
+			dPreviouslyHistogrammed.clear();
+			dPreviouslyHistogrammed_Background.clear();
+		}
 
 	private:
 		DChargedTrackHypothesis* dChargedHypoWrapper;
