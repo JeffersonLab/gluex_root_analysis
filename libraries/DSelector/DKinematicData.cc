@@ -21,8 +21,24 @@ void DKinematicData::Setup_Branches(void)
 		dBranch_PID = dTreeInterface->Get_Branch(locBranchName);
 	}
 
+	//thrown p4/x4
+	if(dBranchNamePrefix == "ThrownBeam")
+	{
+		//P4
+		locBranchName = dBranchNamePrefix + string("__P4");
+		dThrownBeamP4 = dTreeInterface->Get_Pointer_TObject<TLorentzVector>(locBranchName);
+
+		//X4
+		locBranchName = dBranchNamePrefix + string("__X4");
+		dThrownBeamX4 = dTreeInterface->Get_Pointer_TObject<TLorentzVector>(locBranchName);
+
+		//ARRAY SIZE
+		dArraySize = NULL;
+		return;
+	}
+
 	//If thrown, p4 & x4
-	if((dBranchNamePrefix == "Thrown") || (dBranchNamePrefix == "ThrownBeam"))
+	if(dBranchNamePrefix == "Thrown")
 	{
 		//P4_Measured
 		locBranchName = dBranchNamePrefix + string("__P4");
@@ -33,9 +49,7 @@ void DKinematicData::Setup_Branches(void)
 		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
 
 		//ARRAY SIZE
-		if(dBranchNamePrefix == "Thrown") //else NULL (not an array)
-			dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumThrown")->GetAddress();
-
+		dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumThrown")->GetAddress();
 		return;
 	}
 

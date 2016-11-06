@@ -169,11 +169,25 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	locBranchName = dBranchNamePrefix + string("__ChiSq_Timing_KinFit");
 	dBranch_ChiSq_Timing_KinFit = dTreeInterface->Get_Branch(locBranchName);
 
-	locBranchName = "ChargedHypo__Beta_Timing";
-	dBranch_Beta_Timing_Measured = dTreeInterface->Get_Branch(locBranchName);
+	if(dBranchNamePrefix != "ChargedHypo")
+	{
+		locBranchName = dBranchNamePrefix + string("__Beta_Timing_Measured");
+		dBranch_Beta_Timing_Measured = dTreeInterface->Get_Branch(locBranchName);
+		if(dBranch_Beta_Timing_Measured == NULL) //for backwards compatibility
+			dBranch_Beta_Timing_Measured = dTreeInterface->Get_Branch("ChargedHypo__Beta_Timing");
+	}
+	else
+		dBranch_Beta_Timing_Measured = dTreeInterface->Get_Branch("ChargedHypo__Beta_Timing");
 
-	locBranchName = "ChargedHypo__ChiSq_Timing";
-	dBranch_ChiSq_Timing_Measured = dTreeInterface->Get_Branch(locBranchName);
+	if(dBranchNamePrefix != "ChargedHypo")
+	{
+		locBranchName = dBranchNamePrefix + string("__ChiSq_Timing_Measured");
+		dBranch_ChiSq_Timing_Measured = dTreeInterface->Get_Branch(locBranchName);
+		if(dBranch_ChiSq_Timing_Measured == NULL) //for backwards compatibility
+			dBranch_ChiSq_Timing_Measured = dTreeInterface->Get_Branch("ChargedHypo__ChiSq_Timing");
+	}
+	else
+		dBranch_ChiSq_Timing_Measured = dTreeInterface->Get_Branch("ChargedHypo__ChiSq_Timing");
 
 	//HIT ENERGY
 	locBranchName = "ChargedHypo__dEdx_TOF";
@@ -270,12 +284,16 @@ inline UInt_t DChargedTrackHypothesis::Get_NDF_Timing(void) const
 
 inline Float_t DChargedTrackHypothesis::Get_Beta_Timing_Measured(void) const
 {
-	return ((Float_t*)dBranch_Beta_Timing_Measured->GetAddress())[dMeasuredArrayIndex];
+	string locBranchName = dBranchNamePrefix + string("__Beta_Timing_Measured"); //for backwards compatibility
+	int locArrayIndex = (dTreeInterface->Get_Branch(locBranchName) != NULL) ? dArrayIndex : dMeasuredArrayIndex;
+	return ((Float_t*)dBranch_Beta_Timing_Measured->GetAddress())[locArrayIndex];
 }
 
 inline Float_t DChargedTrackHypothesis::Get_ChiSq_Timing_Measured(void) const
 {
-	return ((Float_t*)dBranch_ChiSq_Timing_Measured->GetAddress())[dMeasuredArrayIndex];
+	string locBranchName = dBranchNamePrefix + string("__ChiSq_Timing_Measured"); //for backwards compatibility
+	int locArrayIndex = (dTreeInterface->Get_Branch(locBranchName) != NULL) ? dArrayIndex : dMeasuredArrayIndex;
+	return ((Float_t*)dBranch_ChiSq_Timing_Measured->GetAddress())[locArrayIndex];
 }
 
 inline Float_t DChargedTrackHypothesis::Get_Beta_Timing(void) const

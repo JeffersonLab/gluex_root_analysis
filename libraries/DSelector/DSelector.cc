@@ -91,6 +91,7 @@ void DSelector::Setup_Branches(void)
 		dNumChargedHypos = (UInt_t*)dTreeInterface->Get_Branch("NumChargedHypos")->GetAddress();
 		dNumNeutralHypos = (UInt_t*)dTreeInterface->Get_Branch("NumNeutralHypos")->GetAddress();
 		dNumCombos = (UInt_t*)dTreeInterface->Get_Branch("NumCombos")->GetAddress();
+		dX4_Production = dTreeInterface->Get_Pointer_TObject<TLorentzVector>("X4_Production");
 	}
 }
 
