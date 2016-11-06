@@ -20,7 +20,7 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 		Particle_t locInitialPID = locStep->Get_InitialPID();
 		bool locStepDirectoryCreatedFlag = false;
 
-		//parent //reconstructed &: is gamma, or don't need measured
+		//initial //reconstructed &: is gamma, or don't need measured
 		bool locIsBeamFlag = (locInitialPID == Gamma);
 		if((locStep->Get_InitialParticle() != NULL) && (dUseKinFitFlag || locIsBeamFlag))
 		{
@@ -34,7 +34,7 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 			gDirectory->cd("..");
 		}
 
-		//kids
+		//final state
 		for(size_t loc_j = 0; loc_j < locStep->Get_NumFinalParticles(); ++loc_j)
 		{
 			if(locStep->Get_FinalParticle(loc_j) == NULL)
@@ -364,8 +364,8 @@ void DHistogramAction_ParticleID::Initialize(void)
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
-			Particle_t locPID = locStep->Get_FinalPID(loc_j);
-			if(dHistMap_BetaVsP_BCAL[loc_i].find(locPID) != dHistMap_BetaVsP_BCAL[loc_i].end())
+			Particle_t locFinalStatePID = locStep->Get_FinalPID(loc_j);
+			if(dHistMap_BetaVsP_BCAL[loc_i].find(locFinalStatePID) != dHistMap_BetaVsP_BCAL[loc_i].end())
 				continue; //pid already done
 
 			if(!locStepDirectoryCreatedFlag)
@@ -374,10 +374,31 @@ void DHistogramAction_ParticleID::Initialize(void)
 				locStepDirectoryCreatedFlag = true;
 			}
 
-			locParticleName = ParticleType(locPID);
+			locParticleName = ParticleType(locFinalStatePID);
 			CreateAndChangeTo_Directory(locParticleName);
 
-			Create_Hists(loc_i, locStepROOTName, locPID);
+			//loop over background PIDs
+			if(dChargedHypoWrapper != NULL)
+			{
+				set<Particle_t>::iterator locIterator = dBackgroundPIDs.begin();
+				for(; locIterator != dBackgroundPIDs.end(); ++locIterator)
+				{
+					// Make sure only particle of the same charge are in the same directory
+					Particle_t locBackgroundPID = *locIterator
+					if(ParticleCharge(locBackgroundPID) != ParticleCharge(locFinalStatePID))
+						continue;
+					if(locBackgroundPID == locFinalStatePID)
+						continue; //only want the background!
+
+					string locBackgroundDirName = string(ParticleType(locBackgroundPID)) + string("_Background");
+					CreateAndChangeTo_Directory(locBackgroundDirName);
+
+					Create_BackgroundHists(loc_i, locFinalStatePID, locBackgroundPID, locStepROOTName)
+					gDirectory->cd("..");
+				}
+			} //end background
+
+			Create_Hists(loc_i, locFinalStatePID, locStepROOTName);
 			gDirectory->cd("..");
 		} //end of particle loop
 
@@ -389,7 +410,7 @@ void DHistogramAction_ParticleID::Initialize(void)
 	ChangeTo_BaseDirectory();
 }
 
-void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepROOTName, Particle_t locPID)
+void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locPID, string locStepROOTName)
 {
 	string locParticleROOTName = ParticleName_ROOT(locPID);
 	string locHistName, locHistTitle;
@@ -450,7 +471,8 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepR
 		locHistTitle = locParticleROOTName + string(";#theta (degrees); FCAL E/p");
 		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);	
 	}
-	else {
+	else
+	{
 		locHistName = "ShowerZVsParticleZ";
 		locHistTitle = locParticleROOTName + string(";Particle Vertex Z (cm); Shower Vertex Z (cm)");
 		dHistMap_ShowerZVsParticleZ[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 200, 0., 200., 200, 0., 200);
@@ -459,7 +481,26 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, string locStepR
 		dHistMap_ShowerTVsParticleT[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 200, -100., 100., 200, -100., 100);
 	}
 }
+
+void DHistogramAction_ParticleID::Create_BackgroundHists(int locStepIndex, Particle_t locFinalStatePID, Particle_t locBackgroundPID, string locStepROOTName)
+{
+	string locParticleROOTName = ParticleName_ROOT(locPID);
+	string locHistName, locHistTitle;
 	
+	// deltaT and beta vs p
+	locHistName = "DeltaTVsP_BCAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL #Delta T (ns)");
+	dBackgroundHistMap_DeltaTVsP_BCAL[locStepIndex][locFinalStatePID][locBackgroundPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+
+	locHistName = "DeltaTVsP_FCAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL #Delta T (ns)");
+	dBackgroundHistMap_DeltaTVsP_FCAL[locStepIndex][locFinalStatePID][locBackgroundPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+
+	locHistName = "DeltaTVsP_TOF";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF #Delta T (ns)");
+	dBackgroundHistMap_DeltaTVsP_TOF[locStepIndex][locFinalStatePID][locBackgroundPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+}
+
 bool DHistogramAction_ParticleID::Perform_Action(void)
 {
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
@@ -479,12 +520,56 @@ bool DHistogramAction_ParticleID::Perform_Action(void)
 				continue; //not measured
 
 			//check if duplicate
-			set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][locKinematicData->Get_PID()];
+			Particle_t locFinalStatePID = locKinematicData->Get_PID();
+			set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][locFinalStatePID];
 			if(locParticleSet.find(locKinematicData->Get_ID()) != locParticleSet.end())
 				continue;
 
+			//fill hists
 			Fill_Hists(locKinematicData, loc_i);
 			locParticleSet.insert(locKinematicData->Get_ID());
+
+			//check if should fill background hists
+			if(dChargedHypoWrapper == NULL)
+				continue;
+
+			//loop over background pids
+			set<Particle_t>::iterator locIterator = dBackgroundPIDs.begin();
+			for(; locIterator != dBackgroundPIDs.end(); ++locIterator)
+			{
+				// Make sure has same charge
+				Particle_t locBackgroundPID = *locIterator
+				if(ParticleCharge(locBackgroundPID) != ParticleCharge(locFinalStatePID))
+					continue;
+				if(locBackgroundPID == locFinalStatePID)
+					continue; //only want the background!
+
+				//Find and set array index in dChargedHypoWrapper corresponding to this background PID
+				Int_t locTrackID = locKinematicData->Get_ID();
+				bool locFoundFlag = false;
+				for(UInt_t locHypoArrayIndex = 0; dChargedHypoWrapper->Get_ArraySize(); ++locHypoArrayIndex)
+				{
+					dChargedHypoWrapper->Set_ArrayIndex(locHypoArrayIndex);
+					if(dChargedHypoWrapper->Get_ID() != locTrackID)
+						continue; //wrong track
+					if(dChargedHypoWrapper->Get_PID() != locBackgroundPID)
+						continue; //wrong background PID
+
+					locFoundFlag = true;
+					break;
+				}
+				if(!locFoundFlag)
+					continue; //desired background PID not found
+
+				//check if duplicate
+				locParticleSet = dPreviouslyHistogrammed_Background[loc_i][locFinalStatePID][locBackgroundPID];
+				if(locParticleSet.find(dChargedHypoWrapper->Get_ID()) != locParticleSet.end())
+					continue;
+
+				//fill background hists
+				Fill_BackgroundHists(loc_i, locFinalStatePID);
+				locParticleSet.insert(dChargedHypoWrapper->Get_ID());
+			} //end of background pid loop
 		} //end of particle loop
 	} //end of step loop
 
@@ -573,6 +658,25 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			}
 		}
 	}
+}
+
+void DHistogramAction_ParticleID::Fill_BackgroundHists(size_t locStepIndex, Particle_t locFinalStatePID)
+{
+	Particle_t locPID = dChargedHypoWrapper->Get_PID();
+	TLorentzVector locP4 = dUseKinFitFlag ? dChargedHypoWrapper->Get_P4() : dChargedHypoWrapper->Get_P4_Measured();
+	TLorentzVector locX4 = dUseKinFitFlag ? dChargedHypoWrapper->Get_X4() : dChargedHypoWrapper->Get_X4_Measured();
+	double locP = locP4.P();
+
+	double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
+	double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
+	double locDeltaT = locX4.T() - locPropagatedRFTime;
+
+	if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_BCAL)
+		dBackgroundHistMap_DeltaTVsP_BCAL[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
+	else if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_TOF)
+		dBackgroundHistMap_DeltaTVsP_TOF[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
+	else if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_FCAL)
+		dBackgroundHistMap_DeltaTVsP_FCAL[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
 }
 
 void DHistogramAction_InvariantMass::Initialize(void)

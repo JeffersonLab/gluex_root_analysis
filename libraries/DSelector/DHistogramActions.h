@@ -93,18 +93,44 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 	public:
 		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_ParticleID", locUseKinFitFlag, locActionUniqueString),
+			dChargedHypoWrapper(NULL), dTargetCenterZ(0.0), 
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
 			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
 			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
-			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0) {}
+			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0)
+			{
+				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
+				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
+			}
+
+		//for also histogramming PID background
+		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, DChargedTrackHypothesis* locChargedHypoWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_ParticleID", locUseKinFitFlag, locActionUniqueString),
+			dChargedHypoWrapper(locChargedHypoWrapper), dTargetCenterZ(0.0), 
+			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
+			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
+			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
+			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
+			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
+			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
+			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0)
+			{
+				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
+				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
+			}
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
 		bool Perform_Action(void);
 
+	private:
+		DChargedTrackHypothesis* dChargedHypoWrapper;
+		double dTargetCenterZ;
+
+	public:
 		unsigned int dNumPBins, dNumThetaBins, dNumPhiBins, dNumTBins, dNumVertexXYBins, dNumBetaBins, dNumDeltaBetaBins;
 		unsigned int dNum2DPBins, dNum2DThetaBins, dNum2DPhiBins, dNumDeltaTRFBins, dNumPathLengthBins, dNumLifetimeBins;
 		unsigned int dNumDeltaTBins, dNum2DdEdxBins, dNumEoverPBins;
@@ -112,12 +138,14 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		double dMinBeta, dMaxBeta, dMinDeltaBeta, dMaxDeltaBeta, dMinDeltaTRF, dMaxDeltaTRF, dMaxPathLength, dMaxLifetime, dMaxBeamE;
 		double dMinDeltaT, dMaxDeltaT, dMindEdx, dMaxdEdx, dMinEoverP, dMaxEoverP;
 
+		set<Particle_t> dBackgroundPIDs;
+
 	private:
 
-		double dTargetCenterZ;
-
-		void Create_Hists(int locStepIndex, string locStepROOTName, Particle_t locPID);
+		void Create_Hists(int locStepIndex, Particle_t locPID, string locStepROOTName);
+		void Create_BackgroundHists(int locStepIndex, Particle_t locFinalStatePID, Particle_t locBackgroundPID, string locStepROOTName);
 		void Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex);
+		void Fill_BackgroundHists(size_t locStepIndex, Particle_t locFinalStatePID);
 
 		//keys are step index, PID //beam has PID Unknown
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_CDC;
@@ -140,7 +168,13 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerZVsParticleZ;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerTVsParticleT;
 
+		//background histograms
+		map<size_t, map<Particle_t, TH2I*> > dBackgroundHistMap_DeltaTVsP_BCAL;	
+		map<size_t, map<Particle_t, TH2I*> > dBackgroundHistMap_DeltaTVsP_TOF;
+		map<size_t, map<Particle_t, TH2I*> > dBackgroundHistMap_DeltaTVsP_FCAL;
+
 		map<size_t, map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed; //step index, PID, particle indices
+		map<size_t, map<Particle_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_Background; //step index, PID, background PID, particle indices
 };
 
 class DHistogramAction_InvariantMass : public DAnalysisAction
