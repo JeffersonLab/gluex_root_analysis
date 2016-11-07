@@ -547,9 +547,9 @@ bool DHistogramAction_ParticleID::Perform_Action(void)
 				//Find and set array index in dChargedHypoWrapper corresponding to this background PID
 				Int_t locTrackID = locKinematicData->Get_ID();
 				bool locFoundFlag = false;
-				for(UInt_t locHypoArrayIndex = 0; dChargedHypoWrapper->Get_ArraySize(); ++locHypoArrayIndex)
+				for(UInt_t loc_k = 0; loc_k < dChargedHypoWrapper->Get_ArraySize(); ++loc_k)
 				{
-					dChargedHypoWrapper->Set_ArrayIndex(locHypoArrayIndex);
+					dChargedHypoWrapper->Set_ArrayIndex(loc_k);
 					if(dChargedHypoWrapper->Get_ID() != locTrackID)
 						continue; //wrong track
 					if(dChargedHypoWrapper->Get_PID() != locBackgroundPID)
