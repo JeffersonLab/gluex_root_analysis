@@ -663,8 +663,8 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 void DHistogramAction_ParticleID::Fill_BackgroundHists(size_t locStepIndex, Particle_t locFinalStatePID)
 {
 	Particle_t locPID = dChargedHypoWrapper->Get_PID();
-	TLorentzVector locP4 = dUseKinFitFlag ? dChargedHypoWrapper->Get_P4() : dChargedHypoWrapper->Get_P4_Measured();
-	TLorentzVector locX4 = dUseKinFitFlag ? dChargedHypoWrapper->Get_X4() : dChargedHypoWrapper->Get_X4_Measured();
+	TLorentzVector locP4 = dChargedHypoWrapper->Get_P4_Measured();
+	TLorentzVector locX4 = dChargedHypoWrapper->Get_X4_Measured();
 	double locP = locP4.P();
 
 	double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
