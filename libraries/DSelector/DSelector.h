@@ -54,6 +54,9 @@ class DSelector : public TSelector
 		string dOutputFileName;
 		string dOutputTreeFileName;
 
+		//TREE INTERFACE
+		DTreeInterface* dTreeInterface;
+
 		//ANALYSIS UTILITIES
 		DAnalysisUtilities dAnalysisUtilities;
 
@@ -122,7 +125,6 @@ class DSelector : public TSelector
 		TFile* dOutputTreeFile;
 		TProofOutputFile* dProofFile;
 		TProofOutputFile* dOutputTreeProofFile;
-		DTreeInterface* dTreeInterface;
 
 		// EVENT DATA
 		UInt_t* dRunNumber;
@@ -165,9 +167,11 @@ class DSelector : public TSelector
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
 inline DSelector::DSelector(TTree* locTree) :
-		dInitializedFlag(false), dOutputFileName(""),
+		dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dTreeInterface(NULL),
+		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
-		dBeamWrapper(NULL), dComboWrapper(NULL), dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dTreeInterface(NULL),
+		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
+		dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL),
 		dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
