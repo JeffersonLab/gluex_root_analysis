@@ -48,7 +48,7 @@ class DTreeInterface
 		/********************************************************* SPECIFY GET-ENTRY BRANCHES *******************************************************/
 
 		//Specify get entry branches (default is all)
-		void Reset_GetEntryBranches(void);
+		void Reset_GetEntryBranches(void); //reset to default (all)
 		void Clear_GetEntryBranches(void);
 		void Register_GetEntryBranch(string locBranchName);
 		void Remove_GetEntryBranch(string locBranchName);

@@ -35,7 +35,7 @@ class DCutAction_PIDDeltaT : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void);
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 		double dDeltaTCut;
@@ -55,7 +55,7 @@ class DCutAction_NoPIDHit : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void){}
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 		Particle_t dPID;
@@ -71,7 +71,7 @@ class DCutAction_dEdxProton : public DAnalysisAction
 
 		void Initialize(void);
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 
@@ -89,7 +89,7 @@ class DCutAction_KinFitFOM : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 		const string dKinFitName;
@@ -129,7 +129,7 @@ class DCutAction_MissingMass : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 
@@ -174,7 +174,7 @@ class DCutAction_MissingMassSquared : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 
@@ -206,7 +206,7 @@ class DCutAction_MissingEnergy : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 
@@ -234,7 +234,7 @@ class DCutAction_InvariantMass : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 		Particle_t dInitialPID;
@@ -256,12 +256,36 @@ class DCutAction_BeamEnergy : public DAnalysisAction
 		string Get_ActionName(void) const;
 		void Initialize(void){};
 		void Reset_NewEvent(void){}
-		bool Perform_Action(void); // flag to reject combos
+		bool Perform_Action(void);
 
 	private:
 
 		double dMinBeamEnergy;
 		double dMaxBeamEnergy;
+};
+
+class DCutAction_TrackShowerEOverP : public DAnalysisAction
+{
+	// For all charged tracks except e+/e-, cuts those with FCAL E/p > input value
+	// For e+/e-, cuts those with FCAL E/p < input value
+	// Does not cut tracks without a matching shower
+
+	public:
+
+		DCutAction_TrackShowerEOverP(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, DetectorSystem_t locDetector, Particle_t locPID, double locShowerEOverPCut, string locActionUniqueString = "") :
+		DAnalysisAction(locParticleComboWrapper, "Cut_TrackShowerEOverP", locUseKinFitFlag, locActionUniqueString),
+		dDetector(locDetector), dPID(locPID), dShowerEOverPCut(locShowerEOverPCut) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+
+		DetectorSystem_t dDetector;
+		Particle_t dPID;
+		double dShowerEOverPCut;
 };
 
 #endif // _DCutActions_

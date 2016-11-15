@@ -306,3 +306,56 @@ bool DCutAction_BeamEnergy::Perform_Action(void)
 	double locBeamEnergy = dUseKinFitFlag ? locInitParticle->Get_P4().E() : locInitParticle->Get_P4_Measured().E();
 	return ((locBeamEnergy >= dMinBeamEnergy) && (locBeamEnergy <= dMaxBeamEnergy));
 }
+
+string DCutAction_TrackShowerEOverP::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dDetector << "_" << dPID << "_" << dShowerEOverPCut;
+	return locStream.str();
+}
+
+bool DCutAction_TrackShowerEOverP::Perform_Action(void)
+{
+	// For all charged tracks except e+/e-, cuts those with E/p > input value
+	// For e+/e-, cuts those with E/p < input value
+	// Does not cut tracks without a matching FCAL shower
+
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//final particles
+		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locComboWrapperStep->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			if(locKinematicData->Get_PID() != dPID)
+				continue;
+			if(ParticleCharge(locKinematicData->Get_PID()) == 0)
+				continue;
+
+			const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+			double locShowerEOverP = 0.0;
+			double locShowerEnergy = (dDetector == SYS_BCAL) ? locChargedTrackHypothesis->Get_Energy_BCAL() : locChargedTrackHypothesis->Get_Energy_FCAL();
+			if(!(locShowerEnergy > 0.0))
+				continue;
+
+			if((dPID == Electron) || (dPID == Positron))
+			{
+				if(locShowerEOverP < dShowerEOverPCut)
+					return false;
+			}
+			else if(locShowerEOverP > dShowerEOverPCut)
+				return false;
+		}
+	}
+
+	return true;
+}
