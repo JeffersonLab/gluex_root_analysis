@@ -188,6 +188,13 @@ Bool_t DSelector::Process(Long64_t locEntry)
 	// Use fStatus to set the return value of TTree::Process().
 	// The return value is currently not used.
 
+	//If operating directly on a chain, must call init for each new tree
+	if(dTreeInterface->Get_TreeNumber() != dTreeNumber)
+	{
+		Init(dTreeInterface->dTree); //Init for next tree in chain (not done by TTreePlayer::Process() by default!!!)
+		dTreeNumber = dTreeInterface->Get_TreeNumber();
+	}
+
 	dTreeInterface->Get_Entry(locEntry);
 
 	return kTRUE;

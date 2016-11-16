@@ -14,11 +14,14 @@
 #include <TVector3.h>
 #include <TLorentzVector.h>
 #include <TList.h>
+#include <TChain.h>
 #include <TMap.h>
 
 #include <particleType.h>
 
 using namespace std;
+
+class DSelector;
 
 //https://halldweb1.jlab.org/wiki/index.php/Analysis_TTreeFormat
 class DTreeInterface
@@ -26,6 +29,8 @@ class DTreeInterface
 	//ASSUME: One leaf per branch: No splitting
 	//ASSUME: Tree only stores: Fundamental type objects (not const char*!!), Fundamental type arrays, TObject's, TClonesArray's
 	//ASSUME: TObject's are of type TVector3 & TLorentzVector: Need to expand template type calls if more are used
+
+	friend class DSelector;
 
 	public:
 
@@ -55,7 +60,17 @@ class DTreeInterface
 
 		/************************************************************* GET ENTRY AND FILL ***********************************************************/
 
-		TList* Get_UserInfo(void) const{return dTree->GetUserInfo();}
+		TList* Get_UserInfo(void) const
+		{
+			TChain* locChain = dynamic_cast<TChain*>(dTree);
+			return (locChain != NULL) ? locChain->GetTree()->GetUserInfo() : dTree->GetUserInfo();
+		}
+		Int_t Get_TreeNumber(void) const
+		{
+			TChain* locChain = dynamic_cast<TChain*>(dTree);
+			return (locChain != NULL) ? locChain->GetTreeNumber() : 0;
+		}
+
 		void Get_Entry(Long64_t locEntry);
 		void Fill(void){dTree->Fill();};
 
