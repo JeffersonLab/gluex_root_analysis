@@ -125,6 +125,7 @@ class DSelector : public TSelector
 		TFile* dOutputTreeFile;
 		TProofOutputFile* dProofFile;
 		TProofOutputFile* dOutputTreeProofFile;
+		Int_t dTreeNumber;
 
 		// EVENT DATA
 		UInt_t* dRunNumber;
@@ -171,7 +172,7 @@ inline DSelector::DSelector(TTree* locTree) :
 		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
-		dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL),
+		dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dTreeNumber(0),
 		dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}

@@ -200,9 +200,10 @@ void DTreeInterface::Update_GetEntryBranches(void)
 
 size_t DTreeInterface::Get_ComboInfo(map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap) const
 {
+
 	//returns num steps
 	//map key: step, particle indices, string: name
-	TList* locUserInfo = dTree->GetUserInfo();
+	TList* locUserInfo = Get_UserInfo();
 	TMap* locNameToPIDMap = (TMap*)locUserInfo->FindObject("NameToPIDMap");
 
 	//TMap of "StepIndex_ParticleIndex" (stored in TObjString) -> "UniqueParticleName" (TObjString)
