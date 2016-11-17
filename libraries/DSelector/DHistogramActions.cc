@@ -737,7 +737,7 @@ bool DHistogramAction_InvariantMass::Perform_Action(void)
 		set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
 		for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
 		{
-			map<Particle_t, set<Int_t> > locSourceObjects;
+			map<unsigned int, set<Int_t> > locSourceObjects;
 			TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locComboIterator, locSourceObjects, dUseKinFitFlag);
 
 			if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
@@ -746,7 +746,7 @@ bool DHistogramAction_InvariantMass::Perform_Action(void)
 				dHist_InvaraintMass->Fill(locFinalStateP4.M());
 			}
 
-			pair<Int_t, map<Particle_t, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
+			pair<Int_t, map<unsigned int, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
 			if(dPreviouslyHistogrammed_ConLev.find(locSourceObjects_ConLev) == dPreviouslyHistogrammed_ConLev.end())
 			{
 				dPreviouslyHistogrammed_ConLev.insert(locSourceObjects_ConLev);
@@ -823,9 +823,9 @@ bool DHistogramAction_MissingMass::Perform_Action(void)
 	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
 	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
 	{
-		map<Particle_t, set<Int_t> > locSourceObjects;
+		map<unsigned int, set<Int_t> > locSourceObjects;
 		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingMassOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
-		pair<Int_t, map<Particle_t, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
+		pair<Int_t, map<unsigned int, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
 
 		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
 		{
@@ -908,9 +908,9 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
 	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
 	{
-		map<Particle_t, set<Int_t> > locSourceObjects;
+		map<unsigned int, set<Int_t> > locSourceObjects;
 		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingMassOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
-		pair<Int_t, map<Particle_t, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
+		pair<Int_t, map<unsigned int, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
 
 		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
 		{
@@ -987,7 +987,7 @@ bool DHistogramAction_MissingEnergy::Perform_Action(void)
 	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
 	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
 	{
-		map<Particle_t, set<Int_t> > locSourceObjects;
+		map<unsigned int, set<Int_t> > locSourceObjects;
 		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingEnergyOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
 
 		if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
@@ -1044,19 +1044,19 @@ bool DHistogramAction_2DInvariantMass::Perform_Action(void)
 		set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
 		for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
 		{
-			map<Particle_t, set<Int_t> > locXSourceObjects;
+			map<unsigned int, set<Int_t> > locXSourceObjects;
 			TLorentzVector locXP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locXComboIterator, locXSourceObjects, dUseKinFitFlag);
 
 			set<set<size_t> >::iterator locYComboIterator = locYIndexCombos.begin();
 			for(; locYComboIterator != locYIndexCombos.end(); ++locYComboIterator)
 			{
-				map<Particle_t, set<Int_t> > locYSourceObjects;
+				map<unsigned int, set<Int_t> > locYSourceObjects;
 				TLorentzVector locYP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locYComboIterator, locYSourceObjects, dUseKinFitFlag);
 
 				if(locXSourceObjects == locYSourceObjects)
 					continue; //the same!
 
-				set<map<Particle_t, set<Int_t> > > locAllSourceObjects;
+				set<map<unsigned int, set<Int_t> > > locAllSourceObjects;
 				locAllSourceObjects.insert(locXSourceObjects);
 				locAllSourceObjects.insert(locYSourceObjects);
 				if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
@@ -1112,19 +1112,19 @@ bool DHistogramAction_Dalitz::Perform_Action(void)
 		set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
 		for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
 		{
-			map<Particle_t, set<Int_t> > locXSourceObjects;
+			map<unsigned int, set<Int_t> > locXSourceObjects;
 			TLorentzVector locXP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locXComboIterator, locXSourceObjects, dUseKinFitFlag);
 
 			set<set<size_t> >::iterator locYComboIterator = locYIndexCombos.begin();
 			for(; locYComboIterator != locYIndexCombos.end(); ++locYComboIterator)
 			{
-				map<Particle_t, set<Int_t> > locYSourceObjects;
+				map<unsigned int, set<Int_t> > locYSourceObjects;
 				TLorentzVector locYP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locYComboIterator, locYSourceObjects, dUseKinFitFlag);
 
 				if(locXSourceObjects == locYSourceObjects)
 					continue; //the same!
 
-				set<map<Particle_t, set<Int_t> > > locAllSourceObjects;
+				set<map<unsigned int, set<Int_t> > > locAllSourceObjects;
 				locAllSourceObjects.insert(locXSourceObjects);
 				locAllSourceObjects.insert(locYSourceObjects);
 				if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
