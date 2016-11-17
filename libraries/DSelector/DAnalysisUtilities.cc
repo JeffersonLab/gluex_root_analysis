@@ -2,22 +2,22 @@
 
 TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitDataFlag) const
 {
-	map<Particle_t, set<Int_t> > locSourceObjects;
+	map<unsigned int, set<Int_t> > locSourceObjects;
 	return Calc_MissingP4(locParticleComboWrapper, 0, -1, set<size_t>(), locSourceObjects, locUseKinFitDataFlag);
 }
 
-TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, map<Particle_t, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
+TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, map<unsigned int, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
 {
 	return Calc_MissingP4(locParticleComboWrapper, 0, -1, set<size_t>(), locSourceObjects, locUseKinFitDataFlag);
 }
 
 TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, int locUpToStepIndex, set<size_t> locUpThroughIndices, bool locUseKinFitDataFlag) const
 {
-	map<Particle_t, set<Int_t> > locSourceObjects;
+	map<unsigned int, set<Int_t> > locSourceObjects;
 	return Calc_MissingP4(locParticleComboWrapper, locStepIndex, locUpToStepIndex, locUpThroughIndices, locSourceObjects, locUseKinFitDataFlag);
 }
 
-TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, int locUpToStepIndex, set<size_t> locUpThroughIndices, map<Particle_t, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
+TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, int locUpToStepIndex, set<size_t> locUpThroughIndices, map<unsigned int, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
 {
 	//NOTE: this routine assumes that the p4 of a charged decaying particle with a detached vertex is the same at both vertices!
 	//assumes missing particle is not the beam particle
@@ -61,7 +61,8 @@ TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParti
 				locMissingP4 -= locParticles[loc_j]->Get_P4_Measured();
 			else
 				locMissingP4 -= locParticles[loc_j]->Get_P4();
-			locSourceObjects[locPID].insert(locParticles[loc_j]->Get_ID());
+
+			locSourceObjects[abs(PDGtype(locPID))].insert(locParticles[loc_j]->Get_ID());
 		}
 		else //decaying-particle
 			locMissingP4 += Calc_MissingP4(locParticleComboWrapper, locDecayStepIndex, locUpToStepIndex, locUpThroughIndices, locSourceObjects, locUseKinFitDataFlag); //p4 returned is already < 0
@@ -72,22 +73,22 @@ TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParti
 
 TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, bool locUseKinFitDataFlag) const
 {
-	map<Particle_t, set<Int_t> > locSourceObjects;
+	map<unsigned int, set<Int_t> > locSourceObjects;
 	return Calc_FinalStateP4(locParticleComboWrapper, locStepIndex, set<size_t>(), locSourceObjects, locUseKinFitDataFlag);
 }
 
-TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, map<Particle_t, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
+TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, map<unsigned int, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
 {
 	return Calc_FinalStateP4(locParticleComboWrapper, locStepIndex, set<size_t>(), locSourceObjects, locUseKinFitDataFlag);
 }
 
 TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, set<size_t> locToIncludeIndices, bool locUseKinFitDataFlag) const
 {
-	map<Particle_t, set<Int_t> > locSourceObjects;
+	map<unsigned int, set<Int_t> > locSourceObjects;
 	return Calc_FinalStateP4(locParticleComboWrapper, locStepIndex, locToIncludeIndices, locSourceObjects, locUseKinFitDataFlag);
 }
 
-TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, set<size_t> locToIncludeIndices, map<Particle_t, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
+TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, set<size_t> locToIncludeIndices, map<unsigned int, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
 {
 	if(locUseKinFitDataFlag && (locParticleComboWrapper->Get_NDF_KinFit() == 0))
 		return Calc_FinalStateP4(locParticleComboWrapper, locStepIndex, locToIncludeIndices, locSourceObjects, false); //kinematic fit failed
@@ -127,8 +128,8 @@ TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locPa
 			if(!locUseKinFitDataFlag) //measured
 				locFinalStateP4 += locParticles[loc_i]->Get_P4_Measured();
 			else
-				locFinalStateP4 += locParticles[loc_i]->Get_P4();
-			locSourceObjects[locParticles[loc_i]->Get_PID()].insert(locParticles[loc_i]->Get_ID());
+				locFinalStateP4 += locParticles[loc_i]->Get_P4();	
+			locSourceObjects[abs(PDGtype(locParticles[loc_i]->Get_PID()))].insert(locParticles[loc_i]->Get_ID());
 		}
 	}
 	return locFinalStateP4;
