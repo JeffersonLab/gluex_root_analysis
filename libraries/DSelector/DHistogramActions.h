@@ -228,8 +228,8 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
 		//Multiple combos: Contain maps within a set (easier, faster to search)
-		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
-		set<pair<Int_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
+		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
+		set<pair<Int_t, map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
 };
 
 class DHistogramAction_MissingMass : public DAnalysisAction
@@ -300,8 +300,8 @@ class DHistogramAction_MissingMass : public DAnalysisAction
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
 		//Multiple combos: Contain maps within a set (easier, faster to search)
-		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
-                set<pair<Int_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
+		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
+                set<pair<Int_t, map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
 };
 
 class DHistogramAction_MissingMassSquared : public DAnalysisAction
@@ -372,8 +372,8 @@ class DHistogramAction_MissingMassSquared : public DAnalysisAction
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
 		//Multiple combos: Contain maps within a set (easier, faster to search)
-		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
-                set<pair<Int_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
+		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
+                set<pair<Int_t, map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed_ConLev; //first Int_t: combo index: kinfit (probably) unique for each combo
 };
 
 class DHistogramAction_MissingEnergy : public DAnalysisAction
@@ -427,7 +427,7 @@ class DHistogramAction_MissingEnergy : public DAnalysisAction
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
 		//Multiple combos: Contain maps within a set (easier, faster to search)
-		set<map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed;
+		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
 };
 
 class DHistogramAction_2DInvariantMass : public DAnalysisAction
@@ -451,7 +451,7 @@ class DHistogramAction_2DInvariantMass : public DAnalysisAction
 		DAnalysisUtilities dAnalysisUtilities;
 		TH2I* dHist_2DInvaraintMass;
 
-		set<set<map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed;
+		set<set<map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed;
 };
 
 class DHistogramAction_Dalitz : public DAnalysisAction
@@ -475,7 +475,7 @@ class DHistogramAction_Dalitz : public DAnalysisAction
 		DAnalysisUtilities dAnalysisUtilities;
 		TH2I* dHist_2DInvaraintMass;
 
-		set<set<map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed;
+		set<set<map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed;
 };
 
 class DHistogramAction_KinFitResults : public DAnalysisAction
