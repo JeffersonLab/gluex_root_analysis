@@ -40,9 +40,11 @@ include_directories(libraries/DSelector)
 if (DEFINED ENV{HALLD_HOME} AND DEFINED ENV{BMS_OSNAME})
   message("-- Found external sim-recon in " $ENV{HALLD_HOME}/$ENV{BMS_OSNAME})
   include_directories($ENV{HALLD_HOME}/$ENV{BMS_OSNAME}/include)
+  set(EXT_SIM_RECON 1)
 else()
   message("-- Warning: sim-recon not found, using included GlueX headers. Make sure they are up-to-date!")
   include_directories(include)
+  set(EXT_SIM_RECON 0)
 endif()
 
 # create the dictionary
@@ -81,7 +83,9 @@ if (ROOT_VERSION VERSION_GREATER 6)
 endif()
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/libraries/DSelector/ DESTINATION ${PROJECT_BINARY_DIR}/include/DSelector
         FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION ${PROJECT_BINARY_DIR}/include)
+if (NOT EXT_SIM_RECON)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION ${PROJECT_BINARY_DIR}/include)
+endif()
 install(TARGETS MakeDSelector RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
 install(TARGETS tree_to_amptools RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
 
