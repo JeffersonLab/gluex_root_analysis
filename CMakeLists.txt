@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 project(gluex_root_analysis)
 
 # more warnings
@@ -23,10 +23,6 @@ else()
 endif()
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
-# adjust some paths
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-
 # locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED MODULE COMPONENTS MathCore RIO Hist Tree Net Proof)
 
@@ -39,8 +35,15 @@ file(GLOB SRCS libraries/DSelector/*.cc)
 # header directories
 include_directories(libraries)
 include_directories(libraries/DSelector)
-include_directories(include)
-include_directories($ENV{HALLD_HOME}/$ENV{BMS_OSNAME}/include)
+
+# check for external sim-recon
+if (DEFINED ENV{HALLD_HOME} AND DEFINED ENV{BMS_OSNAME})
+  message("-- Found external sim-recon in " $ENV{HALLD_HOME}/$ENV{BMS_OSNAME})
+  include_directories($ENV{HALLD_HOME}/$ENV{BMS_OSNAME}/include)
+else()
+  message("-- Warning: sim-recon not found, using included GlueX headers. Make sure they are up-to-date!")
+  include_directories(include)
+endif()
 
 # create the dictionary
 if (ROOT_VERSION VERSION_GREATER 6)
@@ -60,24 +63,25 @@ target_link_libraries(MakeDSelector DSelector)
 add_executable(tree_to_amptools programs/tree_to_amptools/tree_to_amptools.cc)
 target_link_libraries(tree_to_amptools ${ROOT_LIBRARIES})
 
-# generate rootmap and install files
+# generate rootmap
 if (ROOT_VERSION VERSION_LESS 6)
     add_custom_command(TARGET DSelector POST_BUILD
-    COMMAND rlibmap -o ${PROJECT_BINARY_DIR}/lib/libDSelector.rootmap
-                    -l ${PROJECT_BINARY_DIR}/lib/libDSelector.so
+    COMMAND rlibmap -o libDSelector.rootmap
+                    -l libDSelector.so
                     -d ${ROOT_LIBRARIES}
                     -c ${CMAKE_SOURCE_DIR}/libraries/DSelector/DSelectorLinkDef.h
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/include
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/include/DSelector
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libraries/DSelector/*.h ${PROJECT_BINARY_DIR}/include/DSelector
-    )
-else()
-    add_custom_command(TARGET DSelector POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E rename ${PROJECT_BINARY_DIR}/libDSelector.rootmap ${PROJECT_BINARY_DIR}/lib/libDSelector.rootmap
-    COMMAND ${CMAKE_COMMAND} -E rename ${PROJECT_BINARY_DIR}/DSelectorDict_rdict.pcm ${PROJECT_BINARY_DIR}/lib/DSelectorDict_rdict.pcm
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/include
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/include/DSelector
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libraries/DSelector/*.h ${PROJECT_BINARY_DIR}/include/DSelector
     )
 endif()
+
+# installation
+install(TARGETS DSelector LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib)
+install(FILES ${PROJECT_BINARY_DIR}/libDSelector.rootmap DESTINATION ${PROJECT_BINARY_DIR}/lib)
+if (ROOT_VERSION VERSION_GREATER 6)
+    install(FILES ${PROJECT_BINARY_DIR}/DSelectorDict_rdict.pcm DESTINATION ${PROJECT_BINARY_DIR}/lib)
+endif()
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/libraries/DSelector/ DESTINATION ${PROJECT_BINARY_DIR}/include/DSelector
+        FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION ${PROJECT_BINARY_DIR}/include)
+install(TARGETS MakeDSelector RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
+install(TARGETS tree_to_amptools RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
 
