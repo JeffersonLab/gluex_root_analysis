@@ -1,6 +1,7 @@
 # gluex_root_analysis
 
-Documentation: https://halldweb.jlab.org/wiki/index.php/DSelector
+### Documentation
+https://halldweb.jlab.org/wiki/index.php/DSelector
 
 ### Setting up the software & environment
 Go to the directory where you want the source code to go. Checkout the software here:
@@ -25,7 +26,7 @@ cd $ROOT_ANALYSIS_HOME
 ./make_all.sh
 ```
 
-### CMake building
+#### CMake building
 ```
 cd gluex_root_analysis
 mkdir build
