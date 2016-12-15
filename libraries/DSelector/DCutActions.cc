@@ -277,6 +277,45 @@ bool DCutAction_InvariantMass::Perform_Action(void)
 	return true;
 }
 
+string DCutAction_InvariantMassVeto::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinMass << "_" << dMaxMass;
+	return locStream.str();
+}
+
+bool DCutAction_InvariantMassVeto::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		const DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+		if((dInitialPID != Unknown) && (locComboWrapperStep->Get_InitialPID() != dInitialPID))
+			continue;
+		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
+			continue;
+
+		//build all possible combinations of the included pids
+		set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locComboWrapperStep, dToIncludePIDs);
+
+		//loop over them: Must fail ALL to fail. if any succeed, go to the next step
+		set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
+		bool locAnyOKFlag = false;
+		for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
+		{
+			TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locComboIterator, dUseKinFitFlag);
+			double locInvariantMass = locFinalStateP4.M();
+			if((locInvariantMass < dMaxMass) && (locInvariantMass > dMinMass))
+				continue;
+			locAnyOKFlag = true;
+			break;
+		}
+		if(!locAnyOKFlag)
+			return false;
+	}
+
+	return true;
+}
+
 string DCutAction_KinFitFOM::Get_ActionName(void) const
 {
 	ostringstream locStream;
