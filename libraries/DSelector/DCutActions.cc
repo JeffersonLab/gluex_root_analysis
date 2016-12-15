@@ -118,8 +118,11 @@ bool DCutAction_NoPIDHit::Perform_Action(void)
 
 void DCutAction_dEdxProton::Initialize(void)
 {
-	f = new TF1("f","exp([0]*x + [1]) + [2]",0.0,10.0);
-	f->SetParameters(-4.0,2.25,1.0);
+  if ( dFunct == NULL )
+    {
+      dFunct = new TF1("f","exp([0]*x + [1]) + [2]",0.0,10.0);
+      dFunct->SetParameters(-4.0,2.25,1.0);
+    }
 }
 
 bool DCutAction_dEdxProton::Perform_Action(void)
@@ -151,7 +154,7 @@ bool DCutAction_dEdxProton::Perform_Action(void)
 				continue;
 
 			double locp = dUseKinFitFlag ? locChargedTrackHypothesis->Get_P4().Vect().Mag() : locChargedTrackHypothesis->Get_P4_Measured().Vect().Mag();
-			if(locdEdx < f->Eval(locp)) 
+			if(locdEdx < dFunct->Eval(locp)) 
 				return false;
 
 		} //end of particle loop
