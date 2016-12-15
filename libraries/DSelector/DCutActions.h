@@ -246,6 +246,34 @@ class DCutAction_InvariantMass : public DAnalysisAction
 		DAnalysisUtilities dAnalysisUtilities;
 };
 
+class DCutAction_InvariantMassVeto : public DAnalysisAction
+{
+	public:
+		DCutAction_InvariantMassVeto(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locInitialPID, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMassVeto", locUseKinFitFlag, locActionUniqueString),
+			dInitialPID(locInitialPID), dStepIndex(-1), dToIncludePIDs(deque<Particle_t>()), dMinMass(locMinMass), dMaxMass(locMaxMass){}
+
+		//e.g. if g, p -> pi+, pi-, p
+			//call with step = 0, PIDs = pi+, pi-, and will histogram rho mass
+		DCutAction_InvariantMassVeto(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMassVeto", locUseKinFitFlag, locActionUniqueString),
+			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs), dMinMass(locMinMass), dMaxMass(locMaxMass){}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		Particle_t dInitialPID;
+		int dStepIndex;
+		deque<Particle_t> dToIncludePIDs;
+
+		double dMinMass;
+		double dMaxMass;
+		DAnalysisUtilities dAnalysisUtilities;
+};
+
 class DCutAction_BeamEnergy : public DAnalysisAction
 {
 	public:
