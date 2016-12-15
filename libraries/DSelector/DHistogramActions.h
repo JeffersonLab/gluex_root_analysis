@@ -107,7 +107,7 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			}
 
 		//for also histogramming PID background
-		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, DChargedTrackHypothesis* locChargedHypoWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
+		DHistogramAction_ParticleID(const DParticleCombo* locParticleComboWrapper, DChargedTrackHypothesis* locChargedHypoWrapper, bool locUseKinFitFlag, string locActionUniqueString) :
 			DAnalysisAction(locParticleComboWrapper, "Hist_ParticleID", locUseKinFitFlag, locActionUniqueString),
 			dChargedHypoWrapper(locChargedHypoWrapper), dTargetCenterZ(0.0), 
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
