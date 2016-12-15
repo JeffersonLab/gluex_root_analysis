@@ -65,9 +65,9 @@ class DCutAction_NoPIDHit : public DAnalysisAction
 class DCutAction_dEdxProton : public DAnalysisAction
 {
 	public:
-		DCutAction_dEdxProton(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag = false, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+                DCutAction_dEdxProton(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag = false, Particle_t locPID = Unknown, TF1* locFunct = NULL, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_dEdxProton", locUseKinFitFlag, locActionUniqueString),
-			dPID(locPID), dSystem(locSystem) {}
+			dPID(locPID), dSystem(locSystem), dFunct(locFunct) {}
 
 		void Initialize(void);
 		void Reset_NewEvent(void){}
@@ -77,7 +77,7 @@ class DCutAction_dEdxProton : public DAnalysisAction
 
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
-		TF1 *f;
+		TF1 *dFunct;
 };
 
 class DCutAction_KinFitFOM : public DAnalysisAction
