@@ -128,7 +128,7 @@ void DTreeInterface::Increase_ArraySize(string locBranchName, string locBranchTy
 
 void DTreeInterface::Get_Entry(Long64_t locEntry)
 {
-	if(dGetEntryBranchesModifiedFlag)
+	if(dUpdateGetEntryBranchesFlag)
 		Update_GetEntryBranches();
 
 	//before getting arrays, must make sure that our current array size is large enough to hold them
@@ -193,14 +193,13 @@ void DTreeInterface::Update_GetEntryBranches(void)
 		dArraySizeToBranchMap_GetEntryNeeded[locArraySizeBranchName].insert(locBranchName);
 	}
 
-	dGetEntryBranchesModifiedFlag = false;
+	dUpdateGetEntryBranchesFlag = false;
 }
 
 /************************************************************** READ GLUEX TTREE METADATA *************************************************************/
 
 size_t DTreeInterface::Get_ComboInfo(map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap) const
 {
-
 	//returns num steps
 	//map key: step, particle indices, string: name
 	TList* locUserInfo = Get_UserInfo();

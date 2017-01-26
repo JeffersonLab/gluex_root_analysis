@@ -958,7 +958,7 @@ void DHistogramAction_MissingP4::Initialize(void)
 	dHist_MissingPz = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMissingEPzBins, dMinMissingEPz, dMaxMissingEPz);
 
 	locHistName = "MissingPt";
-	locHistTitle = string(";") + locReactionString + string(" Missing Transverse Momentum (GeV/c);# Combos");
+	locHistTitle = string(";") + locReactionString + string(" Missing P_{Transverse} (GeV/c);# Combos");
 	dHist_MissingPt = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMissingPtBins, 0.0, dMaxMissingPt);
 
 	//2D vs beam E: pz, pt, E
@@ -971,17 +971,17 @@ void DHistogramAction_MissingP4::Initialize(void)
 	dHist_MissingPzVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMissingEPzBins, dMinMissingEPz, dMaxMissingEPz);
 
 	locHistName = "MissingPtVsBeamE";
-	locHistTitle = string(";Beam Energy (GeV);") + locReactionString + string(" Missing Transverse Momentum (GeV/c)");
+	locHistTitle = string(";Beam Energy (GeV);") + locReactionString + string(" Missing P_{Transverse} (GeV/c)");
 	dHist_MissingPtVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMissingPtBins, 0.0, dMaxMissingPt);
 
 	//missing py vs px
 	locHistName = "MissingPyVsMissingPx";
-	locHistTitle = string(";Missing P_{y} (GeV/c);") + locReactionString + string(" Missing P_{x} (GeV/c)");
+	locHistTitle = string(";") + locReactionString + string(" Missing P_{x} (GeV/c);") + locReactionString + string(" Missing P_{y} (GeV/c)");
 	dHist_MissingPyVsMissingPx = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissingPxyBins, -1.0*dMaxMissingPxy, dMaxMissingPxy, dNum2DMissingPxyBins, -1.0*dMaxMissingPxy, dMaxMissingPxy);
 
 	//missing pt vs pz
 	locHistName = "MissingPtVsMissingPz";
-	locHistTitle = string(";Missing P_{z} (GeV/c);") + locReactionString + string(" Missing Transverse Momentum (GeV/c)");
+	locHistTitle = string(";") + locReactionString + string(" Missing P_{z} (GeV/c);") + locReactionString + string(" Missing P_{Transverse} (GeV/c)");
 	dHist_MissingPtVsMissingPz = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissingEPzBins, dMinMissingEPz, dMaxMissingEPz, dNum2DMissingPtBins, 0.0, dMaxMissingPt);
 
 	//Return to the base directory
@@ -1008,6 +1008,18 @@ bool DHistogramAction_MissingP4::Perform_Action(void)
 	//fill histograms
 	dHist_MissingE->Fill(locMissingP4.E());
 	dHist_MissingEVsBeamE->Fill(locBeamEnergy, locMissingP4.E());
+
+	dHist_MissingE->Fill(locMissingP4.E());
+	dHist_MissingPx->Fill(locMissingP4.Px());
+	dHist_MissingPy->Fill(locMissingP4.Py());
+	dHist_MissingPz->Fill(locMissingP4.Pz());
+	dHist_MissingPt->Fill(locMissingP4.Perp());
+
+	dHist_MissingEVsBeamE->Fill(locBeamEnergy, locMissingP4.E());
+	dHist_MissingPzVsBeamE->Fill(locBeamEnergy, locMissingP4.Pz());
+	dHist_MissingPtVsBeamE->Fill(locBeamEnergy, locMissingP4.Perp());
+	dHist_MissingPtVsMissingPz->Fill(locMissingP4.Pz(), locMissingP4.Perp());
+	dHist_MissingPyVsMissingPx->Fill(locMissingP4.Px(), locMissingP4.Py());
 
 	return true;
 }

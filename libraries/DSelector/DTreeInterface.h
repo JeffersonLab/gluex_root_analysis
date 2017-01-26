@@ -145,7 +145,7 @@ class DTreeInterface
 		void Increase_ArraySize(string locBranchName, string locBranchType, int locNewArraySize);
 		template <typename DType> void Increase_ArraySize(string locBranchName, int locNewArraySize);
 
-		bool dGetEntryBranchesModifiedFlag; //when user changes what branches to get, this will signify that the below maps need to be updated
+		bool dUpdateGetEntryBranchesFlag; //when user changes what branches to get, this will signify that the below maps need to be updated
 
 		//Get Branch names
 		set<string> dInputBranches; //only call GetEntry on these!!!!
@@ -181,7 +181,7 @@ class DTreeInterface
 /********************************************************************* INITIALIZE *********************************************************************/
 
 //Constructor
-inline DTreeInterface::DTreeInterface(TTree* dTree) : dTree(dTree), dGetEntryBranchesModifiedFlag(true)
+inline DTreeInterface::DTreeInterface(TTree* dTree) : dTree(dTree), dUpdateGetEntryBranchesFlag(true)
 {
 	Set_BranchAddresses();
 }
@@ -196,25 +196,33 @@ inline void DTreeInterface::Set_InitialArraySize(string locArraySizeBranchName, 
 inline void DTreeInterface::Reset_GetEntryBranches(void)
 {
 	dGetEntryBranches = dInputBranches;
-	dGetEntryBranchesModifiedFlag = true;
+	dNonArraySizeBranches_GetEntryNeeded.clear();
+	dArraySizeBranches_GetEntryNeeded.clear();
+	dArraySizeToBranchMap_GetEntryNeeded.clear();
+	dUpdateGetEntryBranchesFlag = true;
 }
 
 inline void DTreeInterface::Clear_GetEntryBranches(void)
 {
 	dGetEntryBranches.clear();
-	dGetEntryBranchesModifiedFlag = true;
+	dNonArraySizeBranches_GetEntryNeeded.clear();
+	dArraySizeBranches_GetEntryNeeded.clear();
+	dArraySizeToBranchMap_GetEntryNeeded.clear();
 }
 
 inline void DTreeInterface::Register_GetEntryBranch(string locBranchName)
 {
 	dGetEntryBranches.insert(locBranchName);
-	dGetEntryBranchesModifiedFlag = true;
+	dUpdateGetEntryBranchesFlag = true;
 }
 
 inline void DTreeInterface::Remove_GetEntryBranch(string locBranchName)
 {
-	dGetEntryBranches.insert(locBranchName);
-	dGetEntryBranchesModifiedFlag = true;
+	dGetEntryBranches.erase(locBranchName);
+	dNonArraySizeBranches_GetEntryNeeded.clear();
+	dArraySizeBranches_GetEntryNeeded.clear();
+	dArraySizeToBranchMap_GetEntryNeeded.clear();
+	dUpdateGetEntryBranchesFlag = true;
 }
 
 /**************************************************************** SETUP INPUT BRANCHES ****************************************************************/
