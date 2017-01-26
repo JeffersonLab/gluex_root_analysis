@@ -99,9 +99,9 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(unsigned int locNumThreads, vector
 		gEnv->SetValue("ProofLite.Sandbox", gPROOFLiteSandbox.c_str());
 	TProof* locPROOF = TProof::Open(locNumWorkers.str().c_str());
 
-   locPROOF->ClearInput();
-   locPROOF->ClearPackages();
-   locPROOF->ClearInputData();
+	locPROOF->ClearInput();
+	locPROOF->ClearPackages();
+	locPROOF->ClearInputData();
 
 	for(size_t loc_i = 0; loc_i < locPackageNames.size(); ++loc_i)
 	{
