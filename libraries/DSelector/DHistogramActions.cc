@@ -930,48 +930,66 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 	return true;
 }
 
-void DHistogramAction_MissingEnergy::Initialize(void)
+void DHistogramAction_MissingP4::Initialize(void)
 {
-	double locEnergyPerBin = 1000.0*(dMaxEnergy - dMinEnergy)/((double)dNumEnergyBins);
 	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
-	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingEnergyOffOfStepIndex, dMissingEnergyOffOfPIDs, dUseKinFitFlag, true);
+	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, -1, deque<Particle_t>(), dUseKinFitFlag, !dUseKinFitFlag);
+	string locReactionString = locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName;
+	string locHistName, locHistTitle;
 
 	// CREATE & GOTO MAIN FOLDER
 	CreateAndChangeTo_ActionDirectory();
 
-	string locHistName = "MissingEnergy";
-	ostringstream locStream;
-	locStream << locEnergyPerBin;
-	string locHistTitle = string(";") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Energy (GeV);# Combos / ") + locStream.str() + string(" MeV");
-	dHist_MissingEnergy = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumEnergyBins, dMinEnergy, dMaxEnergy);
+	//1D: missing px, py, pz, pt, E
+	locHistName = "MissingE";
+	locHistTitle = string(";") + locReactionString + string(" Missing Energy (GeV);# Combos");
+	dHist_MissingE = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMissingEPzBins, dMinMissingEPz, dMaxMissingEPz);
 
-	locHistName = "MissingEnergyVsBeamE";
-	locEnergyPerBin *= ((double)dNumEnergyBins)/((double)dNum2DEnergyBins);
-	locStream.str("");
-	locStream << locEnergyPerBin;
-	locHistTitle = string(";Beam Energy (GeV);") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Energy (GeV)");
-	dHist_MissingEnergyVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DEnergyBins, dMinEnergy, dMaxEnergy);
+	locHistName = "MissingPx";
+	locHistTitle = string(";") + locReactionString + string(" Missing P_{x} (GeV/c);# Combos");
+	dHist_MissingPx = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMissingPxyBins, -1.0*dMaxMissingPxy, dMaxMissingPxy);
 
-	locHistName = "MissingEnergyVsConfidenceLevel";
-	locHistTitle = string(";Kinematic Fit Confidence Level;") + locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName + string(" Missing Energy (GeV)");
-	dHist_MissingEnergyVsConfidenceLevel = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumConLevBins, 0.0, 1.0, dNum2DEnergyBins, dMinEnergy, dMaxEnergy);
+	locHistName = "MissingPy";
+	locHistTitle = string(";") + locReactionString + string(" Missing P_{y} (GeV/c);# Combos");
+	dHist_MissingPy = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMissingPxyBins, -1.0*dMaxMissingPxy, dMaxMissingPxy);
 
-	locHistName = "MissingEnergyVsConfidenceLevel_LogX";
-	int locNumBins = 0;
-	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
-	if(locConLevLogBinning != NULL)
-		dHist_MissingEnergyVsConfidenceLevel_LogX = new TH2I(locHistName.c_str(), locHistTitle.c_str(), locNumBins, locConLevLogBinning, dNum2DEnergyBins, dMinEnergy, dMaxEnergy);
-	else
-		dHist_MissingEnergyVsConfidenceLevel_LogX = NULL;
+	locHistName = "MissingPz";
+	locHistTitle = string(";") + locReactionString + string(" Missing P_{z} (GeV/c);# Combos");
+	dHist_MissingPz = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMissingEPzBins, dMinMissingEPz, dMaxMissingEPz);
+
+	locHistName = "MissingPt";
+	locHistTitle = string(";") + locReactionString + string(" Missing Transverse Momentum (GeV/c);# Combos");
+	dHist_MissingPt = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMissingPtBins, 0.0, dMaxMissingPt);
+
+	//2D vs beam E: pz, pt, E
+	locHistName = "MissingEVsBeamE";
+	locHistTitle = string(";Beam Energy (GeV);") + locReactionString + string(" Missing Energy (GeV)");
+	dHist_MissingEVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMissingEPzBins, dMinMissingEPz, dMaxMissingEPz);
+
+	locHistName = "MissingPzVsBeamE";
+	locHistTitle = string(";Beam Energy (GeV);") + locReactionString + string(" Missing P_{z} (GeV/c)");
+	dHist_MissingPzVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMissingEPzBins, dMinMissingEPz, dMaxMissingEPz);
+
+	locHistName = "MissingPtVsBeamE";
+	locHistTitle = string(";Beam Energy (GeV);") + locReactionString + string(" Missing Transverse Momentum (GeV/c)");
+	dHist_MissingPtVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMissingPtBins, 0.0, dMaxMissingPt);
+
+	//missing py vs px
+	locHistName = "MissingPyVsMissingPx";
+	locHistTitle = string(";Missing P_{y} (GeV/c);") + locReactionString + string(" Missing P_{x} (GeV/c)");
+	dHist_MissingPyVsMissingPx = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissingPxyBins, -1.0*dMaxMissingPxy, dMaxMissingPxy, dNum2DMissingPxyBins, -1.0*dMaxMissingPxy, dMaxMissingPxy);
+
+	//missing pt vs pz
+	locHistName = "MissingPtVsMissingPz";
+	locHistTitle = string(";Missing P_{z} (GeV/c);") + locReactionString + string(" Missing Transverse Momentum (GeV/c)");
+	dHist_MissingPtVsMissingPz = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DMissingEPzBins, dMinMissingEPz, dMaxMissingEPz, dNum2DMissingPtBins, 0.0, dMaxMissingPt);
 
 	//Return to the base directory
 	ChangeTo_BaseDirectory();
 }
 
-bool DHistogramAction_MissingEnergy::Perform_Action(void)
+bool DHistogramAction_MissingP4::Perform_Action(void)
 {
-	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
-
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
 	double locBeamEnergy = 0.0;
 	if(dUseKinFitFlag)
@@ -979,26 +997,17 @@ bool DHistogramAction_MissingEnergy::Perform_Action(void)
 	else
 		locBeamEnergy = locBeamParticle->Get_P4_Measured().E();
 
-	//build all possible combinations of the included pids
-	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(dMissingEnergyOffOfStepIndex);
-	set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dMissingEnergyOffOfPIDs);
+	//get missing p4
+	map<unsigned int, set<Int_t> > locSourceObjects;
+	TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, locSourceObjects, dUseKinFitFlag);
 
-	//loop over them
-	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
-	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
-	{
-		map<unsigned int, set<Int_t> > locSourceObjects;
-		TLorentzVector locMissingP4 = dAnalysisUtilities.Calc_MissingP4(dParticleComboWrapper, 0, dMissingEnergyOffOfStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+	if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
+		return true; //dupe: already histed!
+	dPreviouslyHistogrammed.insert(locSourceObjects);
 
-		if(dPreviouslyHistogrammed.find(locSourceObjects) != dPreviouslyHistogrammed.end())
-			continue; //dupe: already histed!
-		dPreviouslyHistogrammed.insert(locSourceObjects);
-
-		dHist_MissingEnergy->Fill(locMissingP4.E());
-		dHist_MissingEnergyVsBeamE->Fill(locBeamEnergy, locMissingP4.E());
-		dHist_MissingEnergyVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.E());
-		dHist_MissingEnergyVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.E());
-	}
+	//fill histograms
+	dHist_MissingE->Fill(locMissingP4.E());
+	dHist_MissingEVsBeamE->Fill(locBeamEnergy, locMissingP4.E());
 
 	return true;
 }
@@ -1144,13 +1153,25 @@ void DHistogramAction_KinFitResults::Initialize(void)
 	// CREATE & GOTO MAIN FOLDER
 	CreateAndChangeTo_ActionDirectory();
 
-	dHist_ChiSqPerDF = new TH1I("ChiSqPerDF", ";Kinematic Fit #chi^{2}/NDF", dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
-	dHist_ConfidenceLevel = new TH1I("ConfidenceLevel", ";Kinematic Fit Confidence Level", dNumConLevBins, 0.0, 1.0);
+	string locConstraintString = dParticleComboWrapper->Get_KinFitConstraints();
+	size_t locNumConstraints = dParticleComboWrapper->Get_NumKinFitConstraints();
+	size_t locNumUnknowns = dParticleComboWrapper->Get_NumKinFitUnknowns();
+	size_t locNDF = locNumConstraints - locNumUnknowns;
+
+	ostringstream locHistTitle;
+	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << ";Fit #chi^{2}/NDF (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ChiSqPerDF = new TH1I("ChiSqPerDF", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
+	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << ";Confidence Level (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ConfidenceLevel = new TH1I("ConfidenceLevel", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
 
 	int locNumBins = 0;
 	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
 	if(locConLevLogBinning != NULL)
-		dHist_ConfidenceLevel_LogX = new TH1I("ConfidenceLevel_LogX", ";Kinematic Fit Confidence Level", locNumBins, locConLevLogBinning);
+		dHist_ConfidenceLevel_LogX = new TH1I("ConfidenceLevel_LogX", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
 	else
 		dHist_ConfidenceLevel_LogX = NULL;
 

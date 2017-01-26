@@ -76,6 +76,10 @@ class DParticleCombo
 		string Get_DecayChainFinalParticlesROOTNames(Particle_t locInitialPID, int locUpToStepIndex, deque<Particle_t> locUpThroughPIDs, bool locKinFitResultsFlag) const;
 		string Get_DecayChainFinalParticlesROOTNames(size_t locStepIndex, int locUpToStepIndex, deque<Particle_t> locUpThroughPIDs, bool locKinFitResultsFlag, bool locExpandDecayingParticlesFlag) const;
 
+		string Get_KinFitConstraints(void) const{return dKinFitConstraints;}
+		size_t Get_NumKinFitConstraints(void) const{return dNumKinFitConstraints;}
+		size_t Get_NumKinFitUnknowns(void) const{return dNumKinFitUnknowns;}
+
 	private:
 		DParticleCombo(void){}; //no default constructor!
 
@@ -84,6 +88,7 @@ class DParticleCombo
 		int Get_DecayStepIndex(int locStepIndex, int locParticleIndex) const;
 		pair<int, int> Get_DecayFromIndices(int locStepIndex) const;
 		void Setup_X4Branches(void);
+		void Setup_KinFitConstraintInfo(void);
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
 		void ReInitialize(DTreeInterface* locTreeInterface);
@@ -111,6 +116,11 @@ class DParticleCombo
 		//Target not necessarily in the particle combo, so add the info here (for convenience)
 		Particle_t dTargetPID;
 		TVector3 dTargetCenter;
+
+		//Kinfit constraint info
+		string dKinFitConstraints;
+		size_t dNumKinFitConstraints;
+		size_t dNumKinFitUnknowns;
 };
 
 inline void DParticleCombo::Print_Reaction(void) const
@@ -218,8 +228,8 @@ inline Float_t DParticleCombo::Get_ChiSq_KinFit(void) const
 
 inline UInt_t DParticleCombo::Get_NDF_KinFit(void) const
 {
-	if(dBranch_NDF_KinFit == NULL)
-		return 0;
+	if((dBranch_NDF_KinFit == NULL) || (dKinFitConstraints != "NA"))
+		return dNumKinFitConstraints - dNumKinFitUnknowns;
 	return ((UInt_t*)dBranch_NDF_KinFit->GetAddress())[dComboIndex];
 }
 
