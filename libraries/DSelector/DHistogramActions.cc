@@ -766,6 +766,10 @@ void DHistogramAction_MissingMass::Initialize(void)
 	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
 	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingMassOffOfStepIndex, dMissingMassOffOfPIDs, dUseKinFitFlag, true);
 
+	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
+	dRunNumber = dParticleComboWrapper->Get_RunNumber();
+	dBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dRunNumber);
+
 	// CREATE & GOTO MAIN FOLDER
 	CreateAndChangeTo_ActionDirectory();
 
@@ -807,7 +811,7 @@ void DHistogramAction_MissingMass::Initialize(void)
 bool DHistogramAction_MissingMass::Perform_Action(void)
 {
 	//beam bunch check, if desired
-	if(dSidebandRange.first < dSidebandRange.second)
+	if(dBeamBunchRange.first <= dBeamBunchRange.second)
 	{
 		//get beam/rf delta-t
 		DKinematicData* locKinematicData = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
@@ -815,13 +819,14 @@ bool DHistogramAction_MissingMass::Perform_Action(void)
 		double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
 		double locBeamRFDeltaT = locBeamX4.T() - (locRFTime + (locBeamX4.Z() - dTargetCenterZ)/29.9792458);
 
-		//get period, delta-t cut range
-		double locBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dParticleComboWrapper->Get_RunNumber());
-		double locMinDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.first - 1);
-		double locMaxDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.second + 1);
+		//delta-t cut range
+		double locMinDeltaT = dBeamBunchPeriod*(double(dBeamBunchRange.first) - 0.5);
+		double locMaxDeltaT = dBeamBunchPeriod*(double(dBeamBunchRange.first) + 0.5);
 
 		//check if outside of range
 		if((fabs(locBeamRFDeltaT) < locMinDeltaT) || (fabs(locBeamRFDeltaT) > locMaxDeltaT))
+			return true;
+		if(std::isnan(locRFTime))
 			return true;
 	}
 
@@ -853,9 +858,9 @@ bool DHistogramAction_MissingMass::Perform_Action(void)
 			dHist_MissingMassVsBeamE->Fill(locBeamEnergy, locMissingP4.M());
 			dHist_MissingMassVsMissingP->Fill(locMissingP4.P(), locMissingP4.M());
 		}
-                if(dPreviouslyHistogrammed_ConLev.find(locSourceObjects_ConLev) == dPreviouslyHistogrammed_ConLev.end())
-                {
-                        dPreviouslyHistogrammed_ConLev.insert(locSourceObjects_ConLev);
+		if(dPreviouslyHistogrammed_ConLev.find(locSourceObjects_ConLev) == dPreviouslyHistogrammed_ConLev.end())
+		{
+			dPreviouslyHistogrammed_ConLev.insert(locSourceObjects_ConLev);
 			dHist_MissingMassVsConfidenceLevel->Fill(locConfidenceLevel, locMissingP4.M());
 			dHist_MissingMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locMissingP4.M());
 		}
@@ -871,6 +876,8 @@ void DHistogramAction_MissingMassSquared::Initialize(void)
 	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingMassOffOfStepIndex, dMissingMassOffOfPIDs, dUseKinFitFlag, true);
 
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
+	dRunNumber = dParticleComboWrapper->Get_RunNumber();
+	dBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dRunNumber);
 
 	// CREATE & GOTO MAIN FOLDER
 	CreateAndChangeTo_ActionDirectory();
@@ -913,7 +920,7 @@ void DHistogramAction_MissingMassSquared::Initialize(void)
 bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 {
 	//beam bunch check, if desired
-	if(dSidebandRange.first < dSidebandRange.second)
+	if(dBeamBunchRange.first <= dBeamBunchRange.second)
 	{
 		//get beam/rf delta-t
 		DKinematicData* locKinematicData = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
@@ -921,13 +928,14 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 		double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
 		double locBeamRFDeltaT = locBeamX4.T() - (locRFTime + (locBeamX4.Z() - dTargetCenterZ)/29.9792458);
 
-		//get period, delta-t cut range
-		double locBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dParticleComboWrapper->Get_RunNumber());
-		double locMinDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.first - 1);
-		double locMaxDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.second + 1);
+		//delta-t cut range
+		double locMinDeltaT = dBeamBunchPeriod*(double(dBeamBunchRange.first) - 0.5);
+		double locMaxDeltaT = dBeamBunchPeriod*(double(dBeamBunchRange.first) + 0.5);
 
 		//check if outside of range
 		if((fabs(locBeamRFDeltaT) < locMinDeltaT) || (fabs(locBeamRFDeltaT) > locMaxDeltaT))
+			return true;
+		if(std::isnan(locRFTime))
 			return true;
 	}
 
@@ -976,6 +984,10 @@ void DHistogramAction_MissingP4::Initialize(void)
 	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, -1, deque<Particle_t>(), dUseKinFitFlag, !dUseKinFitFlag);
 	string locReactionString = locInitialParticlesROOTName + string("#rightarrow") + locFinalParticlesROOTName;
 	string locHistName, locHistTitle;
+
+	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
+	dRunNumber = dParticleComboWrapper->Get_RunNumber();
+	dBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dRunNumber);
 
 	// CREATE & GOTO MAIN FOLDER
 	CreateAndChangeTo_ActionDirectory();
@@ -1031,7 +1043,7 @@ void DHistogramAction_MissingP4::Initialize(void)
 bool DHistogramAction_MissingP4::Perform_Action(void)
 {
 	//beam bunch check, if desired
-	if(dSidebandRange.first < dSidebandRange.second)
+	if(dBeamBunchRange.first <= dBeamBunchRange.second)
 	{
 		//get beam/rf delta-t
 		DKinematicData* locKinematicData = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
@@ -1039,13 +1051,14 @@ bool DHistogramAction_MissingP4::Perform_Action(void)
 		double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
 		double locBeamRFDeltaT = locBeamX4.T() - (locRFTime + (locBeamX4.Z() - dTargetCenterZ)/29.9792458);
 
-		//get period, delta-t cut range
-		double locBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dParticleComboWrapper->Get_RunNumber());
-		double locMinDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.first - 1);
-		double locMaxDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.second + 1);
+		//delta-t cut range
+		double locMinDeltaT = dBeamBunchPeriod*(double(dBeamBunchRange.first) - 0.5);
+		double locMaxDeltaT = dBeamBunchPeriod*(double(dBeamBunchRange.first) + 0.5);
 
 		//check if outside of range
 		if((fabs(locBeamRFDeltaT) < locMinDeltaT) || (fabs(locBeamRFDeltaT) > locMaxDeltaT))
+			return true;
+		if(std::isnan(locRFTime))
 			return true;
 	}
 

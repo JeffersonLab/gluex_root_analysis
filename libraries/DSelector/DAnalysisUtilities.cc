@@ -550,16 +550,27 @@ double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) const
 	//get the first line
 	char buff[1024]; // I HATE char buffers
 	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+	{
+		gSystem->ClosePipe(locInputFile);
 		return -1.0;
+	}
+
+	//get the second line (where the # is)
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+	{
+		gSystem->ClosePipe(locInputFile);
+		return -1.0;
+	}
 	istringstream locStringStream(buff);
+
+	//extract it
+	double locBeamBunchPeriod = -1.0;
+	if(!(locStringStream >> locBeamBunchPeriod))
+		locBeamBunchPeriod = -1.0;
 
 	//Close the pipe
 	gSystem->ClosePipe(locInputFile);
 
-	//extract it
-	double locBeamBunchPeriod = 0.0;
-	if(!(locStringStream >> locBeamBunchPeriod))
-		return -1.0;
 	return locBeamBunchPeriod;
 }
 
