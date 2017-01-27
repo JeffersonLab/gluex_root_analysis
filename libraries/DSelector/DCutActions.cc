@@ -401,3 +401,48 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 
 	return true;
 }
+
+string DCutAction_Kinematics::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dStepIndex << "_" << dPID << "_" << dUseKinFitFlag << "_";
+	locStream << dCutMinP << "_" << dCutMaxP << "_" << dCutMinTheta << "_" << dCutMaxTheta << "_" << dCutMinPhi << "_" << dCutMaxPhi;
+	return locStream.str();
+}
+
+bool DCutAction_Kinematics::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		if((int(loc_i) != dStepIndex) && (dStepIndex != -1))
+			continue;
+		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//final particles
+		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
+			Particle_t locPID = locKinematicData->Get_PID();
+			if((locPID != dPID) && (dPID != Unknown))
+				continue;
+
+			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
+			double locP = locP4.P();
+			if((dCutMinP < dCutMaxP) && (locP >= dCutMinP) && (locP <= dCutMaxP))
+				return false;
+
+			double locTheta = locP4.Theta()*180.0/TMath::Pi();
+			if((dCutMinTheta < dCutMaxTheta) && (locTheta >= dCutMinTheta) && (locTheta <= dCutMaxTheta))
+				return false;
+
+			double locPhi = locP4.Phi()*180.0/TMath::Pi();
+			if((dCutMinPhi < dCutMaxPhi) && (locPhi >= dCutMinPhi) && (locPhi <= dCutMaxPhi))
+				return false;
+		}
+	}
+
+	return true;
+}

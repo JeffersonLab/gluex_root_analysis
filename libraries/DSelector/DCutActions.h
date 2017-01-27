@@ -316,15 +316,13 @@ class DCutAction_TrackShowerEOverP : public DAnalysisAction
 		double dShowerEOverPCut;
 };
 
-//kinematic cuts:
-//step index, PID, kinfit flag
-//p-range: min/max
-//theta-range: min/max
-//phi-range: min/max
-//to ignore: min > max
 class DCutAction_Kinematics : public DAnalysisAction
 {
-	//input range is what is cut
+	//input range is what is cut: cut is ignored if min > max
+	//if step index == -1: all steps
+	//if PID == Unknown: all particles
+	//particle must be detected
+	//angles in degrees
 	public:
 		DCutAction_Kinematics(const DParticleCombo* locParticleComboWrapper, int locStepIndex, Particle_t locPID, bool locUseKinFitFlag,
 			double locCutMinP, double locCutMaxP, double locCutMinTheta = 1.0, double locCutMaxTheta = 0.0, double locCutMinPhi = 1.0, double locCutMaxPhi = 0.0) :

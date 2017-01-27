@@ -806,6 +806,25 @@ void DHistogramAction_MissingMass::Initialize(void)
 
 bool DHistogramAction_MissingMass::Perform_Action(void)
 {
+	//beam bunch check, if desired
+	if(dSidebandRange.first < dSidebandRange.second)
+	{
+		//get beam/rf delta-t
+		DKinematicData* locKinematicData = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+		TLorentzVector locBeamX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
+		double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
+		double locBeamRFDeltaT = locBeamX4.T() - (locRFTime + (locBeamX4.Z() - dTargetCenterZ)/29.9792458);
+
+		//get period, delta-t cut range
+		double locBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dParticleComboWrapper->Get_RunNumber());
+		double locMinDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.first - 1);
+		double locMaxDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.second + 1);
+
+		//check if outside of range
+		if((fabs(locBeamRFDeltaT) < locMinDeltaT) || (fabs(locBeamRFDeltaT) > locMaxDeltaT))
+			return true;
+	}
+
 	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
 
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
@@ -851,6 +870,8 @@ void DHistogramAction_MissingMassSquared::Initialize(void)
 	string locInitialParticlesROOTName = dParticleComboWrapper->Get_InitialParticlesROOTName();
 	string locFinalParticlesROOTName = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(0, dMissingMassOffOfStepIndex, dMissingMassOffOfPIDs, dUseKinFitFlag, true);
 
+	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();
+
 	// CREATE & GOTO MAIN FOLDER
 	CreateAndChangeTo_ActionDirectory();
 
@@ -891,6 +912,25 @@ void DHistogramAction_MissingMassSquared::Initialize(void)
 
 bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 {
+	//beam bunch check, if desired
+	if(dSidebandRange.first < dSidebandRange.second)
+	{
+		//get beam/rf delta-t
+		DKinematicData* locKinematicData = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+		TLorentzVector locBeamX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
+		double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
+		double locBeamRFDeltaT = locBeamX4.T() - (locRFTime + (locBeamX4.Z() - dTargetCenterZ)/29.9792458);
+
+		//get period, delta-t cut range
+		double locBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dParticleComboWrapper->Get_RunNumber());
+		double locMinDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.first - 1);
+		double locMaxDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.second + 1);
+
+		//check if outside of range
+		if((fabs(locBeamRFDeltaT) < locMinDeltaT) || (fabs(locBeamRFDeltaT) > locMaxDeltaT))
+			return true;
+	}
+
 	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
 
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
@@ -990,6 +1030,25 @@ void DHistogramAction_MissingP4::Initialize(void)
 
 bool DHistogramAction_MissingP4::Perform_Action(void)
 {
+	//beam bunch check, if desired
+	if(dSidebandRange.first < dSidebandRange.second)
+	{
+		//get beam/rf delta-t
+		DKinematicData* locKinematicData = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+		TLorentzVector locBeamX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
+		double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
+		double locBeamRFDeltaT = locBeamX4.T() - (locRFTime + (locBeamX4.Z() - dTargetCenterZ)/29.9792458);
+
+		//get period, delta-t cut range
+		double locBeamBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(dParticleComboWrapper->Get_RunNumber());
+		double locMinDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.first - 1);
+		double locMaxDeltaT = 0.5*locBeamBunchPeriod*double(dSidebandRange.second + 1);
+
+		//check if outside of range
+		if((fabs(locBeamRFDeltaT) < locMinDeltaT) || (fabs(locBeamRFDeltaT) > locMaxDeltaT))
+			return true;
+	}
+
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
 	double locBeamEnergy = 0.0;
 	if(dUseKinFitFlag)
