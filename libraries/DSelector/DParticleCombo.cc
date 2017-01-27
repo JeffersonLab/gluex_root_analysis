@@ -99,6 +99,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 
 	Setup_Branches();
 	Setup_X4Branches();
+	Setup_EventBranches();
 	Setup_KinFitConstraintInfo();
 
 	Print_Reaction();
@@ -230,6 +231,51 @@ void DParticleCombo::Setup_X4Branches(void)
 	}
 }
 
+void DParticleCombo::Setup_EventBranches(void)
+{
+	// EVENT DATA
+	dRunNumber = (UInt_t*)dTreeInterface->Get_Branch("RunNumber")->GetAddress();
+	dEventNumber = (ULong64_t*)dTreeInterface->Get_Branch("EventNumber")->GetAddress();
+	TBranch* locL1TriggerBitsBranch = dTreeInterface->Get_Branch("L1TriggerBits");
+	dL1TriggerBits = (locL1TriggerBitsBranch != NULL) ? (UInt_t*)locL1TriggerBitsBranch->GetAddress() : NULL;
+
+	// MC-ONLY
+	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
+	if(locIsMCFlag)
+	{
+		dMCWeight = (Float_t*)dTreeInterface->Get_Branch("MCWeight")->GetAddress();
+		dIsThrownTopology = (Bool_t*)dTreeInterface->Get_Branch("IsThrownTopology")->GetAddress();
+	}
+}
+
+void DParticleCombo::Setup_KinFitConstraintInfo(void)
+{
+	TMap* locMiscInfoMap = (TMap*)dTreeInterface->Get_UserInfo()->FindObject("MiscInfoMap");
+	if(locMiscInfoMap->FindObject("KinFitConstraints") == NULL)
+	{
+		dKinFitConstraints = "NA";
+		dNumKinFitConstraints = 0;
+		dNumKinFitUnknowns = 0;
+		return;
+	}
+
+	//constraint string
+	TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("KinFitConstraints");
+	dKinFitConstraints = locObjString->GetName();
+
+	//# constraints
+	locObjString = (TObjString*)locMiscInfoMap->GetValue("NumKinFitConstraints");
+	istringstream locConstraintStream;
+	locConstraintStream.str(locObjString->GetName());
+	locConstraintStream >> dNumKinFitConstraints;
+
+	//# unknowns
+	locObjString = (TObjString*)locMiscInfoMap->GetValue("NumKinFitUnknowns");
+	istringstream locUnknownStream;
+	locUnknownStream.str(locObjString->GetName());
+	locUnknownStream >> dNumKinFitUnknowns;
+}
+
 /***************************************************************** UTILITY FUNCTIONS ******************************************************************/
 
 string DParticleCombo::Get_DecayChainFinalParticlesROOTNames(size_t locStepIndex, int locUpToStepIndex, deque<Particle_t> locUpThroughPIDs, bool locKinFitResultsFlag, bool locExpandDecayingParticlesFlag) const
@@ -280,32 +326,4 @@ string DParticleCombo::Get_DecayChainFinalParticlesROOTNames(size_t locStepIndex
 			locName += Get_DecayChainFinalParticlesROOTNames(locDecayingStepIndex, locUpToStepIndex, locUpThroughPIDs, locKinFitResultsFlag, locExpandDecayingParticlesFlag);
 	}
 	return locName;
-}
-
-void DParticleCombo::Setup_KinFitConstraintInfo(void)
-{
-	TMap* locMiscInfoMap = (TMap*)dTreeInterface->Get_UserInfo()->FindObject("MiscInfoMap");
-	if(locMiscInfoMap->FindObject("KinFitConstraints") == NULL)
-	{
-		dKinFitConstraints = "NA";
-		dNumKinFitConstraints = 0;
-		dNumKinFitUnknowns = 0;
-		return;
-	}
-
-	//constraint string
-	TObjString* locObjString = (TObjString*)locMiscInfoMap->GetValue("KinFitConstraints");
-	dKinFitConstraints = locObjString->GetName();
-
-	//# constraints
-	locObjString = (TObjString*)locMiscInfoMap->GetValue("NumKinFitConstraints");
-	istringstream locConstraintStream;
-	locConstraintStream.str(locObjString->GetName());
-	locConstraintStream >> dNumKinFitConstraints;
-
-	//# unknowns
-	locObjString = (TObjString*)locMiscInfoMap->GetValue("NumKinFitUnknowns");
-	istringstream locUnknownStream;
-	locUnknownStream.str(locObjString->GetName());
-	locUnknownStream >> dNumKinFitUnknowns;
 }

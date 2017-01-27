@@ -316,4 +316,35 @@ class DCutAction_TrackShowerEOverP : public DAnalysisAction
 		double dShowerEOverPCut;
 };
 
+class DCutAction_Kinematics : public DAnalysisAction
+{
+	//input range is what is cut: cut is ignored if min > max
+	//if step index == -1: all steps
+	//if PID == Unknown: all particles
+	//particle must be detected
+	//angles in degrees
+	public:
+		DCutAction_Kinematics(const DParticleCombo* locParticleComboWrapper, int locStepIndex, Particle_t locPID, bool locUseKinFitFlag,
+			double locCutMinP, double locCutMaxP, double locCutMinTheta = 1.0, double locCutMaxTheta = 0.0, double locCutMinPhi = 1.0, double locCutMaxPhi = 0.0) :
+			DAnalysisAction(locParticleComboWrapper, "Cut_Kinematics", locUseKinFitFlag, ""),
+			dStepIndex(locStepIndex), dPID(locPID), dCutMinP(locCutMinP), dCutMaxP(locCutMaxP), dCutMinTheta(locCutMinTheta),
+			dCutMaxTheta(locCutMaxTheta), dCutMinPhi(locCutMinPhi), dCutMaxPhi(locCutMaxPhi) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+
+		int dStepIndex;
+		Particle_t dPID;
+		double dCutMinP;
+		double dCutMaxP;
+		double dCutMinTheta;
+		double dCutMaxTheta;
+		double dCutMinPhi;
+		double dCutMaxPhi;
+};
+
 #endif // _DCutActions_

@@ -66,6 +66,13 @@ class DParticleCombo
 		UInt_t Get_NDF_KinFit(void) const;
 		Float_t Get_ConfidenceLevel_KinFit(void) const;
 
+		// EVENT INFO: //Doesn't really belong in DParticleCombo, but much easier to pass into actions this way
+		UInt_t Get_RunNumber(void) const;
+		ULong64_t Get_EventNumber(void) const;
+		UInt_t Get_L1TriggerBits(void) const;
+		Bool_t Get_IsThrownTopology(void) const;
+		Float_t Get_MCWeight(void) const;
+
 		//GET CUSTOM DATA
 		template <typename DType> DType Get_Fundamental(string locBranchName) const;
 		template <typename DType> DType Get_TObject(string locBranchName) const;
@@ -88,6 +95,7 @@ class DParticleCombo
 		int Get_DecayStepIndex(int locStepIndex, int locParticleIndex) const;
 		pair<int, int> Get_DecayFromIndices(int locStepIndex) const;
 		void Setup_X4Branches(void);
+		void Setup_EventBranches(void);
 		void Setup_KinFitConstraintInfo(void);
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
@@ -121,6 +129,13 @@ class DParticleCombo
 		string dKinFitConstraints;
 		size_t dNumKinFitConstraints;
 		size_t dNumKinFitUnknowns;
+
+		// EVENT DATA
+		UInt_t* dRunNumber;
+		ULong64_t* dEventNumber;
+		UInt_t* dL1TriggerBits;
+		Float_t* dMCWeight; //only present if simulated data
+		Bool_t* dIsThrownTopology; //only present if simulated data
 };
 
 inline void DParticleCombo::Print_Reaction(void) const
@@ -260,6 +275,32 @@ inline DParticleComboStep* DParticleCombo::Get_MissingParticleStep(void) const
 			return dParticleComboSteps[loc_i];
 	}
 	return NULL;
+}
+
+// EVENT DATA
+inline UInt_t DParticleCombo::Get_RunNumber(void) const
+{
+	return *dRunNumber;
+}
+
+inline ULong64_t DParticleCombo::Get_EventNumber(void) const
+{
+	return *dEventNumber;
+}
+
+inline UInt_t DParticleCombo::Get_L1TriggerBits(void) const
+{
+	return *dL1TriggerBits;
+}
+
+inline Bool_t DParticleCombo::Get_IsThrownTopology(void) const
+{
+	return ((dIsThrownTopology != NULL) ? *dIsThrownTopology : false);
+}
+
+inline Float_t DParticleCombo::Get_MCWeight(void) const
+{
+	return ((dMCWeight != NULL) ? *dMCWeight : 0.0);
 }
 
 //GET CUSTOM DATA
