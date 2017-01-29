@@ -81,10 +81,6 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 			locHistTitle = (loc_i == 0) ? "Production Vertex" : locInitParticleROOTName + string(" Decay Vertex");
 			locHistTitle += string(";Vertex-X (cm);Vertex-Y (cm)");
 			dHistMap_StepVertexYVsX[loc_i] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumVertexXYBins, dMinVertexXY, dMaxVertexXY, dNumVertexXYBins, dMinVertexXY, dMaxVertexXY);
-
-			locHistName = "StepVertexT";
-			locHistTitle = (loc_i == 0) ? ";Production Vertex-T (ns)" : string(";") + locInitParticleROOTName + string(" Decay Vertex-T (ns)");
-			dHistMap_StepVertexT[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumTBins, dMinT, dMaxT);
 		}
 
 		if((loc_i != 0) && IsDetachedVertex(locInitialPID))
@@ -174,11 +170,6 @@ void DHistogramAction_ParticleComboKinematics::Create_Hists(int locStepIndex, st
 		dHistMap_DeltaBetaVsP[locStepIndex][locFillPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaBetaBins, dMinDeltaBeta, dMaxDeltaBeta);
 	}
 
-	// Vertex-T
-	locHistName = "VertexT";
-	locHistTitle = locParticleROOTName + string(", ") + locStepROOTName + string(";Vertex-T (ns)");
-	dHistMap_VertexT[locStepIndex][locFillPID] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumTBins, dMinT, dMaxT);
-
 	if(locIsBeamFlag)
 	{
 		// Delta-T (Beam, RF)
@@ -226,7 +217,6 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 		{
 			dHistMap_StepVertexZ[loc_i]->Fill(locStepSpacetimeVertex.Z());
 			dHistMap_StepVertexYVsX[loc_i]->Fill(locStepSpacetimeVertex.X(), locStepSpacetimeVertex.Y());
-			dHistMap_StepVertexT[loc_i]->Fill(locStepSpacetimeVertex.T());
 		}
 
 		//DETACHED VERTEX INFORMATION
@@ -315,7 +305,6 @@ void DHistogramAction_ParticleComboKinematics::Fill_Hists(const DKinematicData* 
 	dHistMap_DeltaBetaVsP[locStepIndex][locPID]->Fill(locP, locDeltaBeta);
 	dHistMap_VertexZ[locStepIndex][locPID]->Fill(locX4.Z());
 	dHistMap_VertexYVsX[locStepIndex][locPID]->Fill(locX4.X(), locX4.Y());
-	dHistMap_VertexT[locStepIndex][locPID]->Fill(locX4.T());
 }
 
 void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicData* locKinematicData, double locRFTime)
@@ -329,7 +318,6 @@ void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicDa
 	dHistMap_P[0][Unknown]->Fill(locP);
 	dHistMap_VertexZ[0][Unknown]->Fill(locX4.Z());
 	dHistMap_VertexYVsX[0][Unknown]->Fill(locX4.X(), locX4.Y());
-	dHistMap_VertexT[0][Unknown]->Fill(locX4.T());
 	dBeamParticleHist_DeltaTRF->Fill(locDeltaTRF);
 	dBeamParticleHist_DeltaTRFVsBeamE->Fill(locP4.E(), locDeltaTRF);
 }

@@ -68,7 +68,6 @@ class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 		map<size_t, map<Particle_t, TH1I*> > dHistMap_Theta;
 		map<size_t, map<Particle_t, TH1I*> > dHistMap_Phi;
 		map<size_t, map<Particle_t, TH1I*> > dHistMap_VertexZ;
-		map<size_t, map<Particle_t, TH1I*> > dHistMap_VertexT;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_VertexYVsX;
 
 		map<size_t, TH1I*> dHistMap_MaxTrackDeltaZ;
@@ -80,7 +79,6 @@ class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 		//other than first, skipped if not detached vertex
 		map<size_t, TH1I*> dHistMap_StepVertexZ;
 		map<size_t, TH2I*> dHistMap_StepVertexYVsX;
-		map<size_t, TH1I*> dHistMap_StepVertexT;
 
 		//size_t is step index where the detached-vertex particle decays
 		map<size_t, TH1I*> dHistMap_DetachedPathLength; //distance between this vertex and the previous one (if detached)
