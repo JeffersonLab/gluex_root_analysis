@@ -116,16 +116,31 @@ bool DCutAction_NoPIDHit::Perform_Action(void)
 	return true;
 }
 
-void DCutAction_dEdxProton::Initialize(void)
+string DCutAction_dEdx::Get_ActionName(void) const
 {
-  if ( dFunct == NULL )
-    {
-      dFunct = new TF1("f","exp([0]*x + [1]) + [2]",0.0,10.0);
-      dFunct->SetParameters(-4.0,2.25,1.0);
-    }
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dSystem;
+	return locStream.str();
 }
 
-bool DCutAction_dEdxProton::Perform_Action(void)
+void DCutAction_dEdx::Initialize(void)
+{
+	if(dFunc_dEdxCut_SelectHeavy == NULL)
+	{
+		string locFuncName = "df_dEdxCut_SelectHeavy"; //e.g. proton
+		dFunc_dEdxCut_SelectHeavy = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
+		dFunc_dEdxCut_SelectHeavy->SetParameters(2.0, 2.0, 1.0);
+	}
+
+	if(dFunc_dEdxCut_SelectLight == NULL)
+	{
+		string locFuncName = "df_dEdxCut_SelectLight"; //e.g. pions, kaons
+		dFunc_dEdxCut_SelectLight = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
+		dFunc_dEdxCut_SelectLight->SetParameters(2.0, 0.8, 3.0);
+	}
+}
+
+bool DCutAction_dEdx::Perform_Action(void)
 {
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
@@ -143,20 +158,53 @@ bool DCutAction_dEdxProton::Perform_Action(void)
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
-			if((dPID != Unknown) && (locKinematicData->Get_PID() != dPID))
+			Particle_t locPID = locKinematicData->Get_PID();
+			if((dPID != Unknown) && (locPID != dPID))
 				continue;
 
 			const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+			if(locChargedTrackHypothesis == NULL)
+				continue; //neutral!
+
 			Float_t locdEdx;
-			if(dSystem != SYS_CDC)
+			if(dSystem == SYS_CDC)
 				locdEdx = locChargedTrackHypothesis->Get_dEdx_CDC()*1.0E6;
+			else if(dSystem == SYS_FDC)
+				locdEdx = locChargedTrackHypothesis->Get_dEdx_FDC()*1.0E6;
+			else if(dSystem == SYS_START)
+				locdEdx = locChargedTrackHypothesis->Get_dEdx_ST()*1.0E3;
+			else if(dSystem == SYS_TOF)
+				locdEdx = locChargedTrackHypothesis->Get_dEdx_TOF()*1.0E3;
 			else
 				continue;
 
-			double locp = dUseKinFitFlag ? locChargedTrackHypothesis->Get_P4().Vect().Mag() : locChargedTrackHypothesis->Get_P4_Measured().Vect().Mag();
-			if(locdEdx < dFunct->Eval(locp)) 
-				return false;
+			if(!(locdEdx > 0.0))
+				return true; // Not enough hits in the detector to report a dE/dx: Don't cut
 
+			//cut
+			double locP = dUseKinFitFlag ? locChargedTrackHypothesis->Get_P4().Vect().Mag() : locChargedTrackHypothesis->Get_P4_Measured().Vect().Mag();
+			if((ParticleMass(locPID) + 0.0001) >= ParticleMass(Proton))
+			{
+				//heavy
+				if(dMaxRejectionFlag) //focus on rejecting background pions
+				{
+					if(locdEdx < dFunc_dEdxCut_SelectLight->Eval(locP))
+						return false;
+				}
+				else if(locdEdx < dFunc_dEdxCut_SelectHeavy->Eval(locP))
+					return false; //focus on keeping signal protons
+			}
+			else
+			{
+				//light
+				if(dMaxRejectionFlag) //focus on rejecting background pions
+				{
+					if(locdEdx > dFunc_dEdxCut_SelectHeavy->Eval(locP))
+						return false;
+				}
+				else if(locdEdx > dFunc_dEdxCut_SelectLight->Eval(locP))
+					return false; //focus on keeping signal pions
+			}
 		} //end of particle loop
 	} //end of step loop
 
