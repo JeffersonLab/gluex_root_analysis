@@ -186,7 +186,12 @@ inline TLorentzVector DKinematicData::Get_X4_Measured(void) const
 	if(dBranchNamePrefix == "ThrownBeam")
 		return *dThrownBeamX4; //thrown beam
 
-	int locArrayIndex = Get_IsDetectedComboNeutralParticle() ? dArrayIndex : dMeasuredArrayIndex;
+	int locArrayIndex = (Get_IsDetectedComboNeutralParticle() || (dBranchNamePrefix == "ComboBeam")) ? dArrayIndex : dMeasuredArrayIndex;
+	if(dBranchNamePrefix == "ComboBeam") //for backwards compatibility
+	{
+		if(dTreeInterface->Get_Pointer_TClonesArray("ComboBeam__X4_Measured") == NULL)
+			locArrayIndex = dMeasuredArrayIndex;
+	}
 	return *((TLorentzVector*)dX4_Measured->At(locArrayIndex));
 }
 

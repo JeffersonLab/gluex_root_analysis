@@ -129,8 +129,13 @@ void DKinematicData::Setup_Branches(void)
 		dP4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
 
 		//X4_Measured
-		locBranchName = dMeasuredBranchNamePrefix + string("__X4_Measured");
+		locBranchName = dBranchNamePrefix + string("__X4_Measured");
 		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		if(dX4_Measured == NULL) //backwards compatibility
+		{
+			locBranchName = dMeasuredBranchNamePrefix + string("__X4_Measured");
+			dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		}
 	}
 	else if(ParticleCharge(dPID) == 0) //neutral: get from combo object
 	{
