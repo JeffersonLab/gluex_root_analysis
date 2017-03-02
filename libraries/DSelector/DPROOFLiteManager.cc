@@ -66,9 +66,12 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(string locPackageName, string locI
 	locOutputTreeFileName = Setup_Path(locOutputTreeFileName);
 
 	TObjArray* locSessionVariables = new TObjArray(); //use name/title as key/value
-	locSessionVariables->AddLast(new TNamed("INPUT_FILENAME", locInputFileName.c_str()));
-	locSessionVariables->AddLast(new TNamed("OUTPUT_FILENAME", locOutputFileName.c_str()));
-	locSessionVariables->AddLast(new TNamed("OUTPUT_TREE_FILENAME", locOutputTreeFileName.c_str()));
+	if(locInputFileName != "")
+		locSessionVariables->AddLast(new TNamed("INPUT_FILENAME", locInputFileName.c_str()));
+	if(locOutputFileName != "")
+		locSessionVariables->AddLast(new TNamed("OUTPUT_FILENAME", locOutputFileName.c_str()));
+	if(locOutputTreeFileName != "")
+		locSessionVariables->AddLast(new TNamed("OUTPUT_TREE_FILENAME", locOutputTreeFileName.c_str()));
 	locSessionVariables->AddLast(new TNamed("OPTIONS", locOptions.c_str()));
 
 	return Setup_PROOFSession(locNumThreads, vector<string>(1, locPackageName), locSessionVariables);

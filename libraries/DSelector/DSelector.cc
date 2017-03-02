@@ -21,16 +21,14 @@ void DSelector::Init(TTree *locTree)
 	// SETUP TREE
 	locTree->GetDirectory()->cd();
 	locTree->SetMakeClass(1);
-	if(dTreeInterface != NULL)
-		delete dTreeInterface;
-	dTreeInterface = new DTreeInterface(locTree);
-
-	//This is necessary to compensate for one of ROOT's ... idiosyncrasies.
-	//Some branches apparently don't load correctly if the gDirectory(?) is changed between initializing the tree and reading the first entry.
-	dTreeInterface->Get_Entry(0);
+	if(dTreeInterface == NULL)
+		dTreeInterface = new DTreeInterface(locTree);
+	else
+		dTreeInterface->Set_NewTree(locTree);
 
 	// SETUP BRANCHES
-	Setup_Branches();
+	if(!dInitializedFlag)
+		Setup_Branches();
 
 	// IF PREVIOUSLY INITIALIZED, RE-INIT WRAPPERS
 	if(dInitializedFlag)
@@ -47,15 +45,15 @@ void DSelector::Init(TTree *locTree)
 	Setup_Target();
 
 	// CLONE TTree for writing out if desired
-	if(dOutputTreeFile != NULL) {
+	if(dOutputTreeFile != NULL)
+	{
 		dOutputTreeFile->cd();
 		dTreeInterface->CloneTree();
 	}
 
 	//Change back to file dir, if it exists //So that user-created histograms are in the right location
-	if(dFile != NULL) {
+	if(dFile != NULL)
 		dFile->cd();
-	}
 
 	dInitializedFlag = true;
 }
@@ -116,16 +114,16 @@ void DSelector::ReInitialize_Wrappers(void)
 {
 	if(dNumThrown != NULL) //thrown
 	{
-		dThrownBeam->ReInitialize(dTreeInterface);
-		dThrownWrapper->ReInitialize(dTreeInterface);
+		dThrownBeam->ReInitialize();
+		dThrownWrapper->ReInitialize();
 	}
 
 	if(dNumCombos != NULL) //detected
 	{
-		dChargedHypoWrapper->ReInitialize(dTreeInterface);
-		dNeutralHypoWrapper->ReInitialize(dTreeInterface);
-		dBeamWrapper->ReInitialize(dTreeInterface);
-		dComboWrapper->ReInitialize(dTreeInterface);
+		dChargedHypoWrapper->ReInitialize();
+		dNeutralHypoWrapper->ReInitialize();
+		dBeamWrapper->ReInitialize();
+		dComboWrapper->ReInitialize();
 	}
 }
 
@@ -220,20 +218,21 @@ void DSelector::Terminate()
 
 void DSelector::Finalize()
 {
-	if(dFile != NULL)
-	{
-		dFile->Write();
-		dFile->Close();
-	}
 	if(dOutputTreeFile != NULL)
 	{
 		dOutputTreeFile->Write(0, TObject::kOverwrite);
 		dOutputTreeFile->Close();
 	}
-	if(dProofFile != NULL)
-		fOutput->Add(dProofFile);
 	if(dOutputTreeProofFile != NULL)
 		fOutput->Add(dOutputTreeProofFile);
+
+	if(dFile != NULL)
+	{
+		dFile->Write();
+		dFile->Close();
+	}
+	if(dProofFile != NULL)
+		fOutput->Add(dProofFile);
 }
 
 /**************************************************************** EXTRACT THROWN INFO *****************************************************************/

@@ -56,7 +56,7 @@ class DKinematicData
 	protected:
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
-		virtual void ReInitialize(DTreeInterface* locTreeInterface);
+		virtual void ReInitialize(void);
 
 		bool Get_IsComboParticle(void) const;
 		bool Get_IsDetectedComboNeutralParticle(void) const;
@@ -134,9 +134,8 @@ inline bool DKinematicData::Get_IsComboParticle(void) const
 	return !((dBranchNamePrefix == "ThrownBeam") || (dBranchNamePrefix == "Thrown") || (dBranchNamePrefix == "Beam") || (dBranchNamePrefix == "ChargedHypo") || (dBranchNamePrefix == "NeutralHypo"));
 }
 
-inline void DKinematicData::ReInitialize(DTreeInterface* locTreeInterface)
+inline void DKinematicData::ReInitialize(void)
 {
-	dTreeInterface = locTreeInterface;
 	Setup_Branches();
 }
 

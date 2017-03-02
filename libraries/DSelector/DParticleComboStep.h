@@ -72,7 +72,7 @@ class DParticleComboStep
 		DParticleComboStep(void){}; //no default constructor!
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
-		void ReInitialize(DTreeInterface* locTreeInterface);
+		void ReInitialize(void);
 
 		DTreeInterface* dTreeInterface;
 		UInt_t dComboIndex; //the index in the particle-data arrays to use to grab particle data (e.g. corresponding to this combo)
@@ -139,18 +139,16 @@ inline void DParticleComboStep::Set_ComboIndex(UInt_t locComboIndex)
 	}
 }
 
-inline void DParticleComboStep::ReInitialize(DTreeInterface* locTreeInterface)
+inline void DParticleComboStep::ReInitialize(void)
 {
-	dTreeInterface = locTreeInterface;
-
 	if(dInitialParticle != NULL)
-		dInitialParticle->ReInitialize(dTreeInterface);
+		dInitialParticle->ReInitialize();
 	if(dTargetParticle != NULL)
-		dTargetParticle->ReInitialize(dTreeInterface);
+		dTargetParticle->ReInitialize();
 	for(size_t loc_i = 0; loc_i < dFinalParticles.size(); ++loc_i)
 	{
 		if(dFinalParticles[loc_i] != NULL)
-			dFinalParticles[loc_i]->ReInitialize(dTreeInterface);
+			dFinalParticles[loc_i]->ReInitialize();
 	}
 }
 

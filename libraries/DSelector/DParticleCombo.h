@@ -99,7 +99,7 @@ class DParticleCombo
 		void Setup_KinFitConstraintInfo(void);
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
-		void ReInitialize(DTreeInterface* locTreeInterface);
+		void ReInitialize(void);
 
 		DTreeInterface* dTreeInterface;
 		UInt_t* dNumCombos;
@@ -176,12 +176,11 @@ inline void DParticleCombo::Set_ComboIndex(UInt_t locComboIndex)
 		dParticleComboSteps[loc_i]->Set_ComboIndex(locComboIndex);
 }
 
-inline void DParticleCombo::ReInitialize(DTreeInterface* locTreeInterface)
+inline void DParticleCombo::ReInitialize(void)
 {
-	dTreeInterface = locTreeInterface;
 	Setup_Branches();
 	for(size_t loc_i = 0; loc_i < dParticleComboSteps.size(); ++loc_i)
-		dParticleComboSteps[loc_i]->ReInitialize(dTreeInterface);
+		dParticleComboSteps[loc_i]->ReInitialize();
 	Setup_X4Branches();
 }
 

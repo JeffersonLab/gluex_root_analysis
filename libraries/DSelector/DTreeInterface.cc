@@ -1,12 +1,15 @@
 #include "DTreeInterface.h"
 
+#include "TBranchElement.h"
 /**************************************************************** SETUP INPUT BRANCHES ****************************************************************/
 
-void DTreeInterface::Set_BranchAddresses(void)
+void DTreeInterface::Set_BranchAddresses(bool locFirstTreeFlag)
 {
 	//ASSUME: One leaf per branch: No splitting
 
 	//Loop over branches
+	//TChain* locChain = dynamic_cast<TChain*>(dTree);
+	//cout << "TREE, CHAIN POINTERS = " << dTree << ", " << locChain << endl;
 	TObjArray* locBranchArray = dTree->GetListOfBranches();
 	for(Int_t loc_i = 0; loc_i < locBranchArray->GetEntriesFast(); ++loc_i)
 	{
@@ -14,7 +17,11 @@ void DTreeInterface::Set_BranchAddresses(void)
 		TBranch* locBranch = dynamic_cast<TBranch*>(locBranchArray->At(loc_i));
 		string locBranchName = locBranch->GetName();
 
-		//Set addresses based on type
+		//Register branch
+		dInputBranches.insert(locBranchName);
+		dBranchMap_InputTree[locBranchName] = locBranch;
+
+		//Set branch address based on type
 		string locClassName = locBranch->GetClassName(); //is "" for fundamental types, TLorentzVector, TClonesArray (not subtype!)
 		if(locClassName == "") //Is fundamental type
 			Set_FundamentalBranchAddress(locBranchName, locBranch->GetTitle());
@@ -22,13 +29,52 @@ void DTreeInterface::Set_BranchAddresses(void)
 			Set_ClonesArrayBranchAddress(locBranchName);
 		else //TObject
 			Set_TObjectBranchAddress(locBranchName, locClassName);
-
-		//Register branches
-		dBranchMap_InputTree[locBranchName] = locBranch;
-		dInputBranches.insert(locBranchName);
 	}
 
-	dGetEntryBranches = dInputBranches;
+	if(locFirstTreeFlag)
+		dGetEntryBranches = dInputBranches;
+}
+
+void DTreeInterface::CloneTree(void)
+{
+	//make sure you've cd'd into the output file before calling this function!
+	if(dTreeOutput != NULL)
+		return;
+
+	//cannot use TTree::CloneTree(): In PROOF, the selector is only given the TTree, and not the TChain
+	//and, the branch addresses change from tree-to-tree (file-to-file), which is assumed not to happen in TTree::CloneTree()
+	//so, must set it up manually (thanks ROOT!)
+	dTreeOutput = new TTree(dTree->GetName(), dTree->GetName());
+
+	//set user info
+	TList* locInputUserInfo = Get_UserInfo();
+	TList* locOutputUserInfo = dTreeOutput->GetUserInfo();
+	for(Int_t loc_i = 0; loc_i < locInputUserInfo->GetSize(); ++loc_i)
+		locOutputUserInfo->Add(locInputUserInfo->At(loc_i)->Clone());
+
+
+	//Loop over branches in order
+	TObjArray* locBranchArray = dTree->GetListOfBranches();
+	for(Int_t loc_i = 0; loc_i < locBranchArray->GetEntriesFast(); ++loc_i)
+	{
+		//Get branch
+		TBranch* locBranch = dynamic_cast<TBranch*>(locBranchArray->At(loc_i));
+		string locBranchName = locBranch->GetName();
+
+		//Clone branch based on type
+		if(dMemoryMap_Fundamental.find(locBranchName) != dMemoryMap_Fundamental.end())
+		{
+			//is fundamental type. check if it is an array or not
+			if(dBranchToArraySizeMap.find(locBranchName) == dBranchToArraySizeMap.end())
+				Clone_Branch_Fundamental(locBranchName); //not an array
+			else //is an array
+				Clone_Branch_FundamentalArray(locBranchName);
+		}
+		else if(dMemoryMap_ClonesArray.find(locBranchName) != dMemoryMap_ClonesArray.end())
+			Clone_Branch_ClonesArray(locBranchName); //is a clonesarray
+		else //is a tobject
+			Clone_Branch_TObject(locBranchName);
+	}
 }
 
 void DTreeInterface::Set_FundamentalBranchAddress(string locBranchName, string locBranchTitle)
@@ -157,6 +203,9 @@ void DTreeInterface::Get_Entry(Long64_t locEntry)
 			string locBranchType = dFundamentalBranchTypeMap[locBranchName];
 			Increase_ArraySize(locBranchName, locBranchType, locNewArraySize);
 		}
+
+		//save the new array size
+		dFundamentalArraySizeMap[locArraySizeBranchName] = locNewArraySize;
 	}
 
 	//now, can loop through and get entries for all desired branches

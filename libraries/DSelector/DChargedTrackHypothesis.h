@@ -72,7 +72,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		void Setup_Branches(void);
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
-		void ReInitialize(DTreeInterface* locTreeInterface);
+		void ReInitialize(void);
 
 		//For fundamental arrays
 			//cannot store array pointer: when array size is increased, a new array is created
@@ -216,9 +216,9 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	dBranch_TrackFCAL_DOCA = dTreeInterface->Get_Branch(locBranchName);
 }
 
-inline void DChargedTrackHypothesis::ReInitialize(DTreeInterface* locTreeInterface)
+inline void DChargedTrackHypothesis::ReInitialize(void)
 {
-	DKinematicData::ReInitialize(locTreeInterface);
+	DKinematicData::ReInitialize();
 	Setup_Branches();
 }
 
