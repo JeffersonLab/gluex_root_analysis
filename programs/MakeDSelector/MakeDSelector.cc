@@ -535,6 +535,8 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		/*" << endl;
 	locSourceStream << "		TLorentzVector locMyComboP4(8.0, 7.0, 6.0, 5.0);" << endl;
 	locSourceStream << "		//for arrays below: 2nd argument is value, 3rd is array index" << endl;
+	locSourceStream << "		//NOTE: By filling here, AFTER the cuts above, some indices will be unfilled (and uninitialized)" << endl;
+	locSourceStream << "			//So, when you draw the branch, be sure to cut on \"IsComboCut\" to avoid these." << endl;
 	locSourceStream << "		dTreeInterface->Fill_Fundamental<Float_t>(\"my_combo_array\", -2*loc_i, loc_i);" << endl;
 	locSourceStream << "		dTreeInterface->Fill_TObject<TLorentzVector>(\"my_p4_array\", locMyComboP4, loc_i);" << endl;
 	locSourceStream << "		*/" << endl;
