@@ -428,8 +428,8 @@ template <typename DType> inline void DTreeInterface::Create_Branch_NoSplitTObje
 		return;
 	}
 
-	dMemoryMap_TObject[locBranchName] = (TObject*)(new DType());
-	void* locMemoryPointer = static_cast<void*>(dMemoryMap_TObject[locBranchName]);
+	dMemoryMap_TObject[locBranchName] = static_cast<TObject*>(new DType());
+	TObject* locMemoryPointer = dMemoryMap_TObject[locBranchName];
 
 	string locClassName = dMemoryMap_TObject[locBranchName]->ClassName();
 	dBranchMap_OutputTree[locBranchName] = dTreeOutput->Branch(locBranchName.c_str(), locClassName.c_str(), locMemoryPointer, 32000, 0); //0: don't split
