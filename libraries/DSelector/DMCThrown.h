@@ -40,7 +40,7 @@ class DMCThrown : public DKinematicData
 		void Setup_Branches(void);
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
-		void ReInitialize(DTreeInterface* locTreeInterface);
+		void ReInitialize(void);
 
 		//For fundamental arrays
 			//cannot store array pointer: when array size is increased, a new array is created
@@ -75,9 +75,9 @@ inline void DMCThrown::Setup_Branches(void)
 	dBranch_MatchFOM = dTreeInterface->Get_Branch(locBranchName);
 }
 
-inline void DMCThrown::ReInitialize(DTreeInterface* locTreeInterface)
+inline void DMCThrown::ReInitialize(void)
 {
-	DKinematicData::ReInitialize(locTreeInterface);
+	DKinematicData::ReInitialize();
 	Setup_Branches();
 }
 
