@@ -97,14 +97,14 @@ class DKinematicData
 		TBranch* dBranch_PID;
 
 		// P4
-		TClonesArray* dP4_KinFit; //NULL if not kinfit
-		TClonesArray* dP4_Measured; //NULL if target, missing, decaying, or thrown beam
+		TClonesArray** dP4_KinFit; //NULL if not kinfit
+		TClonesArray** dP4_Measured; //NULL if target, missing, decaying, or thrown beam
 		TLorentzVector dFixedP4; //use if target
 		TLorentzVector* dThrownBeamP4; //NULL if not thrown beam
 
 		// X4
-		TClonesArray* dX4_KinFit; //NULL if not kinfit
-		TClonesArray* dX4_Measured; //NULL if thrown beam //if missing, decaying, or target: is from a different particle
+		TClonesArray** dX4_KinFit; //NULL if not kinfit
+		TClonesArray** dX4_Measured; //NULL if thrown beam //if missing, decaying, or target: is from a different particle
 		TLorentzVector* dThrownBeamX4; //NULL if not thrown beam
 };
 
@@ -173,13 +173,13 @@ inline TLorentzVector DKinematicData::Get_P4_Measured(void) const
 		return *dThrownBeamP4; //thrown beam
 
 	int locArrayIndex = Get_IsDetectedComboNeutralParticle() ? dArrayIndex : dMeasuredArrayIndex;
-	return *((TLorentzVector*)dP4_Measured->At(locArrayIndex));
+	return *((TLorentzVector*)(*dP4_Measured)->At(locArrayIndex));
 }
 
 inline TLorentzVector DKinematicData::Get_P4(void) const
 {
 	if(dP4_KinFit != NULL)
-		return *((TLorentzVector*)dP4_KinFit->At(dArrayIndex));
+		return *((TLorentzVector*)(*dP4_KinFit)->At(dArrayIndex));
 	return Get_P4_Measured();
 }
 
@@ -189,13 +189,13 @@ inline TLorentzVector DKinematicData::Get_X4_Measured(void) const
 		return *dThrownBeamX4; //thrown beam
 
 	int locArrayIndex = Get_IsDetectedComboNeutralParticle() ? dArrayIndex : dMeasuredArrayIndex;
-	return *((TLorentzVector*)dX4_Measured->At(locArrayIndex));
+	return *((TLorentzVector*)(*dX4_Measured)->At(locArrayIndex));
 }
 
 inline TLorentzVector DKinematicData::Get_X4(void) const
 {
 	if(dX4_KinFit != NULL)
-		return *((TLorentzVector*)dX4_KinFit->At(dArrayIndex));
+		return *((TLorentzVector*)(*dX4_KinFit)->At(dArrayIndex));
 	return Get_X4_Measured();
 }
 

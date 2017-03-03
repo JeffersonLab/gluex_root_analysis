@@ -88,7 +88,7 @@ class DNeutralParticleHypothesis : public DKinematicData
 		TBranch* dBranch_Energy_BCAL;
 		TBranch* dBranch_Energy_BCALPreshower;
 		TBranch* dBranch_Energy_FCAL;
-		TClonesArray* dX4_Shower;
+		TClonesArray** dX4_Shower;
 
 		//TRACK MATCHING
 		TBranch* dBranch_TrackBCAL_DeltaPhi;
@@ -150,7 +150,7 @@ inline void DNeutralParticleHypothesis::Setup_Branches(void)
 	dBranch_Energy_FCAL = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "NeutralHypo__X4_Shower";
-	dX4_Shower = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+	dX4_Shower = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 	//TRACK MATCHING:
 	locBranchName = "NeutralHypo__TrackBCAL_DeltaPhi";
@@ -268,7 +268,7 @@ inline Float_t DNeutralParticleHypothesis::Get_Energy_FCAL(void) const
 
 inline TLorentzVector DNeutralParticleHypothesis::Get_X4_Shower(void) const
 {
-	return *((TLorentzVector*)dX4_Shower->At(dMeasuredArrayIndex));
+	return *((TLorentzVector*)(*dX4_Shower)->At(dMeasuredArrayIndex));
 }
 
 //TRACK MATCHING:

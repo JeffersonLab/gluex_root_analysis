@@ -42,11 +42,11 @@ void DKinematicData::Setup_Branches(void)
 	{
 		//P4_Measured
 		locBranchName = dBranchNamePrefix + string("__P4");
-		dP4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dP4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//X4_Measured
 		locBranchName = dBranchNamePrefix + string("__X4");
-		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dX4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//ARRAY SIZE
 		dArraySize = (UInt_t*)dTreeInterface->Get_Branch("NumThrown")->GetAddress();
@@ -59,11 +59,11 @@ void DKinematicData::Setup_Branches(void)
 	{
 		//P4_Measured
 		locBranchName = dBranchNamePrefix + string("__P4_Measured");
-		dP4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dP4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//X4_Measured
 		locBranchName = dBranchNamePrefix + string("__X4_Measured");
-		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dX4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//ARRAY SIZE
 		if(dBranchNamePrefix == "Beam")
@@ -82,14 +82,14 @@ void DKinematicData::Setup_Branches(void)
 	//Now, is combo particle
 	//P4_KinFit
 	locBranchName = dBranchNamePrefix + string("__P4_KinFit");
-	dP4_KinFit = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+	dP4_KinFit = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 	//X4_KinFit
 	if(dBranchNamePrefix.substr(0, 8) == "Decaying")
 		locBranchName = dBranchNamePrefix + string("__X4");
 	else
 		locBranchName = dBranchNamePrefix + string("__X4_KinFit");
-	dX4_KinFit = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+	dX4_KinFit = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 	//if decaying/missing, return
 	if((dBranchNamePrefix.substr(0, 8) == "Decaying") || (dBranchNamePrefix.substr(0, 7) == "Missing"))
@@ -109,11 +109,11 @@ void DKinematicData::Setup_Branches(void)
 
 		//X4_Measured
 		locBranchName = "Beam__X4_Measured";
-		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dX4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//X4_KinFit
 		locBranchName = "ComboBeam__X4_KinFit";
-		dX4_KinFit = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dX4_KinFit = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 	}
 	else if(dBranchNamePrefix == "ComboBeam") //beam
 	{
@@ -126,11 +126,11 @@ void DKinematicData::Setup_Branches(void)
 
 		//P4_Measured
 		locBranchName = dMeasuredBranchNamePrefix + string("__P4_Measured");
-		dP4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dP4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//X4_Measured
 		locBranchName = dMeasuredBranchNamePrefix + string("__X4_Measured");
-		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dX4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 	}
 	else if(ParticleCharge(dPID) == 0) //neutral: get from combo object
 	{
@@ -143,11 +143,11 @@ void DKinematicData::Setup_Branches(void)
 
 		//P4_Measured
 		locBranchName = dBranchNamePrefix + string("__P4_Measured");
-		dP4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dP4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//X4_Measured
 		locBranchName = dBranchNamePrefix + string("__X4_Measured");
-		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dX4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 	}
 	else //charged: get from measured object
 	{
@@ -160,10 +160,10 @@ void DKinematicData::Setup_Branches(void)
 
 		//P4_Measured
 		locBranchName = dMeasuredBranchNamePrefix + string("__P4_Measured");
-		dP4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dP4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
 		//X4_Measured
 		locBranchName = dMeasuredBranchNamePrefix + string("__X4_Measured");
-		dX4_Measured = dTreeInterface->Get_Pointer_TClonesArray(locBranchName);
+		dX4_Measured = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 	}
 }
