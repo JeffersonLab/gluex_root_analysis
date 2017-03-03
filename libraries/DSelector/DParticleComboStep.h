@@ -94,7 +94,7 @@ class DParticleComboStep
 		int dMissingParticleIndex; //-2 if none, -1 if parent, > 0 if final state
 
 		// SPACETIME VERTEX
-		TClonesArray* dX4_Step;
+		TClonesArray** dX4_Step;
 		TBranch* dBranch_X4MeasuredIndex; //branch index for dX4_Step if retrieved from a measured source //if kinfit, is just combo index
 };
 
@@ -175,7 +175,7 @@ inline void DParticleComboStep::Print_Reaction(void) const
 inline TLorentzVector DParticleComboStep::Get_X4(void) const
 {
 	UInt_t locArrayIndex = (dBranch_X4MeasuredIndex == NULL) ? dComboIndex : ((UInt_t*)dBranch_X4MeasuredIndex->GetAddress())[dComboIndex];
-	return *((TLorentzVector*)dX4_Step->At(locArrayIndex));
+	return *((TLorentzVector*)(*dX4_Step)->At(locArrayIndex));
 }
 
 inline DKinematicData* DParticleComboStep::Get_MissingParticle(void) const

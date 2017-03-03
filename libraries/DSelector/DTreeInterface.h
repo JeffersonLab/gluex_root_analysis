@@ -89,7 +89,7 @@ class DTreeInterface
 		//GET OBJECT POINTERS
 		template <typename DType> DType* Get_Pointer_Fundamental(string locBranchName) const;
 		template <typename DType> DType* Get_Pointer_TObject(string locBranchName) const;
-		TClonesArray* Get_Pointer_TClonesArray(string locBranchName);
+		TClonesArray** Get_PointerToPointerTo_TClonesArray(string locBranchName); //ROOT sometimes changes the pointer!
 
 		//GET OBJECTS
 		template <typename DType> DType Get_Fundamental(string locBranchName) const;
@@ -361,13 +361,13 @@ template <typename DType> inline DType* DTreeInterface::Get_Pointer_TObject(stri
 	return ((locBranch != NULL) ? *(DType**)locBranch->GetAddress() : NULL);
 }
 
-inline TClonesArray* DTreeInterface::Get_Pointer_TClonesArray(string locBranchName)
+inline TClonesArray** DTreeInterface::Get_PointerToPointerTo_TClonesArray(string locBranchName)
 {
 	TBranch* locBranch = Get_Branch(locBranchName);
 	if(locBranch == NULL)
 		return NULL;
 
-	return *(TClonesArray**)locBranch->GetAddress();
+	return (TClonesArray**)locBranch->GetAddress();
 }
 
 //GET OBJECTS
@@ -388,7 +388,7 @@ template <typename DType> inline DType DTreeInterface::Get_TObject(string locBra
 
 template <typename DType> inline DType DTreeInterface::Get_TObject(string locBranchName, UInt_t locArrayIndex)
 {
-	return *((DType*)Get_Pointer_TClonesArray(locBranchName)->At(locArrayIndex));
+	return *((DType*)(*Get_PointerToPointerTo_TClonesArray(locBranchName))->At(locArrayIndex));
 }
 
 //INCREASE ARRAY SIZE //For when reading only! Not when writing
@@ -548,7 +548,7 @@ template <typename DType> inline void DTreeInterface::Fill_Fundamental(string lo
 
 template <typename DType> inline void DTreeInterface::Fill_TObject(string locBranchName, const DType& locObject, unsigned int locArrayIndex)
 {
-	TClonesArray* locClonesArray = Get_Pointer_TClonesArray(locBranchName);
+	TClonesArray* locClonesArray = *Get_PointerToPointerTo_TClonesArray(locBranchName);
 	if(locArrayIndex == 0) //ASSUMES FILLED IN ORDER!!!
 		locClonesArray->Clear(); //empties array
 	*(DType*)locClonesArray->ConstructedAt(locArrayIndex) = locObject;

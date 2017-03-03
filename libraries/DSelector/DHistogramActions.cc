@@ -250,6 +250,7 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 		//final particles
 		for(size_t loc_j = 0; loc_j < locParticleComboStepWrapper->Get_NumFinalParticles(); ++loc_j)
 		{
+			cout << "j = " << loc_j << endl;
 			DKinematicData* locKinematicData = locParticleComboStepWrapper->Get_FinalParticle(loc_j);
 			if(locKinematicData == NULL)
 				continue; //e.g. a decaying or missing particle whose params aren't set yet

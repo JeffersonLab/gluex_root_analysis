@@ -63,6 +63,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 				locKinematicData = new DChargedTrackHypothesis(dTreeInterface, locParticleName, locPID);
 			else
 				locKinematicData = new DNeutralParticleHypothesis(dTreeInterface, locParticleName, locPID);
+
 			locParticleMap[locStepIndex][locParticleIndex] = pair<Particle_t, DKinematicData*>(locPID, locKinematicData);
 		}
 	}
@@ -103,6 +104,8 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 	Setup_KinFitConstraintInfo();
 
 	Print_Reaction();
+
+	Get_ParticleComboStep(0)->Get_InitialParticle()->Get_X4();
 }
 
 /****************************************************************** SETUP FUNCTIONS *******************************************************************/
@@ -181,7 +184,7 @@ void DParticleCombo::Setup_X4Branches(void)
 	//Set X4 for decaying particles & steps
 	for(size_t loc_i = 0; loc_i < dParticleComboSteps.size(); ++loc_i)
 	{
-		TClonesArray* locX4Step = NULL;
+		TClonesArray** locX4Step = NULL;
 		TBranch* locBranch_X4MeasuredIndex = NULL;
 
 		//First check if in tree
