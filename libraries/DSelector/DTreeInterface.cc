@@ -1,6 +1,5 @@
 #include "DTreeInterface.h"
 
-#include "TBranchElement.h"
 /**************************************************************** SETUP INPUT BRANCHES ****************************************************************/
 
 void DTreeInterface::Set_BranchAddresses(bool locFirstTreeFlag)
@@ -8,9 +7,9 @@ void DTreeInterface::Set_BranchAddresses(bool locFirstTreeFlag)
 	//ASSUME: One leaf per branch: No splitting
 
 	//Loop over branches
-	//TChain* locChain = dynamic_cast<TChain*>(dTree);
-	//cout << "TREE, CHAIN POINTERS = " << dTree << ", " << locChain << endl;
-	TObjArray* locBranchArray = dTree->GetListOfBranches();
+	//TChain* locChain = dynamic_cast<TChain*>(dInputTree);
+	//cout << "TREE, CHAIN POINTERS = " << dInputTree << ", " << locChain << endl;
+	TObjArray* locBranchArray = dInputTree->GetListOfBranches();
 	for(Int_t loc_i = 0; loc_i < locBranchArray->GetEntriesFast(); ++loc_i)
 	{
 		//Get branch
@@ -35,26 +34,25 @@ void DTreeInterface::Set_BranchAddresses(bool locFirstTreeFlag)
 		dGetEntryBranches = dInputBranches;
 }
 
-void DTreeInterface::CloneTree(void)
+void DTreeInterface::Clone_Tree(void)
 {
 	//make sure you've cd'd into the output file before calling this function!
-	if(dTreeOutput != NULL)
+	if(dOutputTree != NULL)
 		return;
 
 	//cannot use TTree::CloneTree(): In PROOF, the selector is only given the TTree, and not the TChain
 	//and, the branch addresses change from tree-to-tree (file-to-file), which is assumed not to happen in TTree::CloneTree()
 	//so, must set it up manually (thanks ROOT!)
-	dTreeOutput = new TTree(dTree->GetName(), dTree->GetName());
+	dOutputTree = new TTree(dInputTree->GetName(), dInputTree->GetName());
 
 	//set user info
 	TList* locInputUserInfo = Get_UserInfo();
-	TList* locOutputUserInfo = dTreeOutput->GetUserInfo();
+	TList* locOutputUserInfo = dOutputTree->GetUserInfo();
 	for(Int_t loc_i = 0; loc_i < locInputUserInfo->GetSize(); ++loc_i)
 		locOutputUserInfo->Add(locInputUserInfo->At(loc_i)->Clone());
 
-
 	//Loop over branches in order
-	TObjArray* locBranchArray = dTree->GetListOfBranches();
+	TObjArray* locBranchArray = dInputTree->GetListOfBranches();
 	for(Int_t loc_i = 0; loc_i < locBranchArray->GetEntriesFast(); ++loc_i)
 	{
 		//Get branch

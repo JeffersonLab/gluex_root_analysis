@@ -65,6 +65,7 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(string locPackageName, string locI
 	locOutputFileName = Setup_Path(locOutputFileName);
 	locOutputTreeFileName = Setup_Path(locOutputTreeFileName);
 
+	//add FLAT_TREE_FILENAME
 	TObjArray* locSessionVariables = new TObjArray(); //use name/title as key/value
 	if(locInputFileName != "")
 		locSessionVariables->AddLast(new TNamed("INPUT_FILENAME", locInputFileName.c_str()));

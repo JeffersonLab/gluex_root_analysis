@@ -22,6 +22,7 @@
 #include <particleType.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
+#include <TString.h>
 
 #include "DBeamParticle.h"
 #include "DMCThrown.h"
@@ -43,7 +44,7 @@ class DSelector : public TSelector
 		virtual Bool_t Process(Long64_t locEntry);
 		void SlaveTerminate(void);
 		void Terminate(void);
-		void FillOutputTree(void);
+		void Fill_OutputTree(void);
 
 	protected:
 
@@ -53,9 +54,11 @@ class DSelector : public TSelector
 		TString dOption;
 		string dOutputFileName;
 		string dOutputTreeFileName;
+		string dFlatTreeFileName; //for output flat trees
 
 		//TREE INTERFACE
-		DTreeInterface* dTreeInterface;
+		DTreeInterface* dTreeInterface; //for event-based tree
+		DTreeInterface* dFlatTreeInterface; //for output-flat trees
 
 		//ANALYSIS UTILITIES
 		DAnalysisUtilities dAnalysisUtilities;
@@ -113,6 +116,9 @@ class DSelector : public TSelector
 
 		vector<DAnalysisAction*> dAnalysisActions;
 
+		//FLAT TREE
+		void Fill_FlatTree(void);
+
 	private:
 
 		void Setup_Branches(void);
@@ -120,11 +126,17 @@ class DSelector : public TSelector
 		void Setup_Output(void);
 		void Create_Wrappers(void);
 		void ReInitialize_Wrappers(void);
+		void Create_FlatTree(void);
+		string Convert_ToBranchName(Particle_t locPID) const;
+		void Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag);
+		void Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag);
 
 		TFile* dFile;
 		TFile* dOutputTreeFile;
+		TFile* dOutputFlatTreeFile;
 		TProofOutputFile* dProofFile;
 		TProofOutputFile* dOutputTreeProofFile;
+		TProofOutputFile* dOutputFlatTreeProofFile;
 		Int_t dTreeNumber;
 
 		// EVENT DATA
@@ -168,12 +180,12 @@ class DSelector : public TSelector
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
 inline DSelector::DSelector(TTree* locTree) :
-		dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dTreeInterface(NULL),
+		dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dTreeInterface(NULL), dFlatTreeInterface(NULL),
 		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
-		dFile(NULL), dOutputTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dTreeNumber(0),
-		dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
+		dFile(NULL), dOutputTreeFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dOutputFlatTreeProofFile(NULL),
+		dTreeNumber(0), dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
 
@@ -321,6 +333,19 @@ inline void DSelector::Fill_NumCombosSurvivedHists(void)
 		Double_t locNum1DCombos = dHist_NumCombosSurvivedAction1D->GetBinContent(loc_i + 1) + dNumCombosSurvivedAction[loc_i];
 		dHist_NumCombosSurvivedAction1D->SetBinContent(loc_i + 1, locNum1DCombos);
 	}
+}
+
+inline string DSelector::Convert_ToBranchName(Particle_t locPID) const
+{
+	string locInputName = ParticleType(locPID);
+	TString locTString(locInputName);
+	locTString.ReplaceAll("*", "Star");
+	locTString.ReplaceAll("(", "_");
+	locTString.ReplaceAll(")", "_");
+	locTString.ReplaceAll("+", "Plus");
+	locTString.ReplaceAll("-", "Minus");
+	locTString.ReplaceAll("'", "Prime");
+	return (string)((const char*)locTString);
 }
 
 #endif // #ifdef DSelector_h

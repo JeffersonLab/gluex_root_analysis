@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	TFile* locInputFile = new TFile(locInputFileName.c_str(), "READ");
 	TTree* locTree = (TTree*)locInputFile->Get(locTreeName.c_str());
 
-	DTreeInterface* locTreeInterface = new DTreeInterface(locTree);
+	DTreeInterface* locTreeInterface = new DTreeInterface(locTree, true); //true: is input
 
 	//get combo info
 	map<int, map<int, pair<Particle_t, string> > > locComboInfoMap;
@@ -220,6 +220,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//USERS: SET OUTPUT FILE NAME //can be overriden by user in PROOF" << endl;
 	locSourceStream << "	dOutputFileName = \"" << locSelectorBaseName << ".root\"; //\"\" for none" << endl;
 	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
+	locSourceStream << "	dFlatTreeFileName = \"\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//Because this function gets called for each TTree in the TChain, we must be careful:" << endl;
 	locSourceStream << "		//We need to re-initialize the tree interface & branch wrappers, but don't want to recreate histograms" << endl;
@@ -269,9 +270,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dHist_MissingMassSquared = new TH1I(\"MissingMassSquared\", \";Missing Mass Squared (GeV/c^{2})^{2}\", 600, -0.06, 0.06);" << endl;
 	locSourceStream << "	dHist_BeamEnergy = new TH1I(\"BeamEnergy\", \";Beam Energy (GeV)\", 600, 0.0, 12.0);" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	/******************************** EXAMPLE USER INITIALIZATION: CUSTOM OUTPUT BRANCHES *******************************/" << endl;
+	locSourceStream << "	/************************** EXAMPLE USER INITIALIZATION: CUSTOM OUTPUT BRANCHES - MAIN TREE *************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//EXAMPLE CUSTOM BRANCHES (OUTPUT ROOT FILE NAME MUST FIRST BE GIVEN!!!! (ABOVE: TOP)):" << endl;
+	locSourceStream << "	//EXAMPLE MAIN TREE CUSTOM BRANCHES (OUTPUT ROOT FILE NAME MUST FIRST BE GIVEN!!!! (ABOVE: TOP)):" << endl;
 	locSourceStream << "	//The type for the branch must be included in the brackets" << endl;
 	locSourceStream << "	//1st function argument is the name of the branch" << endl;
 	locSourceStream << "	//2nd function argument is the name of the branch that contains the size of the array (for fundamentals only)" << endl;
@@ -281,6 +282,19 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dTreeInterface->Create_Branch_FundamentalArray<Float_t>(\"my_combo_array\", \"NumCombos\");" << endl;
 	locSourceStream << "	dTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(\"my_p4\");" << endl;
 	locSourceStream << "	dTreeInterface->Create_Branch_ClonesArray<TLorentzVector>(\"my_p4_array\");" << endl;
+	locSourceStream << "	*/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/************************** EXAMPLE USER INITIALIZATION: CUSTOM OUTPUT BRANCHES - FLAT TREE *************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//EXAMPLE FLAT TREE CUSTOM BRANCHES (OUTPUT ROOT FILE NAME MUST FIRST BE GIVEN!!!! (ABOVE: TOP)):" << endl;
+	locSourceStream << "	//The type for the branch must be included in the brackets" << endl;
+	locSourceStream << "	//1st function argument is the name of the branch" << endl;
+	locSourceStream << "	//2nd function argument is the name of the branch that contains the size of the array (for fundamentals only)" << endl;
+	locSourceStream << "	/*" << endl;
+	locSourceStream << "	dFlatTreeInterface->Create_Branch_Fundamental<Int_t>(\"flat_my_int\"); //fundamental = char, int, float, double, etc." << endl;
+	locSourceStream << "	dFlatTreeInterface->Create_Branch_FundamentalArray<Int_t>(\"flat_my_int_array\", \"flat_my_int\");" << endl;
+	locSourceStream << "	dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(\"flat_my_p4\");" << endl;
+	locSourceStream << "	dFlatTreeInterface->Create_Branch_ClonesArray<TLorentzVector>(\"flat_my_p4_array\");" << endl;
 	locSourceStream << "	*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/************************************* ADVANCED EXAMPLE: CHOOSE BRANCHES TO READ ************************************/" << endl;
@@ -535,7 +549,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		/*" << endl;
 	locSourceStream << "		TLorentzVector locMyComboP4(8.0, 7.0, 6.0, 5.0);" << endl;
 	locSourceStream << "		//for arrays below: 2nd argument is value, 3rd is array index" << endl;
-	locSourceStream << "		//NOTE: By filling here, AFTER the cuts above, some indices will be unfilled (and uninitialized)" << endl;
+	locSourceStream << "		//NOTE: By filling here, AFTER the cuts above, some indices won't be updated (and will be whatever they were from the last event)" << endl;
 	locSourceStream << "			//So, when you draw the branch, be sure to cut on \"IsComboCut\" to avoid these." << endl;
 	locSourceStream << "		dTreeInterface->Fill_Fundamental<Float_t>(\"my_combo_array\", -2*loc_i, loc_i);" << endl;
 	locSourceStream << "		dTreeInterface->Fill_TObject<TLorentzVector>(\"my_p4_array\", locMyComboP4, loc_i);" << endl;
@@ -603,6 +617,26 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//	continue;" << endl;
 	locSourceStream << "		//}" << endl;
 	locSourceStream << endl;
+	locSourceStream << "		/****************************************** FILL FLAT TREE (IF DESIRED) ******************************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		/*" << endl;
+	locSourceStream << "		//FILL ANY CUSTOM BRANCHES FIRST!!" << endl;
+	locSourceStream << "		Int_t locMyInt_Flat = 7;" << endl;
+	locSourceStream << "		dFlatTreeInterface->Fill_Fundamental<Int_t>(\"flat_my_int\", locMyInt_Flat);" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		TLorentzVector locMyP4_Flat(4.0, 3.0, 2.0, 1.0);" << endl;
+	locSourceStream << "		dFlatTreeInterface->Fill_TObject<TLorentzVector>(\"flat_my_p4\", locMyP4_Flat);" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		for(int loc_j = 0; loc_j < locMyInt_Flat; ++loc_j)" << endl;
+	locSourceStream << "		{" << endl;
+	locSourceStream << "			dFlatTreeInterface->Fill_Fundamental<Int_t>(\"flat_my_int_array\", 3*loc_j, loc_j); //2nd argument = value, 3rd = array index" << endl;
+	locSourceStream << "			TLorentzVector locMyComboP4_Flat(8.0, 7.0, 6.0, 5.0);" << endl;
+	locSourceStream << "			dFlatTreeInterface->Fill_TObject<TLorentzVector>(\"flat_my_p4_array\", locMyComboP4_Flat, loc_j);" << endl;
+	locSourceStream << "		}" << endl;
+	locSourceStream << "		*/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		//FILL FLAT TREE" << endl;
+	locSourceStream << "		//Fill_FlatTree(); //for the active combo" << endl;
 	locSourceStream << "	} // end of combo loop" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//FILL HISTOGRAMS: Num combos / events surviving actions" << endl;
@@ -666,7 +700,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		break;" << endl;
 	locSourceStream << "	}" << endl;
 	locSourceStream << "	if(!locIsEventCut && dOutputTreeFileName != \"\")" << endl;
-	locSourceStream << "		FillOutputTree();" << endl;
+	locSourceStream << "		Fill_OutputTree();" << endl;
 	locSourceStream << "*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	return kTRUE;" << endl;

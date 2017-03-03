@@ -232,6 +232,8 @@ inline Int_t DChargedTrackHypothesis::Get_TrackID(void) const
 
 inline Int_t DChargedTrackHypothesis::Get_ThrownIndex(void) const
 {
+	if(dBranch_ThrownIndex == NULL)
+		return -1;
 	return ((Int_t*)dBranch_ThrownIndex->GetAddress())[dMeasuredArrayIndex];
 }
 

@@ -179,6 +179,8 @@ inline Int_t DNeutralParticleHypothesis::Get_NeutralID(void) const
 
 inline Int_t DNeutralParticleHypothesis::Get_ThrownIndex(void) const
 {
+	if(dBranch_ThrownIndex == NULL)
+		return -1;
 	return ((Int_t*)dBranch_ThrownIndex->GetAddress())[dMeasuredArrayIndex];
 }
 

@@ -49,6 +49,9 @@ class DKinematicData
 		//GET ID //To be overloaded by deriving classes: Get_TrackID(), Get_NeutralID(), etc.
 		virtual Int_t Get_ID(void) const{return 0;}
 
+		//GET BRANCH NAME PREFIX
+		string Get_BranchNamePrefix(void) const{return dBranchNamePrefix;}
+
 		//ARRAY
 		UInt_t Get_ArraySize(void) const;
 		void Set_ArrayIndex(UInt_t locArrayIndex);
