@@ -404,24 +404,42 @@ void DSelector::Create_FlatTree(void)
 	}
 
 	//CREATE BRANCHES: COMBO
+	set<string> locBranchesCreatedParticles;
 	for(UInt_t loc_i = 0; loc_i < dComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
 		DParticleComboStep* locStepWrapper = dComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//initial particle
 		DKinematicData* locInitialParticle = locStepWrapper->Get_InitialParticle();
-		Create_FlatBranches(locInitialParticle, locIsMCFlag);
+		if(locInitialParticle != NULL)
+		{
+			string locEventBranchPrefix = locInitialParticle->Get_BranchNamePrefix();
+			if(locBranchesCreatedParticles.find(locEventBranchPrefix) == locBranchesCreatedParticles.end())
+			{
+				Create_FlatBranches(locInitialParticle, locIsMCFlag);
+				locBranchesCreatedParticles.insert(locEventBranchPrefix);
+			}
+		}
+
+		//final particles
 		for(UInt_t loc_j = 0; loc_j < locStepWrapper->Get_NumFinalParticles(); ++loc_j)
 		{
 			DKinematicData* locFinalParticle = locStepWrapper->Get_FinalParticle(loc_j);
-			Create_FlatBranches(locFinalParticle, locIsMCFlag);
+			if(locFinalParticle == NULL)
+				continue;
+
+			string locEventBranchPrefix = locFinalParticle->Get_BranchNamePrefix();
+			if(locBranchesCreatedParticles.find(locEventBranchPrefix) == locBranchesCreatedParticles.end())
+			{
+				Create_FlatBranches(locFinalParticle, locIsMCFlag);
+				locBranchesCreatedParticles.insert(locEventBranchPrefix);
+			}
 		}
 	}
 }
 
 void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 {
-	if(locParticle == NULL)
-		return; //e.g. missing/decaying & no kinfit
-
 	//handle beam
 	string locEventBranchPrefix = locParticle->Get_BranchNamePrefix();
 	if(locEventBranchPrefix == "ComboBeam")
@@ -455,8 +473,22 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 	//get the branch name //first get particle # (e.g. extract the "2" from "PiPlus2")
 	Particle_t locPID = locParticle->Get_PID();
 	string locBranchParticleName_EventTree = Convert_ToBranchName(locPID);
-	string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length());
-	string locBranchPrefix = Get_ShortName(locPID) + locParticleNumber;
+	string locBranchPrefix;
+	if(locEventBranchPrefix.substr(0, 7) == "Missing")
+	{
+		string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length() + 7);
+		locBranchPrefix = string("miss") + Get_ShortName(locPID) + locParticleNumber;
+	}
+	else if(locEventBranchPrefix.substr(0, 8) == "Decaying")
+	{
+		string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length() + 8);
+		locBranchPrefix = string("decay") + Get_ShortName(locPID) + locParticleNumber;
+	}
+	else
+	{
+		string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length());
+		locBranchPrefix = Get_ShortName(locPID) + locParticleNumber;
+	}
 
 	//handle detected charged
 	if(dynamic_cast<DChargedTrackHypothesis*>(locParticle) != NULL)
@@ -582,15 +614,35 @@ void DSelector::Fill_FlatTree(void)
 	}
 
 	//FILL BRANCHES: COMBO
+	set<string> locBranchesFilledParticles;
 	for(UInt_t loc_i = 0; loc_i < dComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
 		DParticleComboStep* locStepWrapper = dComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//initial particle
 		DKinematicData* locInitialParticle = locStepWrapper->Get_InitialParticle();
-		Fill_FlatBranches(locInitialParticle, locIsMCFlag);
+		if(locInitialParticle != NULL)
+		{
+			string locEventBranchPrefix = locInitialParticle->Get_BranchNamePrefix();
+			if(locBranchesFilledParticles.find(locEventBranchPrefix) == locBranchesFilledParticles.end())
+			{
+				Fill_FlatBranches(locInitialParticle, locIsMCFlag);
+				locBranchesFilledParticles.insert(locEventBranchPrefix);
+			}
+		}
+
+		//final particles
 		for(UInt_t loc_j = 0; loc_j < locStepWrapper->Get_NumFinalParticles(); ++loc_j)
 		{
 			DKinematicData* locFinalParticle = locStepWrapper->Get_FinalParticle(loc_j);
-			Fill_FlatBranches(locFinalParticle, locIsMCFlag);
+			if(locFinalParticle == NULL)
+				continue;
+			string locEventBranchPrefix = locFinalParticle->Get_BranchNamePrefix();
+			if(locBranchesFilledParticles.find(locEventBranchPrefix) == locBranchesFilledParticles.end())
+			{
+				Fill_FlatBranches(locFinalParticle, locIsMCFlag);
+				locBranchesFilledParticles.insert(locEventBranchPrefix);
+			}
 		}
 	}
 
@@ -600,9 +652,6 @@ void DSelector::Fill_FlatTree(void)
 
 void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 {
-	if(locParticle == NULL)
-		return; //e.g. missing/decaying & no kinfit
-
 	//handle beam
 	string locEventBranchPrefix = locParticle->Get_BranchNamePrefix();
 	//cout << "fill particle: " << locEventBranchPrefix << endl;
@@ -646,8 +695,22 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 	//get the branch name //first get particle # (e.g. extract the "2" from "PiPlus2")
 	Particle_t locPID = locParticle->Get_PID();
 	string locBranchParticleName_EventTree = Convert_ToBranchName(locPID);
-	string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length());
-	string locBranchPrefix = Get_ShortName(locPID) + locParticleNumber;
+	string locBranchPrefix;
+	if(locEventBranchPrefix.substr(0, 7) == "Missing")
+	{
+		string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length() + 7);
+		locBranchPrefix = string("miss") + Get_ShortName(locPID) + locParticleNumber;
+	}
+	else if(locEventBranchPrefix.substr(0, 8) == "Decaying")
+	{
+		string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length() + 8);
+		locBranchPrefix = string("decay") + Get_ShortName(locPID) + locParticleNumber;
+	}
+	else
+	{
+		string locParticleNumber = locEventBranchPrefix.substr(locBranchParticleName_EventTree.length());
+		locBranchPrefix = Get_ShortName(locPID) + locParticleNumber;
+	}
 
 	//handle detected charged
 	DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<DChargedTrackHypothesis*>(locParticle);
