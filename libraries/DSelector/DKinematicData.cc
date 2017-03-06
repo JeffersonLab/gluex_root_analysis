@@ -26,11 +26,11 @@ void DKinematicData::Setup_Branches(void)
 	{
 		//P4
 		locBranchName = dBranchNamePrefix + string("__P4");
-		dThrownBeamP4 = dTreeInterface->Get_Pointer_TObject<TLorentzVector>(locBranchName);
+		dThrownBeamP4 = dTreeInterface->Get_PointerToPointerTo_TObject<TLorentzVector>(locBranchName);
 
 		//X4
 		locBranchName = dBranchNamePrefix + string("__X4");
-		dThrownBeamX4 = dTreeInterface->Get_Pointer_TObject<TLorentzVector>(locBranchName);
+		dThrownBeamX4 = dTreeInterface->Get_PointerToPointerTo_TObject<TLorentzVector>(locBranchName);
 
 		//ARRAY SIZE
 		dArraySize = NULL;

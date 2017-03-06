@@ -145,7 +145,7 @@ class DSelector : public TSelector
 		UInt_t* dL1TriggerBits;
 		Float_t* dMCWeight; //only present if simulated data
 		Bool_t* dIsThrownTopology; //only present if simulated data
-		TLorentzVector* dX4_Production;
+		TLorentzVector** dX4_Production;
 
 		// ARRAY SIZES
 		UInt_t* dNumBeam;
@@ -219,7 +219,7 @@ inline Float_t DSelector::Get_MCWeight(void) const
 
 inline TLorentzVector DSelector::Get_X4_Production(void) const
 {
-	return ((dX4_Production != NULL) ? *dX4_Production : TLorentzVector());
+	return ((dX4_Production != NULL) ? **dX4_Production : TLorentzVector());
 }
 
 // ARRAY SIZES
