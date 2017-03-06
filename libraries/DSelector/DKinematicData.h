@@ -100,12 +100,12 @@ class DKinematicData
 		TClonesArray** dP4_KinFit; //NULL if not kinfit
 		TClonesArray** dP4_Measured; //NULL if target, missing, decaying, or thrown beam
 		TLorentzVector dFixedP4; //use if target
-		TLorentzVector* dThrownBeamP4; //NULL if not thrown beam
+		TLorentzVector** dThrownBeamP4; //NULL if not thrown beam
 
 		// X4
 		TClonesArray** dX4_KinFit; //NULL if not kinfit
 		TClonesArray** dX4_Measured; //NULL if thrown beam //if missing, decaying, or target: is from a different particle
-		TLorentzVector* dThrownBeamX4; //NULL if not thrown beam
+		TLorentzVector** dThrownBeamX4; //NULL if not thrown beam
 };
 
 /******************************************************************** CONSTRUCTOR *********************************************************************/
@@ -170,7 +170,7 @@ inline TLorentzVector DKinematicData::Get_P4_Measured(void) const
 	if(dBranchNamePrefix.substr(0, 6) == "Target")
 		return dFixedP4; //target
 	if(dBranchNamePrefix == "ThrownBeam")
-		return *dThrownBeamP4; //thrown beam
+		return **dThrownBeamP4; //thrown beam
 
 	int locArrayIndex = Get_IsDetectedComboNeutralParticle() ? dArrayIndex : dMeasuredArrayIndex;
 	return *((TLorentzVector*)(*dP4_Measured)->At(locArrayIndex));
@@ -186,7 +186,7 @@ inline TLorentzVector DKinematicData::Get_P4(void) const
 inline TLorentzVector DKinematicData::Get_X4_Measured(void) const
 {
 	if(dBranchNamePrefix == "ThrownBeam")
-		return *dThrownBeamX4; //thrown beam
+		return **dThrownBeamX4; //thrown beam
 
 	int locArrayIndex = Get_IsDetectedComboNeutralParticle() ? dArrayIndex : dMeasuredArrayIndex;
 	return *((TLorentzVector*)(*dX4_Measured)->At(locArrayIndex));

@@ -88,7 +88,7 @@ class DTreeInterface
 
 		//GET OBJECT POINTERS
 		template <typename DType> DType* Get_Pointer_Fundamental(string locBranchName) const;
-		template <typename DType> DType* Get_Pointer_TObject(string locBranchName) const;
+		template <typename DType> DType** Get_PointerToPointerTo_TObject(string locBranchName) const;
 		TClonesArray** Get_PointerToPointerTo_TClonesArray(string locBranchName); //ROOT sometimes changes the pointer!
 
 		//GET OBJECTS
@@ -355,10 +355,10 @@ template <typename DType> inline DType* DTreeInterface::Get_Pointer_Fundamental(
 	return ((locBranch != NULL) ? (DType*)locBranch->GetAddress() : NULL);
 }
 
-template <typename DType> inline DType* DTreeInterface::Get_Pointer_TObject(string locBranchName) const
+template <typename DType> inline DType** DTreeInterface::Get_PointerToPointerTo_TObject(string locBranchName) const
 {
 	TBranch* locBranch = Get_Branch(locBranchName);
-	return ((locBranch != NULL) ? *(DType**)locBranch->GetAddress() : NULL);
+	return ((locBranch != NULL) ? (DType**)locBranch->GetAddress() : NULL);
 }
 
 inline TClonesArray** DTreeInterface::Get_PointerToPointerTo_TClonesArray(string locBranchName)
@@ -556,7 +556,7 @@ template <typename DType> inline void DTreeInterface::Fill_TObject(string locBra
 
 template <typename DType> inline void DTreeInterface::Fill_TObject(string locBranchName, const DType& locObject)
 {
-	*Get_Pointer_TObject<DType>(locBranchName) = locObject;
+	**Get_PointerToPointerTo_TObject<DType>(locBranchName) = locObject;
 }
 
 /************************************************************** GET BRANCH MEMORY ***********************************************************/
