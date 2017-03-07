@@ -357,7 +357,7 @@ void DSelector::Create_ComboSurvivalHists(void)
 void DSelector::Create_FlatTree(void)
 {
 	//create flat tree & interface
-	string locTreeName = dTreeInterface->Get_TreeName() + string("_flat");
+	string locTreeName = (dFlatTreeName != "") ? dFlatTreeName : dTreeInterface->Get_TreeName().substr(0, dTreeInterface->Get_TreeName().size() - 5);
 	TTree* locFlatTree = new TTree(locTreeName.c_str(), locTreeName.c_str());
 	dFlatTreeInterface = new DTreeInterface(locFlatTree, false); //false: is output
 

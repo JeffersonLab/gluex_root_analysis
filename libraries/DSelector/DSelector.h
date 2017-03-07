@@ -55,6 +55,7 @@ class DSelector : public TSelector
 		string dOutputFileName;
 		string dOutputTreeFileName;
 		string dFlatTreeFileName; //for output flat trees
+		string dFlatTreeName; //for output flat trees
 
 		//TREE INTERFACE
 		DTreeInterface* dTreeInterface; //for event-based tree
