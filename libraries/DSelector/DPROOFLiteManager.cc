@@ -4,14 +4,14 @@ string gPROOFLiteSandbox = "";
 
 /************************************************************ PROCESS ************************************************************/
 
-bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, unsigned int locNumThreads, string locOutputFileName, string locOutputTreeFileName, string locOptions)
 {
 	TChain* locChain = new TChain(locTreeName.c_str());
 	locChain->Add(locInputFileName.c_str());
-	return Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
+	return Process_Chain(locChain, locSelectorName, locNumThreads, locOutputFileName, locOutputTreeFileName, locOptions);
 }
 
-bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, unsigned int locNumThreads, string locOutputFileName, string locOutputTreeFileName, string locOptions)
 {
 	string locPackageName = Get_PackagePath();
 	Setup_PROOFSession(locPackageName, "", locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
