@@ -11,16 +11,6 @@ bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName
 	return Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
 }
 
-bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
-{
-	return Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
-}
-
-bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
-{
-	return Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, "", "", locNumThreads);
-}
-
 bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
 {
 	string locPackageName = Get_PackagePath();
@@ -28,17 +18,7 @@ bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, 
 	return Process_Chain(locChain, locSelectorName);
 }
 
-bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
-{
-	return Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
-}
-
-bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
-{
-	return Process_Chain(locChain, locSelectorName, locOutputFileName, "", "", locNumThreads);
-}
-
-bool DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads, unsigned int locNumEntries)
+bool DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, unsigned int locNumThreads, unsigned int locNumEntries, string locOutputFileName, string locOutputTreeFileName, string locOptions)
 {
 	string locPackageName = Get_PackagePath();
 	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);

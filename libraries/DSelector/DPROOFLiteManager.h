@@ -25,13 +25,9 @@ class DPROOFLiteManager
 		static void Set_SandBox(string locPath);
 
 		//SIMPLE INTERFACE //only for using DSelector's
-		static bool Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads);
-		static bool Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads);
-		static bool Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, unsigned int locNumThreads);
-		static bool Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads);
-		static bool Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads);
-		static bool Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, unsigned int locNumThreads);
-		static bool Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads, unsigned int locNumEntries);
+		static bool Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, unsigned int locNumThreads, string locOutputFileName = "", string locOutputTreeFileName = "", string locOptions = "");
+		static bool Process_Chain(TChain* locChain, string locSelectorName, unsigned int locNumThreads, string locOutputFileName = "", string locOutputTreeFileName = "", string locOptions = "");
+		static bool Process_Other(string locSelectorName, string locInputFileName, unsigned int locNumThreads, unsigned int locNumEntries, string locOutputFileName = "", string locOutputTreeFileName = "", string locOptions = "");
 
 		//FULL INTERFACE //For any use
 		//Create PROOF
