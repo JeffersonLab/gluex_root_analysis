@@ -4,45 +4,46 @@ string gPROOFLiteSandbox = "";
 
 /************************************************************ PROCESS ************************************************************/
 
-void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
 {
 	TChain* locChain = new TChain(locTreeName.c_str());
 	locChain->Add(locInputFileName.c_str());
-	Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
+	return Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
 }
 
-void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
 {
-	Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
+	return Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
 }
 
-void DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
 {
-	Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, "", "", locNumThreads);
+	return Process_Tree(locInputFileName, locTreeName, locSelectorName, locOutputFileName, "", "", locNumThreads);
 }
 
-void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
 {
 	string locPackageName = Get_PackagePath();
 	Setup_PROOFSession(locPackageName, "", locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
-	Process_Chain(locChain, locSelectorName);
+	return Process_Chain(locChain, locSelectorName);
 }
 
-void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, string locOutputTreeFileName, unsigned int locNumThreads)
 {
-	Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
+	return Process_Chain(locChain, locSelectorName, locOutputFileName, locOutputTreeFileName, "", locNumThreads);
 }
 
-void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
+bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, string locOutputFileName, unsigned int locNumThreads)
 {
-	Process_Chain(locChain, locSelectorName, locOutputFileName, "", "", locNumThreads);
+	return Process_Chain(locChain, locSelectorName, locOutputFileName, "", "", locNumThreads);
 }
 
-void DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads, unsigned int locNumEntries)
+bool DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads, unsigned int locNumEntries)
 {
 	string locPackageName = Get_PackagePath();
 	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
-	locPROOF->Process(locSelectorName.c_str(), locNumEntries, "");
+	Long64_t locStatus = locPROOF->Process(locSelectorName.c_str(), locNumEntries, "");
+	return (locStatus >= Long64_t(0)); //failed if -1
 }
 
 /******************************************************* UTILITY FUNCTIONS *******************************************************/
@@ -119,10 +120,11 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(unsigned int locNumThreads, vector
 	return locPROOF;
 }
 
-void DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName)
+bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName)
 {
 	//uses gProof!
 	locChain->SetProof();
-	locChain->Process(locSelectorName.c_str(), "", locChain->GetEntries()); //process this TSelector
+	Long64_t locStatus = locChain->Process(locSelectorName.c_str(), "", locChain->GetEntries()); //process this TSelector
 	locChain->SetProof(0); //detach from PROOF session
+	return (locStatus >= Long64_t(0)); //failed if -1
 }
