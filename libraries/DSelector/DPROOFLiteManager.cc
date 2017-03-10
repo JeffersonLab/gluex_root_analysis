@@ -23,6 +23,7 @@ bool DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFil
 	string locPackageName = Get_PackagePath();
 	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
 	Long64_t locStatus = locPROOF->Process(locSelectorName.c_str(), locNumEntries, "");
+	cout << "PROOF status = " << locStatus << endl;
 	return (locStatus >= Long64_t(0)); //failed if -1
 }
 
@@ -106,5 +107,6 @@ bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName)
 	locChain->SetProof();
 	Long64_t locStatus = locChain->Process(locSelectorName.c_str(), "", locChain->GetEntries()); //process this TSelector
 	locChain->SetProof(0); //detach from PROOF session
+	cout << "PROOF status = " << locStatus << endl;
 	return (locStatus >= Long64_t(0)); //failed if -1
 }
