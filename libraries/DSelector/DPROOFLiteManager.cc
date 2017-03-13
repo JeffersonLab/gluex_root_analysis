@@ -23,6 +23,7 @@ bool DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFil
 	string locPackageName = Get_PackagePath();
 	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
 	Long64_t locStatus = locPROOF->Process(locSelectorName.c_str(), locNumEntries, "");
+	cout << "PROOF status = " << locStatus << endl;
 	return (locStatus >= Long64_t(0)); //failed if -1
 }
 
@@ -80,9 +81,12 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(unsigned int locNumThreads, vector
 	ostringstream locNumWorkers;
 	locNumWorkers << "workers=" << locNumThreads;
 
-	if(gPROOFLiteSandbox != "")
-		gEnv->SetValue("ProofLite.Sandbox", gPROOFLiteSandbox.c_str());
 	TProof* locPROOF = TProof::Open(locNumWorkers.str().c_str());
+	if(gPROOFLiteSandbox != "")
+	{
+		locPROOF->AddEnvVar("ProofLite.Sandbox", gPROOFLiteSandbox.c_str());
+		locPROOF->AddEnvVar("ProofServ.Sandbox", gPROOFLiteSandbox.c_str());
+	}
 
 	locPROOF->ClearInput();
 	locPROOF->ClearPackages();
@@ -106,5 +110,6 @@ bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName)
 	locChain->SetProof();
 	Long64_t locStatus = locChain->Process(locSelectorName.c_str(), "", locChain->GetEntries()); //process this TSelector
 	locChain->SetProof(0); //detach from PROOF session
+	cout << "PROOF status = " << locStatus << endl;
 	return (locStatus >= Long64_t(0)); //failed if -1
 }
