@@ -81,9 +81,12 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(unsigned int locNumThreads, vector
 	ostringstream locNumWorkers;
 	locNumWorkers << "workers=" << locNumThreads;
 
-	if(gPROOFLiteSandbox != "")
-		gEnv->SetValue("ProofLite.Sandbox", gPROOFLiteSandbox.c_str());
 	TProof* locPROOF = TProof::Open(locNumWorkers.str().c_str());
+	if(gPROOFLiteSandbox != "")
+	{
+		locPROOF->AddEnvVar("ProofLite.Sandbox", gPROOFLiteSandbox.c_str());
+		locPROOF->AddEnvVar("ProofServ.Sandbox", gPROOFLiteSandbox.c_str());
+	}
 
 	locPROOF->ClearInput();
 	locPROOF->ClearPackages();
