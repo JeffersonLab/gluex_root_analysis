@@ -187,6 +187,7 @@ void DTreeInterface::Get_Entry(Long64_t locEntry)
 		//get the new array size
 		Get_Branch(locArraySizeBranchName)->GetEntry(locEntry);
 		UInt_t locNewArraySize = Get_Fundamental<UInt_t>(locArraySizeBranchName);
+//cout << "branch name, current array size, new array size = " << locArraySizeBranchName << ", " << locCurrentArraySize << ", " << locNewArraySize << endl;
 
 		//compare them
 		if(locNewArraySize <= locCurrentArraySize)

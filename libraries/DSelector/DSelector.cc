@@ -9,6 +9,7 @@ void DSelector::Init(TTree *locTree)
 	// Init() will be called many times when running on PROOF (once per file to be processed).
 
 	// GET OPTION
+	cout << "INITIALIZE NEW TREE" << endl;
 	dOption = GetOption(); //optional argument given to TTree::Process()
 	if(fInput != NULL) 
 		dOption = ((TNamed*)fInput->FindObject("OPTIONS"))->GetTitle();
@@ -27,8 +28,7 @@ void DSelector::Init(TTree *locTree)
 		dTreeInterface->Set_NewTree(locTree);
 
 	// SETUP BRANCHES
-	if(!dInitializedFlag)
-		Setup_Branches();
+	Setup_Branches();
 
 	// IF PREVIOUSLY INITIALIZED, RE-INIT WRAPPERS
 	if(dInitializedFlag)
