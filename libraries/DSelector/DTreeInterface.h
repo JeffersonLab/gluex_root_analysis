@@ -397,7 +397,11 @@ template <typename DType> inline void DTreeInterface::Increase_ArraySize(string 
 	//create a new, larger array if the current one is too small
 		//DOES NOT copy the old results!  In other words, only call BETWEEN entries, not DURING an entry
 	DType* locOldBranchAddress = Get_Pointer_Fundamental<DType>(locBranchName);
-	dInputTree->SetBranchAddress(locBranchName.c_str(), new DType[locNewArraySize]);
+
+	dMemoryMap_Fundamental[locBranchName] = static_cast<void*>(new DType[locNewArraySize]);
+	Get_Branch(locBranchName)->SetAddress(dMemoryMap_Fundamental[locBranchName]);
+
+	dFundamentalArraySizeMap[locBranchName] = locNewArraySize;
 	delete[] locOldBranchAddress;
 }
 
@@ -531,7 +535,9 @@ template <typename DType> inline void DTreeInterface::Fill_Fundamental(string lo
 	if(locArrayIndex >= locCurrentArraySize)
 	{
 		DType* locOldArray = locArray;
-		dOutputTree->SetBranchAddress(locBranchName.c_str(), new DType[locArrayIndex + 100]);
+		unsigned int locNewArraySize = locArrayIndex + 100;
+		dMemoryMap_Fundamental[locBranchName] = static_cast<void*>(new DType[locNewArraySize]);
+		dOutputTree->SetBranchAddress(locBranchName.c_str(), dMemoryMap_Fundamental[locBranchName]);
 		locArray = Get_Pointer_Fundamental<DType>(locBranchName);
 
 		//copy the old contents into the new array
@@ -539,7 +545,7 @@ template <typename DType> inline void DTreeInterface::Fill_Fundamental(string lo
 			locArray[loc_i] = locOldArray[loc_i];
 
 		delete[] locOldArray;
-		dFundamentalArraySizeMap[locBranchName] = locArrayIndex + 1;
+		dFundamentalArraySizeMap[locBranchName] = locNewArraySize;
 	}
 
 	//set the data
