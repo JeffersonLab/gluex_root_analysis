@@ -551,7 +551,7 @@ bool DHistogramAction_ParticleID::Perform_Action(void)
 
 				//check if duplicate
 				set<Int_t>& locBackgroundParticleSet = dPreviouslyHistogrammed_Background[loc_i][locFinalStatePID][locBackgroundPID];
-				if(locBackgroundParticleSet.find(dChargedHypoWrapper->Get_ID()) != locParticleSet.end())
+				if(locBackgroundParticleSet.find(dChargedHypoWrapper->Get_ID()) != locBackgroundParticleSet.end())
 					continue;
 
 				//fill background hists
