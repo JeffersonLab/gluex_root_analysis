@@ -550,13 +550,13 @@ bool DHistogramAction_ParticleID::Perform_Action(void)
 					continue; //desired background PID not found
 
 				//check if duplicate
-				locParticleSet = dPreviouslyHistogrammed_Background[loc_i][locFinalStatePID][locBackgroundPID];
-				if(locParticleSet.find(dChargedHypoWrapper->Get_ID()) != locParticleSet.end())
+				set<Int_t>& locBackgroundParticleSet = dPreviouslyHistogrammed_Background[loc_i][locFinalStatePID][locBackgroundPID];
+				if(locBackgroundParticleSet.find(dChargedHypoWrapper->Get_ID()) != locParticleSet.end())
 					continue;
 
 				//fill background hists
 				Fill_BackgroundHists(loc_i, locFinalStatePID);
-				locParticleSet.insert(dChargedHypoWrapper->Get_ID());
+				locBackgroundParticleSet.insert(dChargedHypoWrapper->Get_ID());
 			} //end of background pid loop
 		} //end of particle loop
 	} //end of step loop
