@@ -536,6 +536,40 @@ bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFl
 	return false;
 }
 
+bool DAnalysisUtilities::Get_PolarizationAngle(int locRunNumber, int& locPolarizationAngle) const
+{
+	//RCDB environment must be setup!!
+
+	//Pipe the current constant into this function
+	ostringstream locCommandStream;
+	locCommandStream << "rcnd " << locRunNumber << " polarization_angle";
+	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+	if(locInputFile == NULL)
+		return false;
+
+	//get the first line
+	char buff[1024];
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+		return 0;
+	istringstream locStringStream(buff);
+
+	//Close the pipe
+	gSystem->ClosePipe(locInputFile);
+
+	//extract it
+	string locPolarizationAngleString;
+	if(!(locStringStream >> locPolarizationAngleString))
+		return false;
+
+	// convert string to integer
+	locPolarizationAngle = atoi(locPolarizationAngleString.c_str());
+	// amorphous runs have the value -1
+	if (locPolarizationAngle == -1)
+	  return false;
+	
+	return true;
+}
+
 double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) const
 {
 	//CCDB environment must be setup!!
