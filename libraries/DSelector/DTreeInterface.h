@@ -416,6 +416,11 @@ template <typename DType> inline void DTreeInterface::Increase_ArraySize(string 
 	dMemoryMap_Fundamental[locBranchName] = static_cast<void*>(new DType[locNewArraySize]);
 	Get_Branch(locBranchName)->SetAddress(dMemoryMap_Fundamental[locBranchName]);
 
+	//if cloning into output trees, must set their branches addresses as well
+	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
+	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
+		locIterator->second->GetBranch(locBranchName.c_str())->SetAddress(dMemoryMap_Fundamental[locBranchName]);
+
 	dFundamentalArraySizeMap[locBranchName] = locNewArraySize;
 	delete[] locOldBranchAddress;
 }
