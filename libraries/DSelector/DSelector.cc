@@ -322,14 +322,14 @@ map<Particle_t, UInt_t> DSelector::Get_NumFinalStateThrown(void) const
 	return locNumFinalStateThrown;
 }
 
-void DSelector::Fill_OutputTree(string locFileName)
+void DSelector::Fill_OutputTree(string locKeyName)
 {
 	// The FillOutputTree() function is called for events in the tree which pass
 	// the user-defined analysis cuts.  The output file then contains the TTree 
 	// with these events that can be used for higher-level analysis (eg. AmptTools fit,
 	// PWA, etc.)
 
-	dTreeInterface->Fill_OutputTree(locFileName);
+	dTreeInterface->Fill_OutputTree(locKeyName);
 }
 
 void DSelector::Create_ComboSurvivalHists(void)

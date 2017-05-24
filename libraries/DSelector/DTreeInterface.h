@@ -141,10 +141,10 @@ class DTreeInterface
 
 		/************************************************************** CLONE BRANCHES **************************************************************/
 
-		void Clone_Branch_Fundamental(string locBranchName);
-		void Clone_Branch_ClonesArray(string locBranchName);
-		void Clone_Branch_FundamentalArray(string locBranchName);
-		void Clone_Branch_TObject(string locBranchName);
+		void Clone_Branch_Fundamental(string locBranchName, string locTreeKeyName);
+		void Clone_Branch_ClonesArray(string locBranchName, string locTreeKeyName);
+		void Clone_Branch_FundamentalArray(string locBranchName, string locTreeKeyName);
+		void Clone_Branch_TObject(string locBranchName, string locTreeKeyName);
 
 		/************************************************************** MISCELLANEOUS ***************************************************************/
 
@@ -534,60 +534,32 @@ template <typename DType> inline void DTreeInterface::Create_Branch_ClonesArray(
 
 /*************************************************************** CLONE BRANCHES *************************************************************/
 
-inline void DTreeInterface::Clone_Branch_Fundamental(string locBranchName)
+inline void DTreeInterface::Clone_Branch_Fundamental(string locBranchName, string locTreeKeyName)
 {
 	void* locMemoryPointer = dMemoryMap_Fundamental[locBranchName];
 	string locTypeName = locBranchName + string("/") + dFundamentalBranchTypeMap[locBranchName];
-
-	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
-	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
-	{
-		TBranch* locBranch = locIterator->second->Branch(locBranchName.c_str(), locMemoryPointer, locTypeName.c_str());
-		if(locIterator == dOutputTreeMap.begin())
-			dBranchMap_OutputTree[locBranchName] = locBranch;
-	}
+	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locMemoryPointer, locTypeName.c_str());
 }
 
-inline void DTreeInterface::Clone_Branch_TObject(string locBranchName)
+inline void DTreeInterface::Clone_Branch_TObject(string locBranchName, string locTreeKeyName)
 {
 	TObject* locMemoryPointer = dMemoryMap_TObject[locBranchName];
 	string locClassName = dMemoryMap_TObject[locBranchName]->ClassName();
-
-	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
-	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
-	{
-		TBranch* locBranch = locIterator->second->Branch(locBranchName.c_str(), locClassName.c_str(), locMemoryPointer, 32000, 0); //0: don't split
-		if(locIterator == dOutputTreeMap.begin())
-			dBranchMap_OutputTree[locBranchName] = locBranch;
-	}
+	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locClassName.c_str(), locMemoryPointer, 32000, 0); //0: don't split
 }
 
-inline void DTreeInterface::Clone_Branch_FundamentalArray(string locBranchName)
+inline void DTreeInterface::Clone_Branch_FundamentalArray(string locBranchName, string locTreeKeyName)
 {
 	void* locMemoryPointer = dMemoryMap_Fundamental[locBranchName];
 	string locArraySizeString = dBranchToArraySizeMap[locBranchName];
 	string locArrayName = locBranchName + string("[") + locArraySizeString + string("]/") + dFundamentalBranchTypeMap[locBranchName];
-
-	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
-	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
-	{
-		TBranch* locBranch = locIterator->second->Branch(locBranchName.c_str(), locMemoryPointer, locArrayName.c_str());
-		if(locIterator == dOutputTreeMap.begin())
-			dBranchMap_OutputTree[locBranchName] = locBranch;
-	}
+	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locMemoryPointer, locArrayName.c_str());
 }
 
-inline void DTreeInterface::Clone_Branch_ClonesArray(string locBranchName)
+inline void DTreeInterface::Clone_Branch_ClonesArray(string locBranchName, string locTreeKeyName)
 {
 	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
-
-	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
-	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
-	{
-		TBranch* locBranch = locIterator->second->Branch(locBranchName.c_str(), locPointerToPointer, 32000, 0); //0: don't split
-		if(locIterator == dOutputTreeMap.begin())
-			dBranchMap_OutputTree[locBranchName] = locBranch;
-	}
+	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locPointerToPointer, 32000, 0); //0: don't split
 }
 
 /**************************************************************** FILL BRANCHES *************************************************************/

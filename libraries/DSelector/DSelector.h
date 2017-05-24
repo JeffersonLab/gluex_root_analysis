@@ -44,7 +44,7 @@ class DSelector : public TSelector
 		virtual Bool_t Process(Long64_t locEntry);
 		void SlaveTerminate(void);
 		void Terminate(void);
-		void Fill_OutputTree(string locFileName = "");
+		void Fill_OutputTree(string locKeyName = "");
 
 	protected:
 

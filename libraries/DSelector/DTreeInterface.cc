@@ -64,14 +64,14 @@ void DTreeInterface::Clone_Tree(string locTreeKeyName)
 		{
 			//is fundamental type. check if it is an array or not
 			if(dBranchToArraySizeMap.find(locBranchName) == dBranchToArraySizeMap.end())
-				Clone_Branch_Fundamental(locBranchName); //not an array
+				Clone_Branch_Fundamental(locBranchName, locTreeKeyName); //not an array
 			else //is an array
-				Clone_Branch_FundamentalArray(locBranchName);
+				Clone_Branch_FundamentalArray(locBranchName, locTreeKeyName);
 		}
 		else if(dMemoryMap_ClonesArray.find(locBranchName) != dMemoryMap_ClonesArray.end())
-			Clone_Branch_ClonesArray(locBranchName); //is a clonesarray
+			Clone_Branch_ClonesArray(locBranchName, locTreeKeyName); //is a clonesarray
 		else //is a tobject
-			Clone_Branch_TObject(locBranchName);
+			Clone_Branch_TObject(locBranchName, locTreeKeyName);
 	}
 }
 
