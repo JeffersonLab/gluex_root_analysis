@@ -168,14 +168,16 @@ class DSelector : public TSelector
 		//binary power of a PID is given by ParticleMultiplexPower() (defined in libraries/include/particleType.h)
 		//types: most Particle_t's 
 
-		map<string, string> dOutputTreeFileNameMap; //key is key, value is file name
-		map<string, TFile*> dOutputTreeFileMap; //key is key name (not necessarily file name)
-		map<string, TProofOutputFile*> dOutputTreeProofFileMap; //key is key name (not necessarily file name)
-
 		TH1D* dHist_NumEventsSurvivedAction;
 		TH2D* dHist_NumCombosSurvivedAction;
 		TH1D* dHist_NumCombosSurvivedAction1D;
 		vector<size_t> dNumCombosSurvivedAction;
+
+	protected:
+		map<string, string> dOutputTreeFileNameMap; //key is key, value is file name
+	private:
+		map<string, TFile*> dOutputTreeFileMap; //key is key name (not necessarily file name)
+		map<string, TProofOutputFile*> dOutputTreeProofFileMap; //key is key name (not necessarily file name)
 
 	ClassDef(DSelector, 0);
 };
