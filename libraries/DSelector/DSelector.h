@@ -44,7 +44,7 @@ class DSelector : public TSelector
 		virtual Bool_t Process(Long64_t locEntry);
 		void SlaveTerminate(void);
 		void Terminate(void);
-		void Fill_OutputTree(void);
+		void Fill_OutputTree(string locKeyName = "");
 
 	protected:
 
@@ -53,7 +53,7 @@ class DSelector : public TSelector
 		bool dInitializedFlag;
 		TString dOption;
 		string dOutputFileName;
-		string dOutputTreeFileName;
+		string dOutputTreeFileName; //DEPRECATED!! use dOutputTreeFileNameMap instead!!
 		string dFlatTreeFileName; //for output flat trees
 		string dFlatTreeName; //for output flat trees
 
@@ -133,10 +133,8 @@ class DSelector : public TSelector
 		void Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag);
 
 		TFile* dFile;
-		TFile* dOutputTreeFile;
 		TFile* dOutputFlatTreeFile;
 		TProofOutputFile* dProofFile;
-		TProofOutputFile* dOutputTreeProofFile;
 		TProofOutputFile* dOutputFlatTreeProofFile;
 		Int_t dTreeNumber;
 
@@ -175,6 +173,12 @@ class DSelector : public TSelector
 		TH1D* dHist_NumCombosSurvivedAction1D;
 		vector<size_t> dNumCombosSurvivedAction;
 
+	protected:
+		map<string, string> dOutputTreeFileNameMap; //key is key, value is file name
+	private:
+		map<string, TFile*> dOutputTreeFileMap; //key is key name (not necessarily file name)
+		map<string, TProofOutputFile*> dOutputTreeProofFileMap; //key is key name (not necessarily file name)
+
 	ClassDef(DSelector, 0);
 };
 
@@ -185,7 +189,7 @@ inline DSelector::DSelector(TTree* locTree) :
 		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
-		dFile(NULL), dOutputTreeFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputTreeProofFile(NULL), dOutputFlatTreeProofFile(NULL),
+		dFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputFlatTreeProofFile(NULL),
 		dTreeNumber(0), dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}

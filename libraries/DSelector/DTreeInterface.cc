@@ -34,20 +34,20 @@ void DTreeInterface::Set_BranchAddresses(bool locFirstTreeFlag)
 		dGetEntryBranches = dInputBranches;
 }
 
-void DTreeInterface::Clone_Tree(void)
+void DTreeInterface::Clone_Tree(string locTreeKeyName)
 {
 	//make sure you've cd'd into the output file before calling this function!
-	if(dOutputTree != NULL)
-		return;
+	if(dOutputTreeMap.find(locTreeKeyName) != dOutputTreeMap.end())
+		return; //already cloned!!
 
 	//cannot use TTree::CloneTree(): In PROOF, the selector is only given the TTree, and not the TChain
 	//and, the branch addresses change from tree-to-tree (file-to-file), which is assumed not to happen in TTree::CloneTree()
 	//so, must set it up manually (thanks ROOT!)
-	dOutputTree = new TTree(dInputTree->GetName(), dInputTree->GetName());
+	dOutputTreeMap[locTreeKeyName] = new TTree(dInputTree->GetName(), dInputTree->GetName());
 
 	//set user info
 	TList* locInputUserInfo = Get_UserInfo();
-	TList* locOutputUserInfo = dOutputTree->GetUserInfo();
+	TList* locOutputUserInfo = dOutputTreeMap[locTreeKeyName]->GetUserInfo();
 	for(Int_t loc_i = 0; loc_i < locInputUserInfo->GetSize(); ++loc_i)
 		locOutputUserInfo->Add(locInputUserInfo->At(loc_i)->Clone());
 
@@ -64,14 +64,14 @@ void DTreeInterface::Clone_Tree(void)
 		{
 			//is fundamental type. check if it is an array or not
 			if(dBranchToArraySizeMap.find(locBranchName) == dBranchToArraySizeMap.end())
-				Clone_Branch_Fundamental(locBranchName); //not an array
+				Clone_Branch_Fundamental(locBranchName, locTreeKeyName); //not an array
 			else //is an array
-				Clone_Branch_FundamentalArray(locBranchName);
+				Clone_Branch_FundamentalArray(locBranchName, locTreeKeyName);
 		}
 		else if(dMemoryMap_ClonesArray.find(locBranchName) != dMemoryMap_ClonesArray.end())
-			Clone_Branch_ClonesArray(locBranchName); //is a clonesarray
+			Clone_Branch_ClonesArray(locBranchName, locTreeKeyName); //is a clonesarray
 		else //is a tobject
-			Clone_Branch_TObject(locBranchName);
+			Clone_Branch_TObject(locBranchName, locTreeKeyName);
 	}
 }
 

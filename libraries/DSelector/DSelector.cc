@@ -45,10 +45,11 @@ void DSelector::Init(TTree *locTree)
 	Setup_Target();
 
 	// CLONE TTree for writing out if desired
-	if(dOutputTreeFile != NULL)
+	map<string, TFile*>::const_iterator locFileIterator = dOutputTreeFileMap.begin();
+	for(; locFileIterator != dOutputTreeFileMap.end(); ++locFileIterator)
 	{
-		dOutputTreeFile->cd();
-		dTreeInterface->Clone_Tree();
+		locFileIterator->second->cd();
+		dTreeInterface->Clone_Tree(locFileIterator->first);
 	}
 
 	// Create flat output TTree if desired
@@ -151,6 +152,7 @@ void DSelector::Setup_Output(void)
 		if(locFlatTreeFileObject != NULL)
 			dFlatTreeFileName = locFlatTreeFileObject->GetTitle();
 	}
+	dOutputTreeFileNameMap[""] = dOutputTreeFileName;
 
 	//Create output hist file (if desired)
 	if(dOutputFileName != "")
@@ -165,14 +167,15 @@ void DSelector::Setup_Output(void)
 	}
 
 	//Create output clone tree file (if desired)
-	if(dOutputTreeFileName != "")
+	map<string, string>::const_iterator locIterator = dOutputTreeFileNameMap.begin();
+	for(; locIterator != dOutputTreeFileNameMap.end(); ++locIterator)
 	{
 		if(gProofServ == NULL)
-			dOutputTreeFile = new TFile(dOutputTreeFileName.c_str(), "RECREATE");
+			dOutputTreeFileMap[locIterator->first] = new TFile(locIterator->second.c_str(), "RECREATE");
 		else
 		{
-			dOutputTreeProofFile = new TProofOutputFile(dOutputTreeFileName.c_str(), TProofOutputFile::kMerge);
-			dOutputTreeFile = dOutputTreeProofFile->OpenFile("RECREATE");
+			dOutputTreeProofFileMap[locIterator->first] = new TProofOutputFile(locIterator->second.c_str(), TProofOutputFile::kMerge);
+			dOutputTreeFileMap[locIterator->first] = dOutputTreeProofFileMap[locIterator->first]->OpenFile("RECREATE");
 		}
 	}
 
@@ -252,14 +255,16 @@ void DSelector::Finalize()
 	if(dOutputFlatTreeProofFile != NULL)
 		fOutput->Add(dOutputFlatTreeProofFile);
 
-	//Write output clone tree and close file
-	if(dOutputTreeFile != NULL)
+	//Write output clone trees and close files
+	map<string, TFile*>::const_iterator locFileIterator = dOutputTreeFileMap.begin();
+	for(; locFileIterator != dOutputTreeFileMap.end(); ++locFileIterator)
 	{
-		dOutputTreeFile->Write(0, TObject::kOverwrite);
-		dOutputTreeFile->Close();
+		locFileIterator->second->Write(0, TObject::kOverwrite);
+		locFileIterator->second->Close();
 	}
-	if(dOutputTreeProofFile != NULL)
-		fOutput->Add(dOutputTreeProofFile);
+	map<string, TProofOutputFile*>::const_iterator locPROOFFileIterator = dOutputTreeProofFileMap.begin();
+	for(; locPROOFFileIterator != dOutputTreeProofFileMap.end(); ++locPROOFFileIterator)
+		fOutput->Add(locPROOFFileIterator->second);
 
 	//Write output histograms and close file
 	if(dFile != NULL)
@@ -317,14 +322,14 @@ map<Particle_t, UInt_t> DSelector::Get_NumFinalStateThrown(void) const
 	return locNumFinalStateThrown;
 }
 
-void DSelector::Fill_OutputTree()
+void DSelector::Fill_OutputTree(string locKeyName)
 {
 	// The FillOutputTree() function is called for events in the tree which pass
 	// the user-defined analysis cuts.  The output file then contains the TTree 
 	// with these events that can be used for higher-level analysis (eg. AmptTools fit,
 	// PWA, etc.)
 
-	dTreeInterface->Fill_OutputTree();
+	dTreeInterface->Fill_OutputTree(locKeyName);
 }
 
 void DSelector::Create_ComboSurvivalHists(void)
@@ -647,7 +652,7 @@ void DSelector::Fill_FlatTree(void)
 	}
 
 	//FILL TREE
-	dFlatTreeInterface->Fill_OutputTree();
+	dFlatTreeInterface->Fill_OutputTree("");
 }
 
 void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
@@ -687,7 +692,7 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 			}
 		}
 
-        return;
+		return;
 	}
 
 	//handle decaying & final state particles
