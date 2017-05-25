@@ -152,7 +152,8 @@ void DSelector::Setup_Output(void)
 		if(locFlatTreeFileObject != NULL)
 			dFlatTreeFileName = locFlatTreeFileObject->GetTitle();
 	}
-	dOutputTreeFileNameMap[""] = dOutputTreeFileName;
+	if(dOutputTreeFileName != "")
+		dOutputTreeFileNameMap[""] = dOutputTreeFileName;
 
 	//Create output hist file (if desired)
 	if(dOutputFileName != "")
