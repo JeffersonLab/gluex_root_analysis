@@ -437,6 +437,10 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 			if(!(locShowerEnergy > 0.0))
 				continue;
 
+			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
+                        double locP = locP4.P();
+                        locShowerEOverP = locShowerEnergy/locP;
+
 			if((dPID == Electron) || (dPID == Positron))
 			{
 				if(locShowerEOverP < dShowerEOverPCut)
@@ -449,6 +453,53 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 
 	return true;
 }
+
+bool DCutAction_TrackBCALPreshowerFraction::Perform_Action(void)
+{
+        for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+        {
+                DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+                //final particles
+                for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+                {
+                        DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+                        if(locKinematicData == NULL)
+                                continue; //e.g. a decaying or missing particle whose params aren't set yet
+			
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locComboWrapperStep->Get_DecayStepIndex(loc_j);
+                        if(locDecayStepIndex != -2)
+                                continue; //not measured
+			
+			if(locKinematicData->Get_PID() != dPID)
+                                continue;
+                        if(ParticleCharge(locKinematicData->Get_PID()) == 0)
+                                continue;
+
+                        const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+                        double locBCALPreshowerE = locChargedTrackHypothesis->Get_Energy_BCALPreshower();
+                        double locBCALShowerE = locChargedTrackHypothesis->Get_Energy_BCAL();
+                        if(!(locBCALShowerE > 0.0))
+                                continue;
+
+			double locPreshowerFraction = locBCALPreshowerE/locBCALShowerE*sin(locChargedTrackHypothesis->Get_P4().Theta());
+
+                        if((dPID == Electron) || (dPID == Positron))
+                        {
+                                if(locPreshowerFraction < dPreshowerFractionCut)
+                                        return false;
+                        }       
+			//else if(locPreshowerFraction > dPreshowerFractionCut)
+			//	 return false;
+
+		}
+        }
+
+        return true;
+}
+
+
 
 string DCutAction_Kinematics::Get_ActionName(void) const
 {
