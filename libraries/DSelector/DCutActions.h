@@ -30,7 +30,20 @@ class DCutAction_PIDDeltaT : public DAnalysisAction
 	public:
 		DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_PIDDeltaT", locUseKinFitFlag, locActionUniqueString),
-			dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
+			dChargedHypoWrapper(NULL), dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem), dTargetCenterZ(0.0)
+			{
+				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
+				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
+			}
+
+		//for cutting background
+		DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, DChargedTrackHypothesis* locChargedHypoWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "", Particle_t locPID_BG = Unknown, bool locUseCurveCutFlag = false) :	
+			DAnalysisAction(locParticleComboWrapper, "Cut_PIDDeltaT", locUseKinFitFlag, locActionUniqueString),
+			dChargedHypoWrapper(locChargedHypoWrapper), dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem), dPID_BG(locPID_BG), dUseCurveCutFlag(locUseCurveCutFlag), dTargetCenterZ(0.0)
+			{
+				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
+				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
+			}
 
 		string Get_ActionName(void) const;
 		void Initialize(void);
@@ -38,11 +51,17 @@ class DCutAction_PIDDeltaT : public DAnalysisAction
 		bool Perform_Action(void);
 
 	private:
+		DChargedTrackHypothesis * dChargedHypoWrapper;
 		double dDeltaTCut;
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
-
+		Particle_t dPID_BG;
+		bool dUseCurveCutFlag;
 		double dTargetCenterZ;
+
+	public:
+		set<Particle_t> dBackgroundPIDs;
+	
 };
 
 class DCutAction_NoPIDHit : public DAnalysisAction

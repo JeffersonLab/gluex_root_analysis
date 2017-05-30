@@ -9,6 +9,7 @@ string DCutAction_PIDDeltaT::Get_ActionName(void) const
 
 void DCutAction_PIDDeltaT::Initialize(void)
 {
+	// Get target center
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();	
 }
 
@@ -17,7 +18,6 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
 		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
-
 		//final particles
 		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
 		{
@@ -30,7 +30,7 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
-			if((dPID != Unknown) && (locKinematicData->Get_PID() != dPID))
+			if((dPID != Unknown) && (locKinematicData->Get_PID() != dPID)) 
 				continue;
 
 			// determine detector system
@@ -47,20 +47,139 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 				if(locNeutralParticleHypothesis != NULL)
 					locSystem = locNeutralParticleHypothesis->Get_Detector_System_Timing();
 			}
-			
-			if((dSystem != SYS_NULL) && (locSystem != dSystem))
-				continue;
+			if((dSystem != SYS_NULL) && (locSystem != dSystem)) {
+				if(dChargedHypoWrapper == NULL) // This is only true for non background situations!!!
+					continue;
+			}
 
 			TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
 			double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
 			double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
 			double locDeltaT = locX4.T() - locPropagatedRFTime;
-			if(fabs(locDeltaT) > dDeltaTCut) 
-				return false;
+			TLorentzVector locP = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
 
+			// Perform cut on non_background
+			if(dChargedHypoWrapper == NULL) {
+				if(fabs(locDeltaT) > dDeltaTCut) 
+					return false;
+			}
+			else {	// Perform cut on backgound hypothesis
+				//loop over background pids
+				Particle_t locFinalStatePID = locKinematicData->Get_PID();
+				set<Particle_t>::iterator locIterator = dBackgroundPIDs.begin();
+				for(; locIterator != dBackgroundPIDs.end(); ++locIterator)
+				{
+					// Make sure has same charge
+					Particle_t locBackgroundPID = *locIterator;
+					if(ParticleCharge(locBackgroundPID) != ParticleCharge(locFinalStatePID))
+						continue;
+					if(locBackgroundPID == locFinalStatePID)
+						continue; //only want the background!
+
+					//Find and set array index in dChargedHypoWrapper corresponding to this background PID
+					Int_t locTrackID = locKinematicData->Get_ID();
+					bool locFoundFlag = false;
+					for(UInt_t loc_k = 0; loc_k < dChargedHypoWrapper->Get_ArraySize(); ++loc_k)
+					{
+						dChargedHypoWrapper->Set_ArrayIndex(loc_k);
+						if(dChargedHypoWrapper->Get_ID() != locTrackID)
+							continue; //wrong track
+						if(dChargedHypoWrapper->Get_PID() != locBackgroundPID)
+							continue; //wrong background PID
+
+						locFoundFlag = true;
+						break;
+					}
+					if(!locFoundFlag)
+						continue; //desired background PID not found
+
+					// Make deltaT calculations for background particles
+					TLorentzVector locX4_BG = dChargedHypoWrapper->Get_X4_Measured();
+					double locRFTime_BG = dParticleComboWrapper->Get_RFTime_Measured();
+					double locPropagatedRFTime_BG = locRFTime_BG + (locX4_BG.Z() - dTargetCenterZ)/29.9792458;
+					double locDeltaT_BG = locX4_BG.T() - locPropagatedRFTime_BG;
+					TLorentzVector locP_BG = dChargedHypoWrapper->Get_P4_Measured();
+
+					// For curve cut
+					double locBeta = locP_BG.P()/sqrt(ParticleMass(locFinalStatePID)*ParticleMass(locFinalStatePID) + locP_BG.P()*locP_BG.P());
+					double locBeta_BG = locP_BG.P()/sqrt(ParticleMass(locBackgroundPID)*ParticleMass(locBackgroundPID) + locP_BG.P()*locP_BG.P());
+
+					// Make sure to cut out the background PID the user requests
+					if((dPID_BG != Unknown) && (dChargedHypoWrapper->Get_PID() != dPID_BG)) 
+						continue;
+
+					// Make sure to cut out the background dSystem the user requests
+					DetectorSystem_t locSystem_BG = dChargedHypoWrapper->Get_Detector_System_Timing();
+					if((dSystem != SYS_NULL) && (locSystem_BG != dSystem))
+						continue;
+
+					// Set cut for curvefit
+					double sys_DeltaT = 0.0;
+					if (dUseCurveCutFlag) {
+						if (locSystem_BG == SYS_TOF)
+							sys_DeltaT = ((542.485 / 29.9792458) * (1./locBeta - 1./locBeta_BG)); // 542.485 = z Distance from target to TOF wall in cm
+						if (locSystem_BG == SYS_FCAL)
+							sys_DeltaT = ((675.766 / 29.9792458) * (1./locBeta - 1./locBeta_BG)); // 675.766 = z Distance from target to FCAL wall in cm
+						if (locSystem_BG == SYS_BCAL) {
+							double loc_BCAL_angle = locP_BG.Theta()*180.0/TMath::Pi();
+							if ((loc_BCAL_angle >= 10.) && (loc_BCAL_angle < 15.))
+								sys_DeltaT = ((340. / 29.9792458) * (1./locBeta - 1./locBeta_BG)); // 340 = z Distance from target to outermost BCAL wall in cm
+							if ((loc_BCAL_angle >= 15.) && (loc_BCAL_angle < 20.))
+								sys_DeltaT = ((253. / 29.9792458) * (1./locBeta - 1./locBeta_BG)); 
+							if ((loc_BCAL_angle >= 20.) && (loc_BCAL_angle < 25.))
+								sys_DeltaT = ((191. / 29.9792458) * (1./locBeta - 1./locBeta_BG)); 
+							if ((loc_BCAL_angle >= 25.) && (loc_BCAL_angle < 30.))
+								sys_DeltaT = ((157. / 29.9792458) * (1./locBeta - 1./locBeta_BG));
+							if ((loc_BCAL_angle >= 30.) && (loc_BCAL_angle < 35.))
+								sys_DeltaT = ((133. / 29.9792458) * (1./locBeta - 1./locBeta_BG)); 
+							if ((loc_BCAL_angle >= 35.))
+								sys_DeltaT = ((116. / 29.9792458) * (1./locBeta - 1./locBeta_BG));
+						}
+					} // dUseCurveCutFlag
+
+					// Perform Cuts on the Background of the Proton 
+					if ((locFinalStatePID == Proton) && (dPID == Proton)) {
+						if ((locDeltaT_BG < dDeltaTCut) && (!dUseCurveCutFlag))
+								return false;
+						if (dUseCurveCutFlag) {
+							if ((locDeltaT_BG < sys_DeltaT - dDeltaTCut) || (locDeltaT_BG > sys_DeltaT + dDeltaTCut))
+								return false;
+						}
+					} // if proton
+					
+					// Perform Cuts on the Background of the Kaons
+					if (((locFinalStatePID == KPlus) && (dPID == KPlus)) || ((locFinalStatePID == KMinus) && (dPID == KMinus))) {
+						if ((locBackgroundPID == PiPlus) || (locBackgroundPID == PiMinus)) {
+							if (locDeltaT_BG < dDeltaTCut && (!dUseCurveCutFlag))
+								return false;
+							if (dUseCurveCutFlag) {
+								if ((locDeltaT_BG < sys_DeltaT - dDeltaTCut) || (locDeltaT_BG > sys_DeltaT + dDeltaTCut))
+									return false;
+							}
+						}
+						else if ((locBackgroundPID == Proton) || (locBackgroundPID == AntiProton)) {
+							if (locDeltaT_BG > dDeltaTCut && (!dUseCurveCutFlag))
+								return false;
+							if (dUseCurveCutFlag) {
+								if ((locDeltaT_BG < sys_DeltaT - dDeltaTCut) || (locDeltaT_BG > sys_DeltaT + dDeltaTCut))
+									return false;
+							} // dUseCurveCutFlag
+						} 
+					} // if K+/K-
+
+					// Perform Cuts on the Background of the Pions
+					if (((locFinalStatePID == PiPlus) && (dPID == PiPlus)) || ((locFinalStatePID == PiMinus) && (dPID == PiMinus))) {
+						if ((locDeltaT_BG > dDeltaTCut) && (!dUseCurveCutFlag))
+								return false;
+						if (dUseCurveCutFlag) {
+							if ((locDeltaT_BG < sys_DeltaT - dDeltaTCut) || (locDeltaT_BG > sys_DeltaT + dDeltaTCut))
+								return false;
+						}
+					} // if pi+/pi-
+				} //end of background pid loop
+			} //dChargedHypoWrapper != NULL
 		} //end of particle loop
 	} //end of step loop
-
 	return true;
 }
 
