@@ -81,10 +81,6 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 			locHistTitle = (loc_i == 0) ? "Production Vertex" : locInitParticleROOTName + string(" Decay Vertex");
 			locHistTitle += string(";Vertex-X (cm);Vertex-Y (cm)");
 			dHistMap_StepVertexYVsX[loc_i] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumVertexXYBins, dMinVertexXY, dMaxVertexXY, dNumVertexXYBins, dMinVertexXY, dMaxVertexXY);
-
-			locHistName = "StepVertexT";
-			locHistTitle = (loc_i == 0) ? ";Production Vertex-T (ns)" : string(";") + locInitParticleROOTName + string(" Decay Vertex-T (ns)");	
-			dHistMap_StepVertexT[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumTBins, dMinT, dMaxT);
 		}
 
 		if((loc_i != 0) && IsDetachedVertex(locInitialPID))
@@ -226,7 +222,6 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 		{
 			dHistMap_StepVertexZ[loc_i]->Fill(locStepSpacetimeVertex.Z());
 			dHistMap_StepVertexYVsX[loc_i]->Fill(locStepSpacetimeVertex.X(), locStepSpacetimeVertex.Y());
-			dHistMap_StepVertexT[loc_i]->Fill(locStepSpacetimeVertex.T());
 		}
 
 		//DETACHED VERTEX INFORMATION
@@ -469,7 +464,17 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		dHistMap_EoverPVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumEoverPBins, dMinEoverP, dMaxEoverP);
 		locHistName = "EoverPVsTheta_FCAL";
 		locHistTitle = locParticleROOTName + string(";#theta (degrees); FCAL E/p");
-		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);	
+		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);
+		// PreshowerFraction BCAL vs p, theta
+		locHistName = "PreshowerFractionVsP_BCAL";
+                locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL Preshower Energy / Shower Energy");
+                dHistMap_PreshowerFractionVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+                locHistName = "PreshowerFractionVsTheta_BCAL";
+                locHistTitle = locParticleROOTName + string(";#theta (degrees); BCAL Preshower Energy / Shower Energy");
+                dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+                locHistName = "EoverPVs_PreshowerFraction_BCAL";
+                locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
+                dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
 	}
 	else
 	{
