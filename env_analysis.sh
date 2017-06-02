@@ -12,10 +12,20 @@ if [[ $BMS_OSNAME == "" ]]; then
 	export BMS_OSNAME=`$ROOT_ANALYSIS_HOME/osrelease.pl`
 fi
 
-# SET LIBRARY, PATH
-if [[ $LD_LIBRARY_PATH == "" ]]; then
-	export LD_LIBRARY_PATH
+if [[ `uname` != "Darwin" ]]; then
+
+   # SET LIBRARY, PATH
+   if [[ $LD_LIBRARY_PATH == "" ]]; then
+       export LD_LIBRARY_PATH
+   fi
+   export LD_LIBRARY_PATH=$ROOT_ANALYSIS_HOME/$BMS_OSNAME/lib:$LD_LIBRARY_PATH
+else
+    
+   # SET LIBRARY, PATH
+   if [[ $DYLD_LIBRARY_PATH == "" ]]; then
+       export DYLD_LIBRARY_PATH
+   fi
+   export DYLD_LIBRARY_PATH=$ROOT_ANALYSIS_HOME/$BMS_OSNAME/lib:$DYLD_LIBRARY_PATH
 fi
 
-export LD_LIBRARY_PATH=$ROOT_ANALYSIS_HOME/$BMS_OSNAME/lib:$LD_LIBRARY_PATH
 export PATH=$ROOT_ANALYSIS_HOME/$BMS_OSNAME/bin:$PATH
