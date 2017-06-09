@@ -350,4 +350,25 @@ class DCutAction_Kinematics : public DAnalysisAction
 		double dCutMaxPhi;
 };
 
+class DCutAction_TrackBCALPreshowerFraction : public DAnalysisAction
+{
+        public:
+
+                DCutAction_TrackBCALPreshowerFraction(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID, double locPreshowerFractionCut, string locActionUniqueString = "") :
+                DAnalysisAction(locParticleComboWrapper, "Cut_TrackBCALPreshowerFraction", locUseKinFitFlag, locActionUniqueString),
+                dPID(locPID), dPreshowerFractionCut(locPreshowerFractionCut) {}
+
+                string Get_ActionName(void) const;
+                void Initialize(void){};
+                void Reset_NewEvent(void){}
+                bool Perform_Action(void);
+
+        private:
+
+                DetectorSystem_t dDetector;
+                Particle_t dPID;
+                double dPreshowerFractionCut;
+};
+
+
 #endif // _DCutActions_

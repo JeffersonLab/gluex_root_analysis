@@ -157,6 +157,11 @@ void DHistogramAction_ParticleComboKinematics::Create_Hists(int locStepIndex, st
 	locHistTitle = locParticleROOTName + string(", ") + locStepROOTName + string(";Vertex-X (cm);Vertex-Y (cm)");
 	dHistMap_VertexYVsX[locStepIndex][locFillPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumVertexXYBins, dMinVertexXY, dMaxVertexXY, dNumVertexXYBins, dMinVertexXY, dMaxVertexXY);
 
+	// Vertex-T
+	locHistName = "VertexT";
+	locHistTitle = locParticleROOTName + string(", ") + locStepROOTName + string(";Vertex-T (ns)");
+	dHistMap_VertexT[locStepIndex][locFillPID] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumTBins, dMinT, dMaxT);
+
 	if(!locIsBeamFlag)
 	{
 		//beta vs p
@@ -305,6 +310,7 @@ void DHistogramAction_ParticleComboKinematics::Fill_Hists(const DKinematicData* 
 	dHistMap_DeltaBetaVsP[locStepIndex][locPID]->Fill(locP, locDeltaBeta);
 	dHistMap_VertexZ[locStepIndex][locPID]->Fill(locX4.Z());
 	dHistMap_VertexYVsX[locStepIndex][locPID]->Fill(locX4.X(), locX4.Y());
+	dHistMap_VertexT[locStepIndex][locPID]->Fill(locX4.T());
 }
 
 void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicData* locKinematicData, double locRFTime)
@@ -318,6 +324,7 @@ void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicDa
 	dHistMap_P[0][Unknown]->Fill(locP);
 	dHistMap_VertexZ[0][Unknown]->Fill(locX4.Z());
 	dHistMap_VertexYVsX[0][Unknown]->Fill(locX4.X(), locX4.Y());
+	dHistMap_VertexT[0][Unknown]->Fill(locX4.T());
 	dBeamParticleHist_DeltaTRF->Fill(locDeltaTRF);
 	dBeamParticleHist_DeltaTRFVsBeamE->Fill(locP4.E(), locDeltaTRF);
 }
@@ -457,7 +464,17 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		dHistMap_EoverPVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumEoverPBins, dMinEoverP, dMaxEoverP);
 		locHistName = "EoverPVsTheta_FCAL";
 		locHistTitle = locParticleROOTName + string(";#theta (degrees); FCAL E/p");
-		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);	
+		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);
+		// PreshowerFraction BCAL vs p, theta
+		locHistName = "PreshowerFractionVsP_BCAL";
+                locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL Preshower Energy / Shower Energy");
+                dHistMap_PreshowerFractionVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+                locHistName = "PreshowerFractionVsTheta_BCAL";
+                locHistTitle = locParticleROOTName + string(";#theta (degrees); BCAL Preshower Energy / Shower Energy");
+                dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+                locHistName = "EoverPVs_PreshowerFraction_BCAL";
+                locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
+                dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
 	}
 	else
 	{
@@ -609,9 +626,16 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 
 			// E over P
 			if(locChargedTrackHypothesis->Get_Energy_BCAL() > 0.) {
-				double locEoverP = locChargedTrackHypothesis->Get_Energy_BCAL()/locP;
+				double locShowerE = locChargedTrackHypothesis->Get_Energy_BCAL();
+				double locEoverP = locShowerE/locP;
 				dHistMap_EoverPVsP_BCAL[locStepIndex][locPID]->Fill(locP, locEoverP);
 				dHistMap_EoverPVsTheta_BCAL[locStepIndex][locPID]->Fill(locTheta, locEoverP);
+
+				double locPreshowerE = locChargedTrackHypothesis->Get_Energy_BCALPreshower();
+                                double locPreshowerFraction = locPreshowerE/locShowerE*sin(locChargedTrackHypothesis->Get_P4().Theta());
+                                dHistMap_PreshowerFractionVsP_BCAL[locStepIndex][locPID]->Fill(locP, locPreshowerFraction);
+                                dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID]->Fill(locTheta, locPreshowerFraction);
+                                dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID]->Fill(locPreshowerFraction, locEoverP);
 			}
 			if(locChargedTrackHypothesis->Get_Energy_FCAL() > 0.) {
 				double locEoverP = locChargedTrackHypothesis->Get_Energy_FCAL()/locP;

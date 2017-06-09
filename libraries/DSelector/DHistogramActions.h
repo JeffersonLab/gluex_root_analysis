@@ -69,6 +69,7 @@ class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 		map<size_t, map<Particle_t, TH1I*> > dHistMap_Phi;
 		map<size_t, map<Particle_t, TH1I*> > dHistMap_VertexZ;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_VertexYVsX;
+		map<size_t, map<Particle_t, TH1I*> > dHistMap_VertexT;
 
 		map<size_t, TH1I*> dHistMap_MaxTrackDeltaZ;
 		map<size_t, TH1I*> dHistMap_MaxTrackDeltaT;
@@ -79,6 +80,7 @@ class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 		//other than first, skipped if not detached vertex
 		map<size_t, TH1I*> dHistMap_StepVertexZ;
 		map<size_t, TH2I*> dHistMap_StepVertexYVsX;
+		map<size_t, TH1I*> dHistMap_StepVertexT;
 
 		//size_t is step index where the detached-vertex particle decays
 		map<size_t, TH1I*> dHistMap_DetachedPathLength; //distance between this vertex and the previous one (if detached)
@@ -94,11 +96,12 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			dChargedHypoWrapper(NULL), dTargetCenterZ(0.0), 
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
-			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
+			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100),
 			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
-			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0)
+			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0),
+			dMinPreshowerFraction(0.0), dMaxPreshowerFraction(1.0)
 			{
 				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
 				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
@@ -110,11 +113,12 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			dChargedHypoWrapper(locChargedHypoWrapper), dTargetCenterZ(0.0), 
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
-			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200),
+			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100),
 			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
-			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0)
+			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0),
+			dMinPreshowerFraction(0.0), dMaxPreshowerFraction(1.0)
 			{
 				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
 				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
@@ -136,10 +140,11 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 	public:
 		unsigned int dNumPBins, dNumThetaBins, dNumPhiBins, dNumTBins, dNumVertexXYBins, dNumBetaBins, dNumDeltaBetaBins;
 		unsigned int dNum2DPBins, dNum2DThetaBins, dNum2DPhiBins, dNumDeltaTRFBins, dNumPathLengthBins, dNumLifetimeBins;
-		unsigned int dNumDeltaTBins, dNum2DdEdxBins, dNumEoverPBins;
+		unsigned int dNumDeltaTBins, dNum2DdEdxBins, dNumEoverPBins, dNumPreshowerFractionBins;
 		double dMinT, dMaxT, dMinP, dMaxP, dMinTheta, dMaxTheta, dMinPhi, dMaxPhi, dMinVertexZ, dMaxVertexZ, dMinVertexXY, dMaxVertexXY;
 		double dMinBeta, dMaxBeta, dMinDeltaBeta, dMaxDeltaBeta, dMinDeltaTRF, dMaxDeltaTRF, dMaxPathLength, dMaxLifetime, dMaxBeamE;
 		double dMinDeltaT, dMaxDeltaT, dMindEdx, dMaxdEdx, dMinEoverP, dMaxEoverP;
+		double dMinPreshowerFraction, dMaxPreshowerFraction;
 
 		set<Particle_t> dBackgroundPIDs;
 
@@ -165,6 +170,10 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_BCAL;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_BCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_PreshowerFractionVsP_BCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_PreshowerFractionVsTheta_BCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVs_PreshowerFraction;
+
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_FCAL;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_FCAL;
 		

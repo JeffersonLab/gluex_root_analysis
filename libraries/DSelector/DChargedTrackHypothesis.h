@@ -59,6 +59,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_dEdx_ST(void) const;
 		Float_t Get_Energy_BCAL(void) const;
 		Float_t Get_Energy_BCALPreshower(void) const;
+		Float_t Get_SigLong_BCAL(void) const;
+                Float_t Get_SigTheta_BCAL(void) const;
+                Float_t Get_SigTrans_BCAL(void) const;
 		Float_t Get_Energy_FCAL(void) const;
 
 		//SHOWER MATCHING
@@ -105,6 +108,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_dEdx_ST;
 		TBranch* dBranch_Energy_BCAL;
 		TBranch* dBranch_Energy_BCALPreshower;
+		TBranch* dBranch_SigLong_BCAL;
+                TBranch* dBranch_SigTheta_BCAL;
+                TBranch* dBranch_SigTrans_BCAL;
 		TBranch* dBranch_Energy_FCAL;
  
 		//SHOWER MATCHING
@@ -201,6 +207,15 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "ChargedHypo__Energy_BCALPreshower";
 	dBranch_Energy_BCALPreshower = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__SigLong_BCAL";
+        dBranch_SigLong_BCAL = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__SigTheta_BCAL";
+        dBranch_SigTheta_BCAL = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__SigTrans_BCAL";
+        dBranch_SigTrans_BCAL = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "ChargedHypo__Energy_FCAL";
 	dBranch_Energy_FCAL = dTreeInterface->Get_Branch(locBranchName);
@@ -359,6 +374,21 @@ inline Float_t DChargedTrackHypothesis::Get_Energy_BCAL(void) const
 inline Float_t DChargedTrackHypothesis::Get_Energy_BCALPreshower(void) const
 {
 	return ((Float_t*)dBranch_Energy_BCALPreshower->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_SigLong_BCAL(void) const
+{
+        return ((Float_t*)dBranch_SigLong_BCAL->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_SigTheta_BCAL(void) const
+{
+        return ((Float_t*)dBranch_SigTheta_BCAL->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_SigTrans_BCAL(void) const
+{
+        return ((Float_t*)dBranch_SigTrans_BCAL->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DChargedTrackHypothesis::Get_Energy_FCAL(void) const
