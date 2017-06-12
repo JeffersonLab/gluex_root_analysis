@@ -370,5 +370,23 @@ class DCutAction_TrackBCALPreshowerFraction : public DAnalysisAction
                 double dPreshowerFractionCut;
 };
 
+class DCutAction_Energy_UnusedShowers : public DAnalysisAction
+{
+        public:
+
+                DCutAction_Energy_UnusedShowers(const DParticleCombo* locParticleComboWrapper,  double locMaxEnergy_UnusedShowersCut, string locActionUniqueString = "") :
+                DAnalysisAction(locParticleComboWrapper, "Cut_Energy_UnusedShowers", false, locActionUniqueString),
+		dMaxEnergy_UnusedShowersCut(locMaxEnergy_UnusedShowersCut) {}
+
+                string Get_ActionName(void) const;
+                void Initialize(void){};
+                void Reset_NewEvent(void){}
+                bool Perform_Action(void);
+
+        private:
+
+                double dMaxEnergy_UnusedShowersCut;
+};
+
 
 #endif // _DCutActions_

@@ -547,4 +547,26 @@ class DHistogramAction_BeamEnergy : public DAnalysisAction
 		set<Int_t> dPreviouslyHistogrammed; //Int_t: Unique ID for beam particles. set: easy to use, fast to search
 };
 
+class DHistogramAction_Energy_UnusedShowers : public DAnalysisAction
+{
+	public:
+		DHistogramAction_Energy_UnusedShowers(const DParticleCombo* locParticleComboWrapper, string locActionUniqueString = "") :
+	        DAnalysisAction(locParticleComboWrapper, "Hist_UnusedShowers", false, locActionUniqueString),
+			dNumEnergyBins(100), dMinEnergy_UnusedShowers(0.0), dMaxEnergy_UnusedShowers(5.0) {}
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();} // reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+		unsigned int dNumEnergyBins;
+		double dMinEnergy_UnusedShowers, dMaxEnergy_UnusedShowers;
+
+	private:
+
+		TH1I* dHist_Energy_UnusedShowers;
+		DAnalysisUtilities dAnalysisUtilities;
+
+		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
+};
+
 #endif // _DHistogramActions_

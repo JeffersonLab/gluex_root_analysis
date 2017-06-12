@@ -66,6 +66,9 @@ class DParticleCombo
 		UInt_t Get_NDF_KinFit(void) const;
 		Float_t Get_ConfidenceLevel_KinFit(void) const;
 
+		// UNUSED ENERGY:
+		Float_t Get_Energy_UnusedShowers(void) const;
+
 		// EVENT INFO: //Doesn't really belong in DParticleCombo, but much easier to pass into actions this way
 		UInt_t Get_RunNumber(void) const;
 		ULong64_t Get_EventNumber(void) const;
@@ -120,6 +123,7 @@ class DParticleCombo
 
 		TBranch* dBranch_ChiSq_KinFit; //only if kinematic fit performed
 		TBranch* dBranch_NDF_KinFit; //only if kinematic fit performed // = 0 if kinematic fit doesn't converge
+		TBranch* dBranch_Energy_UnusedShowers;
 
 		//Target not necessarily in the particle combo, so add the info here (for convenience)
 		Particle_t dTargetPID;
@@ -162,6 +166,9 @@ inline void DParticleCombo::Setup_Branches(void)
 	// KINFIT:
 	dBranch_ChiSq_KinFit = dTreeInterface->Get_Branch("ChiSq_KinFit");
 	dBranch_NDF_KinFit = dTreeInterface->Get_Branch("NDF_KinFit");
+
+	// UNUSED ENERGY:
+	dBranch_Energy_UnusedShowers = dTreeInterface->Get_Branch("Energy_UnusedShowers");
 }
 
 inline UInt_t DParticleCombo::Get_NumCombos(void) const
@@ -254,6 +261,14 @@ inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit(void) const
 		return -1.0;
 	UInt_t locNDF = Get_NDF_KinFit();
 	return TMath::Prob(locChiSq, locNDF);
+}
+
+// UNUSED ENERGY:
+inline Float_t DParticleCombo::Get_Energy_UnusedShowers(void) const
+{
+	if(dBranch_Energy_UnusedShowers == NULL)
+		return -1.0;
+	return ((Float_t*)dBranch_Energy_UnusedShowers->GetAddress())[dComboIndex];
 }
 
 // MISSING

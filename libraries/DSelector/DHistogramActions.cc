@@ -1320,3 +1320,30 @@ bool DHistogramAction_BeamEnergy::Perform_Action(void)
 
 	return true;
 }
+
+void DHistogramAction_Energy_UnusedShowers::Initialize(void)
+{
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	dHist_Energy_UnusedShowers = new TH1I("Energy_UnusedShowers", "; Unused Shower Energy (GeV)", dNumEnergyBins, dMinEnergy_UnusedShowers, dMaxEnergy_UnusedShowers);
+
+	//Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+bool DHistogramAction_Energy_UnusedShowers::Perform_Action(void)
+{
+	// get source objects for uniqueness tracking
+	map<unsigned int, set<Int_t> > locSourceObjects;
+	TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, locSourceObjects, dUseKinFitFlag);
+
+	if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end()){
+		dPreviouslyHistogrammed.insert(locSourceObjects);
+	
+		double locEnergy_UnusedShowers = dParticleComboWrapper->Get_Energy_UnusedShowers();	
+		dHist_Energy_UnusedShowers->Fill(locEnergy_UnusedShowers);
+	}
+
+	return true;
+}
