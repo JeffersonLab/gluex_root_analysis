@@ -499,8 +499,6 @@ bool DCutAction_TrackBCALPreshowerFraction::Perform_Action(void)
         return true;
 }
 
-
-
 string DCutAction_Kinematics::Get_ActionName(void) const
 {
 	ostringstream locStream;
@@ -544,4 +542,16 @@ bool DCutAction_Kinematics::Perform_Action(void)
 	}
 
 	return true;
+}
+
+string DCutAction_Energy_UnusedShowers::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMaxEnergy_UnusedShowersCut;
+	return locStream.str();
+}
+
+bool DCutAction_Energy_UnusedShowers::Perform_Action(void)
+{
+	return (dParticleComboWrapper->Get_Energy_UnusedShowers() <= dMaxEnergy_UnusedShowersCut);
 }
