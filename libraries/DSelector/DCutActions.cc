@@ -454,6 +454,13 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 	return true;
 }
 
+string DCutAction_TrackBCALPreshowerFraction::Get_ActionName(void) const
+{
+        ostringstream locStream;
+        locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dPreshowerFractionCut;
+        return locStream.str();
+}
+
 bool DCutAction_TrackBCALPreshowerFraction::Perform_Action(void)
 {
         for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
