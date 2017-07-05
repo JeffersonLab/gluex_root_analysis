@@ -348,22 +348,16 @@ bool DCutAction_InvariantMassVeto::Perform_Action(void)
 		//build all possible combinations of the included pids
 		set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locComboWrapperStep, dToIncludePIDs);
 
-		//loop over them: Must fail ALL to fail. if any succeed, go to the next step
+		//loop over them: Must fail only ONE to fail. only if all succeed, go to the next step
 		set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
-		bool locAnyOKFlag = false;
 		for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
 		{
 			TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locComboIterator, dUseKinFitFlag);
 			double locInvariantMass = locFinalStateP4.M();
-			if((locInvariantMass < dMaxMass) && (locInvariantMass > dMinMass))
-				continue;
-			locAnyOKFlag = true;
-			break;
+			if((dMinMass < locInvariantMass) && (locInvariantMass < dMaxMass))
+			  return false;
 		}
-		if(!locAnyOKFlag)
-			return false;
 	}
-
 	return true;
 }
 
