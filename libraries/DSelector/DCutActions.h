@@ -73,13 +73,13 @@ class DCutAction_dEdx : public DAnalysisAction
 		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
+		TF1 *dFunc_dEdxCut_SelectHeavy;
+                TF1 *dFunc_dEdxCut_SelectLight;
 
 	private:
 
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
-		TF1 *dFunc_dEdxCut_SelectHeavy;
-		TF1 *dFunc_dEdxCut_SelectLight;
 		bool dMaxRejectionFlag;
 };
 
