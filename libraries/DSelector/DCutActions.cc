@@ -9,6 +9,10 @@ string DCutAction_PIDDeltaT::Get_ActionName(void) const
 
 void DCutAction_PIDDeltaT::Initialize(void)
 {
+	dFunc_PIDCut_SelectPositive = new TF1("dFunc_PIDCut_SelectPositive","pol0",0.0, 12.0);
+	dFunc_PIDCut_SelectPositive->SetParameter(0,dDeltaTCut);
+	dFunc_PIDCut_SelectNegative = new TF1("dFunc_PIDCut_SelectNegative","pol0",0.0, 12.0);
+	dFunc_PIDCut_SelectNegative->SetParameter(0,-dDeltaTCut);
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();	
 }
 
@@ -52,10 +56,11 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 				continue;
 
 			TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
+			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
 			double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
 			double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
 			double locDeltaT = locX4.T() - locPropagatedRFTime;
-			if(fabs(locDeltaT) > dDeltaTCut) 
+			if(  locDeltaT > dFunc_PIDCut_SelectPositive->Eval(locP4.P()) || locDeltaT < dFunc_PIDCut_SelectNegative->Eval(locP4.P())) 
 				return false;
 
 		} //end of particle loop

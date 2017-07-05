@@ -30,12 +30,14 @@ class DCutAction_PIDDeltaT : public DAnalysisAction
 	public:
 		DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_PIDDeltaT", locUseKinFitFlag, locActionUniqueString),
-			dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
+			dFunc_PIDCut_SelectPositive(nullptr), dFunc_PIDCut_SelectNegative(nullptr), dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
 
 		string Get_ActionName(void) const;
 		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
+		TF1 *dFunc_PIDCut_SelectPositive;
+                TF1 *dFunc_PIDCut_SelectNegative;
 
 	private:
 		double dDeltaTCut;
@@ -67,19 +69,19 @@ class DCutAction_dEdx : public DAnalysisAction
 	public:
 		DCutAction_dEdx(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID, DetectorSystem_t locSystem = SYS_CDC, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_dEdx", locUseKinFitFlag, locActionUniqueString),
-			dPID(locPID), dSystem(locSystem), dFunc_dEdxCut_SelectHeavy(NULL), dFunc_dEdxCut_SelectLight(NULL), dMaxRejectionFlag(false) {}
+			dFunc_dEdxCut_SelectHeavy(NULL), dFunc_dEdxCut_SelectLight(NULL), dPID(locPID), dSystem(locSystem), dMaxRejectionFlag(false) {}
 
 		string Get_ActionName(void) const;
 		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
+		TF1 *dFunc_dEdxCut_SelectHeavy;
+                TF1 *dFunc_dEdxCut_SelectLight;
 
 	private:
 
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
-		TF1 *dFunc_dEdxCut_SelectHeavy;
-		TF1 *dFunc_dEdxCut_SelectLight;
 		bool dMaxRejectionFlag;
 };
 
