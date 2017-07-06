@@ -9,10 +9,18 @@ string DCutAction_PIDDeltaT::Get_ActionName(void) const
 
 void DCutAction_PIDDeltaT::Initialize(void)
 {
-	dFunc_PIDCut_SelectPositive = new TF1("dFunc_PIDCut_SelectPositive","pol0",0.0, 12.0);
-	dFunc_PIDCut_SelectPositive->SetParameter(0,dDeltaTCut);
-	dFunc_PIDCut_SelectNegative = new TF1("dFunc_PIDCut_SelectNegative","pol0",0.0, 12.0);
-	dFunc_PIDCut_SelectNegative->SetParameter(0,-dDeltaTCut);
+	if (dFunc_PIDCut_SelectPositive == nullptr){
+		dFunc_PIDCut_SelectPositive = new TF1("dFunc_PIDCut_SelectPositive","pol0",0.0, 12.0);
+		dFunc_PIDCut_SelectPositive->SetParameter(0,dDeltaTCut);
+	}
+	else cout << "Using user function for positive PID delta-T cut " << endl;
+
+	if (dFunc_PIDCut_SelectNegative == nullptr){
+		dFunc_PIDCut_SelectNegative = new TF1("dFunc_PIDCut_SelectNegative","pol0",0.0, 12.0);
+		dFunc_PIDCut_SelectNegative->SetParameter(0,-dDeltaTCut);
+	}
+	else cout << "Using user function for negative PID delta-T cut " << endl;	
+	
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();	
 }
 
@@ -51,7 +59,7 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 				if(locNeutralParticleHypothesis != NULL)
 					locSystem = locNeutralParticleHypothesis->Get_Detector_System_Timing();
 			}
-			
+
 			if((dSystem != SYS_NULL) && (locSystem != dSystem))
 				continue;
 
@@ -111,7 +119,7 @@ bool DCutAction_NoPIDHit::Perform_Action(void)
 				if(locNeutralParticleHypothesis != NULL)
 					locSystem = locNeutralParticleHypothesis->Get_Detector_System_Timing();
 			}
-			
+
 			if((dSystem != SYS_NULL) && (locSystem != dSystem))
 				return false;
 
@@ -134,14 +142,14 @@ void DCutAction_dEdx::Initialize(void)
 	{
 		string locFuncName = "df_dEdxCut_SelectHeavy"; //e.g. proton
 		dFunc_dEdxCut_SelectHeavy = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
-		dFunc_dEdxCut_SelectHeavy->SetParameters(2.0, 2.0, 1.0);
+		dFunc_dEdxCut_SelectHeavy->SetParameters(dSelectHeavy_c0, dSelectHeavy_c1, dSelectHeavy_c2);
 	}
 
 	if(dFunc_dEdxCut_SelectLight == NULL)
 	{
 		string locFuncName = "df_dEdxCut_SelectLight"; //e.g. pions, kaons
 		dFunc_dEdxCut_SelectLight = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
-		dFunc_dEdxCut_SelectLight->SetParameters(2.0, 0.8, 3.0);
+		dFunc_dEdxCut_SelectLight->SetParameters(dSelectLight_c0, dSelectLight_c1, dSelectLight_c2);
 	}
 }
 
@@ -437,8 +445,8 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 				continue;
 
 			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
-                        double locP = locP4.P();
-                        locShowerEOverP = locShowerEnergy/locP;
+			double locP = locP4.P();
+			locShowerEOverP = locShowerEnergy/locP;
 
 			if((dPID == Electron) || (dPID == Positron))
 			{
@@ -455,54 +463,54 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 
 string DCutAction_TrackBCALPreshowerFraction::Get_ActionName(void) const
 {
-        ostringstream locStream;
-        locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dPreshowerFractionCut;
-        return locStream.str();
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dPreshowerFractionCut;
+	return locStream.str();
 }
 
 bool DCutAction_TrackBCALPreshowerFraction::Perform_Action(void)
 {
-        for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
-        {
-                DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
 
-                //final particles
-                for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
-                {
-                        DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
-                        if(locKinematicData == NULL)
-                                continue; //e.g. a decaying or missing particle whose params aren't set yet
-			
+		//final particles
+		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
 			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
 			int locDecayStepIndex = locComboWrapperStep->Get_DecayStepIndex(loc_j);
-                        if(locDecayStepIndex != -2)
-                                continue; //not measured
-			
-			if(locKinematicData->Get_PID() != dPID)
-                                continue;
-                        if(ParticleCharge(locKinematicData->Get_PID()) == 0)
-                                continue;
+			if(locDecayStepIndex != -2)
+				continue; //not measured
 
-                        const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
-                        double locBCALPreshowerE = locChargedTrackHypothesis->Get_Energy_BCALPreshower();
-                        double locBCALShowerE = locChargedTrackHypothesis->Get_Energy_BCAL();
-                        if(!(locBCALShowerE > 0.0))
-                                continue;
+			if(locKinematicData->Get_PID() != dPID)
+				continue;
+			if(ParticleCharge(locKinematicData->Get_PID()) == 0)
+				continue;
+
+			const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+			double locBCALPreshowerE = locChargedTrackHypothesis->Get_Energy_BCALPreshower();
+			double locBCALShowerE = locChargedTrackHypothesis->Get_Energy_BCAL();
+			if(!(locBCALShowerE > 0.0))
+				continue;
 
 			double locPreshowerFraction = locBCALPreshowerE/locBCALShowerE*sin(locChargedTrackHypothesis->Get_P4().Theta());
 
-                        if((dPID == Electron) || (dPID == Positron))
-                        {
-                                if(locPreshowerFraction < dPreshowerFractionCut)
-                                        return false;
-                        }       
+			if((dPID == Electron) || (dPID == Positron))
+			{
+				if(locPreshowerFraction < dPreshowerFractionCut)
+					return false;
+			}       
 			//else if(locPreshowerFraction > dPreshowerFractionCut)
 			//	 return false;
 
 		}
-        }
+	}
 
-        return true;
+	return true;
 }
 
 string DCutAction_Kinematics::Get_ActionName(void) const
