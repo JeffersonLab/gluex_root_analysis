@@ -48,12 +48,11 @@ int main(int argc, char* argv[])
 	TFile* locInputFile = new TFile(locInputFileName.c_str(), "READ");
 	TTree* locInputTree = (TTree*)locInputFile->Get(locInputTreeName.c_str());
 
-	//see what type it is
-	TList* locUserInfo = locInputTree->GetUserInfo();
-	if(locUserInfo->GetSize() == 0)
-		Convert_ToAmpToolsFormat_MCGen("AmpToolsInputTree.root", locInputTree);
+	// if the PIDs are specified, the tree will be filled with the generated events
+	if(gDesiredPIDOrder.size() != 0)
+	  Convert_ToAmpToolsFormat_MCGen("AmpToolsInputTree.root", locInputTree);
 	else
-		Convert_ToAmpToolsFormat("AmpToolsInputTree.root", locInputTree);
+	  Convert_ToAmpToolsFormat("AmpToolsInputTree.root", locInputTree);
 
 	return 0;
 }
@@ -64,7 +63,7 @@ void Print_Usage(void)
 	cout << "Converts from ANALYSIS library ROOT TTree to AmpTools input ROOT TTree." << endl;
 	cout << "1st argument: The input ROOT file name." << endl;
 	cout << "2nd argument: The name of the TTree in the input ROOT file that you want to convert." << endl;
-	cout << "3rd - Nth arguments (For generated MC tree only): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
+	cout << "[3rd - Nth arguments] (to use generated MC data intead of reconstructed): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
 	cout << endl;
 	cout << "The 'primary' particles in the tree are in the same order as they were specified in the DReaction." << endl;
 	cout << endl;
