@@ -48,12 +48,11 @@ int main(int argc, char* argv[])
 	TFile* locInputFile = new TFile(locInputFileName.c_str(), "READ");
 	TTree* locInputTree = (TTree*)locInputFile->Get(locInputTreeName.c_str());
 
-	//see what type it is
-	TList* locUserInfo = locInputTree->GetUserInfo();
-	if(locUserInfo->GetSize() == 0)
-		Convert_ToAmpToolsFormat_MCGen("AmpToolsInputTree.root", locInputTree);
+	// if the PIDs are specified, the tree will be filled with the generated events
+	if(gDesiredPIDOrder.size() != 0)
+	  Convert_ToAmpToolsFormat_MCGen("AmpToolsInputTree.root", locInputTree);
 	else
-		Convert_ToAmpToolsFormat("AmpToolsInputTree.root", locInputTree);
+	  Convert_ToAmpToolsFormat("AmpToolsInputTree.root", locInputTree);
 
 	return 0;
 }
