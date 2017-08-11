@@ -25,6 +25,7 @@ class DAnalysisUtilities
 
 		bool Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const; //RCDB environment must be setup!!
 		bool Get_PolarizationAngle(int locRunNumber, int& locPolarizationAngle) const; //RCDB environment must be setup!!
+		bool Get_CoherentPeak(int locRunNumber, double& locCoherentPeak, bool locIsPolarizedFlag) const; //RCDB environment must be setup!!
 		double Get_BeamBunchPeriod(int locRunNumber) const; //CCDB environment must be setup!!
 
 		double Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locMesonP4) const;
