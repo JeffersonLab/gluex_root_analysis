@@ -569,6 +569,43 @@ bool DAnalysisUtilities::Get_PolarizationAngle(int locRunNumber, int& locPolariz
 	
 	return true;
 }
+bool DAnalysisUtilities::Get_CoherentPeak(int locRunNumber, double& locCoherentPeak, bool locIsPolarizedFlag) const
+{
+	//RCDB environment must be setup!!
+
+	// amorphous runs can have any value
+	if (!locIsPolarizedFlag)
+	{
+	  locCoherentPeak = 0.0;
+	  return false;
+	}
+
+	//Pipe the current constant into this function
+	ostringstream locCommandStream;
+	locCommandStream << "rcnd " << locRunNumber << " coherent_peak";
+	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+	if(locInputFile == NULL)
+		return false;
+
+	//get the first line
+	char buff[1024];
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+		return 0;
+	istringstream locStringStream(buff);
+
+	//Close the pipe
+	gSystem->ClosePipe(locInputFile);
+
+	//extract it
+	string locCoherentPeakString;
+	if(!(locStringStream >> locCoherentPeakString))
+		return false;
+
+	// convert string to double
+	locCoherentPeak = atof(locCoherentPeakString.c_str());
+	
+	return true;
+}
 
 double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) const
 {
