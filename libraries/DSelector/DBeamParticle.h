@@ -63,8 +63,7 @@ inline void DBeamParticle::Setup_Branches(void)
 	if(dBranchNamePrefix == "ThrownBeam")
 		return;
 
-	string locBranchName = dBranchNamePrefix + string("__IsGenerator");
-	dBranch_IsGenerator = dTreeInterface->Get_Branch(locBranchName);
+	dBranch_IsGenerator = dTreeInterface->Get_Branch("Beam__IsGenerator");
 }
 
 inline void DBeamParticle::ReInitialize(void)
