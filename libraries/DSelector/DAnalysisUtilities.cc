@@ -110,8 +110,8 @@ TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locPa
 
 		if(locParticleComboStepWrapper->Is_FinalParticleDecaying(loc_i))
 		{
-			//measured results, or not constrained by kinfit (either non-fixed mass or excluded from kinfit)
-			if((!locUseKinFitDataFlag) || (!IsFixedMass(locParticleComboStepWrapper->Get_FinalPID(loc_i))))
+			//below: measured results, or not constrained by kinfit (either non-fixed mass or excluded from kinfit)
+			if((!locUseKinFitDataFlag) || (locParticles[loc_i] == nullptr))
 				locFinalStateP4 += Calc_FinalStateP4(locParticleComboWrapper, locParticleComboStepWrapper->Get_DecayStepIndex(loc_i), set<size_t>(), locSourceObjects, locUseKinFitDataFlag);
 			else //want kinfit results, and decaying particle p4 is constrained by kinfit
 			{
@@ -166,7 +166,7 @@ set<set<size_t> > DAnalysisUtilities::Build_IndexCombos(const DParticleComboStep
 	{
 		if(int(loc_i) == locMissingParticleIndex)
 			continue;
-		Particle_t locPID = locParticles[loc_i]->Get_PID();
+		Particle_t locPID = locParticleComboStepWrapper->Get_FinalPID(loc_i);
 
 		//register where this is a valid option: loop over to-include PIDs
 		for(size_t loc_j = 0; loc_j < locToIncludePIDs.size(); ++loc_j)
