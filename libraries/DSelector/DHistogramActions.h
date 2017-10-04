@@ -228,9 +228,9 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 
 	private:
 		DAnalysisUtilities dAnalysisUtilities;
-		TH1I* dHist_InvaraintMass;
-		TH2I* dHist_InvaraintMassVsConfidenceLevel;
-		TH2I* dHist_InvaraintMassVsConfidenceLevel_LogX;
+		TH1I* dHist_InvaraintMass = nullptr;
+		TH2I* dHist_InvaraintMassVsConfidenceLevel = nullptr;
+		TH2I* dHist_InvaraintMassVsConfidenceLevel_LogX = nullptr;
 
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
 		//In general: Multiple PIDs, so multiple sets: Contain within a map
