@@ -40,10 +40,10 @@ TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParti
 
 	//target particle
 	Particle_t locTargetPID = locParticleComboStepWrapper->Get_TargetPID();
-	if(locPID != Unknown)
+	if(locTargetPID != Unknown)
 	{
-		double locMass = ParticleMass(locPID);
-		locMissingP4 += DLorentzVector(DVector3(0.0, 0.0, 0.0), locMass);
+		double locMass = ParticleMass(locTargetPID);
+		locMissingP4 += TLorentzVector(TVector3(0.0, 0.0, 0.0), locMass);
 	}
 
 	deque<DKinematicData*> locParticles = locParticleComboStepWrapper->Get_FinalParticles();
@@ -106,7 +106,7 @@ TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locPa
 	{
 		Particle_t locPID = locParticleComboStepWrapper->Get_TargetPID();
 		if(locPID != Unknown)
-			locFinalStateP4 -= DLorentzVector(DVector3(0.0, 0.0, 0.0), ParticleMass(locPID));
+			locFinalStateP4 -= TLorentzVector(TVector3(0.0, 0.0, 0.0), ParticleMass(locPID));
 	}
 
 	bool locDoSubsetFlag = !locToIncludeIndices.empty();
