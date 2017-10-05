@@ -91,6 +91,13 @@ void DKinematicData::Setup_Branches(void)
 		locBranchName = dBranchNamePrefix + string("__X4_KinFit");
 	dX4_KinFit = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
 
+	//path length
+	if(dBranchNamePrefix.substr(0, 8) == "Decaying")
+	{
+		locBranchName = dBranchNamePrefix + string("__PathLengthSigma");
+		dBranch_PathLengthSigma = dTreeInterface->Get_Branch(locBranchName);
+	}
+
 	//if decaying/missing, return
 	if((dBranchNamePrefix.substr(0, 8) == "Decaying") || (dBranchNamePrefix.substr(0, 7) == "Missing"))
 		return; //are done

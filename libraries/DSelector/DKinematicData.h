@@ -56,6 +56,9 @@ class DKinematicData
 		UInt_t Get_ArraySize(void) const;
 		void Set_ArrayIndex(UInt_t locArrayIndex);
 
+		//PATH LENGTH SIGMA (sigh)
+		Float_t Get_PathLengthSigma(void) const; //for decaying particles with detached vertices only!!!
+
 	protected:
 
 		//RE-INITIALIZE (e.g. with the next TTree in a chain)
@@ -106,6 +109,9 @@ class DKinematicData
 		TClonesArray** dX4_KinFit; //NULL if not kinfit
 		TClonesArray** dX4_Measured; //NULL if thrown beam //if missing, decaying, or target: is from a different particle
 		TLorentzVector** dThrownBeamX4; //NULL if not thrown beam
+
+		// Path length sigma //for decaying particles with detached vertices only!!!
+		TBranch* dBranch_PathLengthSigma;
 };
 
 /******************************************************************** CONSTRUCTOR *********************************************************************/
@@ -113,7 +119,7 @@ class DKinematicData
 inline DKinematicData::DKinematicData(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID) : 
 dTreeInterface(locTreeInterface), dBranchNamePrefix(locBranchNamePrefix), dMeasuredBranchNamePrefix(locBranchNamePrefix), 
 dArraySize(NULL), dArrayIndex(0), dMeasuredArrayIndex(0), dBranch_MeasuredIndex(NULL), dPID(locPID), dBranch_PID(NULL),
-dP4_KinFit(NULL), dP4_Measured(NULL), dFixedP4(TLorentzVector()), dThrownBeamP4(NULL), dX4_KinFit(NULL), dX4_Measured(NULL), dThrownBeamX4(NULL)
+dP4_KinFit(NULL), dP4_Measured(NULL), dFixedP4(TLorentzVector()), dThrownBeamP4(NULL), dX4_KinFit(NULL), dX4_Measured(NULL), dThrownBeamX4(NULL), dBranch_PathLengthSigma(NULL)
 {
 	//locPID should be set for combo particles, and Unknown otherwise
 	Setup_Branches();
@@ -197,6 +203,13 @@ inline TLorentzVector DKinematicData::Get_X4(void) const
 	if(dX4_KinFit != NULL)
 		return *((TLorentzVector*)(*dX4_KinFit)->At(dArrayIndex));
 	return Get_X4_Measured();
+}
+
+//PATH LENGTH SIGMA
+inline Float_t DKinematicData::Get_PathLengthSigma(void) const
+{
+	//for decaying particles with detached vertices only!!!
+	return (dBranch_PathLengthSigma == NULL) ? 0.0 : ((Float_t*)dBranch_PathLengthSigma->GetAddress())[dArrayIndex];
 }
 
 //GET CUSTOM DATA

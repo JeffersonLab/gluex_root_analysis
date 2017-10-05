@@ -95,6 +95,10 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 			locHistTitle = string(";") + locInitParticleROOTName + string(" Path Length (cm)");
 			dHistMap_DetachedPathLength[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumPathLengthBins, 0.0, dMaxPathLength);
 
+			locHistName = locInitParticleName + string("PathLengthSignificance");
+			locHistTitle = string(";") + locInitParticleROOTName + string(" Path Length / Path Length #sigma");
+			dHistMap_DetachedPathLengthSignificance[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumPathLengthSignificanceBins, 0.0, dMaxPathLengthSignificance);
+
 			locHistName = locInitParticleName + string("Lifetime");
 			locHistTitle = string(";") + locInitParticleROOTName + string(" Lifetime (ns)");
 			dHistMap_DetachedLifetime[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumLifetimeBins, 0.0, dMaxLifetime);
@@ -249,6 +253,8 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 				double locRestFrameLifetime = locPathLength*ParticleMass(locInitialPID)/(29.9792458*locInitialP4.P()); //tau
 				dHistMap_DetachedLifetime_RestFrame[loc_i]->Fill(locRestFrameLifetime);
 				//note that tau = hbar / Gamma, hbar = 6.582119E-22 MeV*s, Gamma = Resonance FWHM
+
+				dHistMap_DetachedPathLengthSignificance[loc_i]->Fill(locPathLength/locKinematicData->Get_PathLengthSigma());
 			}
 		}
 
