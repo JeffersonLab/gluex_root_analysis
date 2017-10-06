@@ -192,7 +192,7 @@ bool DCutAction_dEdx::Perform_Action(void)
 				continue;
 
 			if(!(locdEdx > 0.0))
-				return true; // Not enough hits in the detector to report a dE/dx: Don't cut
+				continue; // Not enough hits in the detector to report a dE/dx: Don't cut
 
 			//cut
 			double locP = dUseKinFitFlag ? locChargedTrackHypothesis->Get_P4().Vect().Mag() : locChargedTrackHypothesis->Get_P4_Measured().Vect().Mag();

@@ -34,19 +34,19 @@ class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 		DHistogramAction_ParticleComboKinematics(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_ParticleComboKinematics", locUseKinFitFlag, locActionUniqueString),
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumVertexZBins(600), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
-			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumDeltaTRFBins(500), dNumPathLengthBins(750), dNumLifetimeBins(500),
+			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumDeltaTRFBins(500), dNumPathLengthBins(750), dNumLifetimeBins(500), dNumPathLengthSignificanceBins(500), 
 			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0), dMinDeltaTRF(-10.0), dMaxDeltaTRF(10.0),
-			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0) {}
+			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0), dMaxPathLengthSignificance(10.0) {}
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
 		bool Perform_Action(void);
 
 		unsigned int dNumPBins, dNumThetaBins, dNumPhiBins, dNumVertexZBins, dNumTBins, dNumVertexXYBins, dNumBetaBins, dNumDeltaBetaBins;
-		unsigned int dNum2DPBins, dNum2DThetaBins, dNum2DPhiBins, dNumDeltaTRFBins, dNumPathLengthBins, dNumLifetimeBins;
+		unsigned int dNum2DPBins, dNum2DThetaBins, dNum2DPhiBins, dNumDeltaTRFBins, dNumPathLengthBins, dNumLifetimeBins, dNumPathLengthSignificanceBins;
 		double dMinT, dMaxT, dMinP, dMaxP, dMinTheta, dMaxTheta, dMinPhi, dMaxPhi, dMinVertexZ, dMaxVertexZ, dMinVertexXY, dMaxVertexXY;
-		double dMinBeta, dMaxBeta, dMinDeltaBeta, dMaxDeltaBeta, dMinDeltaTRF, dMaxDeltaTRF, dMaxPathLength, dMaxLifetime, dMaxBeamE;
+		double dMinBeta, dMaxBeta, dMinDeltaBeta, dMaxDeltaBeta, dMinDeltaTRF, dMaxDeltaTRF, dMaxPathLength, dMaxLifetime, dMaxBeamE, dMaxPathLengthSignificance;
 
 	private:
 
@@ -84,6 +84,7 @@ class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 
 		//size_t is step index where the detached-vertex particle decays
 		map<size_t, TH1I*> dHistMap_DetachedPathLength; //distance between this vertex and the previous one (if detached)
+		map<size_t, TH1I*> dHistMap_DetachedPathLengthSignificance; //path length / sigma
 		map<size_t, TH1I*> dHistMap_DetachedLifetime; //delta-t between this vertex and the previous one (if detached)
 		map<size_t, TH1I*> dHistMap_DetachedLifetime_RestFrame; //in rest frame
 };
@@ -228,9 +229,9 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 
 	private:
 		DAnalysisUtilities dAnalysisUtilities;
-		TH1I* dHist_InvaraintMass;
-		TH2I* dHist_InvaraintMassVsConfidenceLevel;
-		TH2I* dHist_InvaraintMassVsConfidenceLevel_LogX;
+		TH1I* dHist_InvaraintMass = nullptr;
+		TH2I* dHist_InvaraintMassVsConfidenceLevel = nullptr;
+		TH2I* dHist_InvaraintMassVsConfidenceLevel_LogX = nullptr;
 
 		//In general: Could have multiple particles with the same PID: Use a set of Int_t's
 		//In general: Multiple PIDs, so multiple sets: Contain within a map

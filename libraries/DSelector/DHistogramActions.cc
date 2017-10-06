@@ -95,6 +95,10 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 			locHistTitle = string(";") + locInitParticleROOTName + string(" Path Length (cm)");
 			dHistMap_DetachedPathLength[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumPathLengthBins, 0.0, dMaxPathLength);
 
+			locHistName = locInitParticleName + string("PathLengthSignificance");
+			locHistTitle = string(";") + locInitParticleROOTName + string(" Path Length / Path Length #sigma");
+			dHistMap_DetachedPathLengthSignificance[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumPathLengthSignificanceBins, 0.0, dMaxPathLengthSignificance);
+
 			locHistName = locInitParticleName + string("Lifetime");
 			locHistTitle = string(";") + locInitParticleROOTName + string(" Lifetime (ns)");
 			dHistMap_DetachedLifetime[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumLifetimeBins, 0.0, dMaxLifetime);
@@ -249,6 +253,8 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 				double locRestFrameLifetime = locPathLength*ParticleMass(locInitialPID)/(29.9792458*locInitialP4.P()); //tau
 				dHistMap_DetachedLifetime_RestFrame[loc_i]->Fill(locRestFrameLifetime);
 				//note that tau = hbar / Gamma, hbar = 6.582119E-22 MeV*s, Gamma = Resonance FWHM
+
+				dHistMap_DetachedPathLengthSignificance[loc_i]->Fill(locPathLength/locKinematicData->Get_PathLengthSigma());
 			}
 		}
 
@@ -425,7 +431,8 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 	locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL #beta");
 	dHistMap_BetaVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
 
-	if(ParticleCharge(locPID) != 0) {
+	if(ParticleCharge(locPID) != 0)
+	{
 		
 		locHistName = "DeltaTVsP_TOF";
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF #Delta T (ns)");
@@ -465,16 +472,17 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		locHistName = "EoverPVsTheta_FCAL";
 		locHistTitle = locParticleROOTName + string(";#theta (degrees); FCAL E/p");
 		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);
+
 		// PreshowerFraction BCAL vs p, theta
 		locHistName = "PreshowerFractionVsP_BCAL";
-                locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL Preshower Energy / Shower Energy");
-                dHistMap_PreshowerFractionVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
-                locHistName = "PreshowerFractionVsTheta_BCAL";
-                locHistTitle = locParticleROOTName + string(";#theta (degrees); BCAL Preshower Energy / Shower Energy");
-                dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
-                locHistName = "EoverPVs_PreshowerFraction_BCAL";
-                locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
-                dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL Preshower Energy / Shower Energy");
+		dHistMap_PreshowerFractionVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+		locHistName = "PreshowerFractionVsTheta_BCAL";
+		locHistTitle = locParticleROOTName + string(";#theta (degrees); BCAL Preshower Energy / Shower Energy");
+		dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+		locHistName = "EoverPVs_PreshowerFraction_BCAL";
+		locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
+		dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
 	}
 	else
 	{
@@ -615,7 +623,7 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			}
 			
 			// dE/dx vs p
-			if(locChargedTrackHypothesis->Get_dEdx_CDC() > 0.) 
+			if(locChargedTrackHypothesis->Get_dEdx_CDC() > 0.)
 				dHistMap_dEdxVsP_CDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_CDC()*1e6);
 			if(locChargedTrackHypothesis->Get_dEdx_FDC() > 0.) 
 				dHistMap_dEdxVsP_FDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_FDC()*1e6);
