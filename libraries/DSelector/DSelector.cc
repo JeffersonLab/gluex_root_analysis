@@ -79,10 +79,12 @@ void DSelector::Setup_Branches(void)
 	TBranch* locL1TriggerBitsBranch = dTreeInterface->Get_Branch("L1TriggerBits");
 	dL1TriggerBits = (locL1TriggerBitsBranch != NULL) ? (UInt_t*)locL1TriggerBitsBranch->GetAddress() : NULL;
 
-	// MC-ONLY
+	// MC
 	if(locIsMCFlag)
 	{
 		dMCWeight = (Float_t*)dTreeInterface->Get_Branch("MCWeight")->GetAddress();
+		TBranch* locGenEnergyBranch = dTreeInterface->Get_Branch("GeneratedEnergy");
+		dGeneratedEnergy = (locGenEnergyBranch != NULL) ? (Float_t*)locGenEnergyBranch->GetAddress() : NULL;
 		dNumThrown = (UInt_t*)dTreeInterface->Get_Branch("NumThrown")->GetAddress();
 		dNumPIDThrown_FinalState = (ULong64_t*)dTreeInterface->Get_Branch("NumPIDThrown_FinalState")->GetAddress();
 		dPIDThrown_Decaying = (ULong64_t*)dTreeInterface->Get_Branch("PIDThrown_Decaying")->GetAddress();
