@@ -95,6 +95,10 @@ void DHistogramAction_ParticleComboKinematics::Initialize(void)
 			locHistTitle = string(";") + locInitParticleROOTName + string(" Path Length (cm)");
 			dHistMap_DetachedPathLength[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumPathLengthBins, 0.0, dMaxPathLength);
 
+			locHistName = locInitParticleName + string("PathLengthSignificance");
+			locHistTitle = string(";") + locInitParticleROOTName + string(" Path Length / Path Length #sigma");
+			dHistMap_DetachedPathLengthSignificance[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumPathLengthSignificanceBins, 0.0, dMaxPathLengthSignificance);
+
 			locHistName = locInitParticleName + string("Lifetime");
 			locHistTitle = string(";") + locInitParticleROOTName + string(" Lifetime (ns)");
 			dHistMap_DetachedLifetime[loc_i] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumLifetimeBins, 0.0, dMaxLifetime);
@@ -249,6 +253,8 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 				double locRestFrameLifetime = locPathLength*ParticleMass(locInitialPID)/(29.9792458*locInitialP4.P()); //tau
 				dHistMap_DetachedLifetime_RestFrame[loc_i]->Fill(locRestFrameLifetime);
 				//note that tau = hbar / Gamma, hbar = 6.582119E-22 MeV*s, Gamma = Resonance FWHM
+
+				dHistMap_DetachedPathLengthSignificance[loc_i]->Fill(locPathLength/locKinematicData->Get_PathLengthSigma());
 			}
 		}
 
@@ -425,7 +431,8 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 	locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL #beta");
 	dHistMap_BetaVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
 
-	if(ParticleCharge(locPID) != 0) {
+	if(ParticleCharge(locPID) != 0)
+	{
 		
 		locHistName = "DeltaTVsP_TOF";
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF #Delta T (ns)");
@@ -465,16 +472,17 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		locHistName = "EoverPVsTheta_FCAL";
 		locHistTitle = locParticleROOTName + string(";#theta (degrees); FCAL E/p");
 		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);
+
 		// PreshowerFraction BCAL vs p, theta
 		locHistName = "PreshowerFractionVsP_BCAL";
-                locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL Preshower Energy / Shower Energy");
-                dHistMap_PreshowerFractionVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
-                locHistName = "PreshowerFractionVsTheta_BCAL";
-                locHistTitle = locParticleROOTName + string(";#theta (degrees); BCAL Preshower Energy / Shower Energy");
-                dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
-                locHistName = "EoverPVs_PreshowerFraction_BCAL";
-                locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
-                dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); BCAL Preshower Energy / Shower Energy");
+		dHistMap_PreshowerFractionVsP_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+		locHistName = "PreshowerFractionVsTheta_BCAL";
+		locHistTitle = locParticleROOTName + string(";#theta (degrees); BCAL Preshower Energy / Shower Energy");
+		dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
+		locHistName = "EoverPVs_PreshowerFraction_BCAL";
+		locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
+		dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
 	}
 	else
 	{
@@ -615,7 +623,7 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			}
 			
 			// dE/dx vs p
-			if(locChargedTrackHypothesis->Get_dEdx_CDC() > 0.) 
+			if(locChargedTrackHypothesis->Get_dEdx_CDC() > 0.)
 				dHistMap_dEdxVsP_CDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_CDC()*1e6);
 			if(locChargedTrackHypothesis->Get_dEdx_FDC() > 0.) 
 				dHistMap_dEdxVsP_FDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_FDC()*1e6);
@@ -712,19 +720,23 @@ void DHistogramAction_InvariantMass::Initialize(void)
 	ostringstream locStream;
 	locStream << locMassPerBin;
 	locHistTitle = string(";") + locParticleNamesForHist + string(" Invariant Mass (GeV/c^{2});# Combos / ") + locStream.str() + string(" MeV/c^{2}");
-	dHist_InvaraintMass = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
+	dHist_InvariantMass = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
+
+	locHistName = "InvariantMassVsBeamE";
+	locHistTitle = string(";Beam Energy (GeV);") + locParticleNamesForHist + string(" Invariant Mass (GeV/c^{2})");
+	dHist_InvariantMassVsBeamE = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DBeamEBins, dMinBeamE, dMaxBeamE, dNum2DMassBins, dMinMass, dMaxMass);
 
 	locHistName = "InvariantMassVsConfidenceLevel";
 	locHistTitle = string(";Kinematic Fit Confidence Level;") + locParticleNamesForHist + string(" Invariant Mass (GeV/c^{2})");
-	dHist_InvaraintMassVsConfidenceLevel = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumConLevBins, 0.0, 1.0, dNum2DMassBins, dMinMass, dMaxMass);
+	dHist_InvariantMassVsConfidenceLevel = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumConLevBins, 0.0, 1.0, dNum2DMassBins, dMinMass, dMaxMass);
 
 	locHistName = "InvariantMassVsConfidenceLevel_LogX";
 	int locNumBins = 0;
 	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
 	if(locConLevLogBinning != NULL)
-		dHist_InvaraintMassVsConfidenceLevel_LogX = new TH2I(locHistName.c_str(), locHistTitle.c_str(), locNumBins, locConLevLogBinning, dNum2DMassBins, dMinMass, dMaxMass);
+		dHist_InvariantMassVsConfidenceLevel_LogX = new TH2I(locHistName.c_str(), locHistTitle.c_str(), locNumBins, locConLevLogBinning, dNum2DMassBins, dMinMass, dMaxMass);
 	else
-		dHist_InvaraintMassVsConfidenceLevel_LogX = NULL;
+		dHist_InvariantMassVsConfidenceLevel_LogX = NULL;
 
 	//Return to the base directory
 	ChangeTo_BaseDirectory();
@@ -742,6 +754,14 @@ bool DHistogramAction_InvariantMass::Perform_Action(void)
 		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
 			continue;
 
+		DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
+		Int_t locBeamID = locBeamParticle->Get_ID();
+		double locBeamEnergy = 0.0;
+		if(dUseKinFitFlag)
+		  locBeamEnergy = locBeamParticle->Get_P4().E();
+		else
+		  locBeamEnergy = locBeamParticle->Get_P4_Measured().E();
+		
 		//build all possible combinations of the included pids
 		set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dToIncludePIDs);
 
@@ -755,15 +775,22 @@ bool DHistogramAction_InvariantMass::Perform_Action(void)
 			if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
 			{
 				dPreviouslyHistogrammed.insert(locSourceObjects);
-				dHist_InvaraintMass->Fill(locFinalStateP4.M());
+				dHist_InvariantMass->Fill(locFinalStateP4.M());
+			}
+
+			pair<Int_t, map<unsigned int, set<Int_t> > > locSourceObjects_BeamE(locBeamID, locSourceObjects);
+			if(dPreviouslyHistogrammed_BeamE.find(locSourceObjects_BeamE) == dPreviouslyHistogrammed_BeamE.end())
+			{
+			  dPreviouslyHistogrammed_BeamE.insert(locSourceObjects_BeamE);
+			  dHist_InvariantMassVsBeamE->Fill(locBeamEnergy, locFinalStateP4.M());
 			}
 
 			pair<Int_t, map<unsigned int, set<Int_t> > > locSourceObjects_ConLev(dParticleComboWrapper->Get_ComboIndex(), locSourceObjects);
 			if(dPreviouslyHistogrammed_ConLev.find(locSourceObjects_ConLev) == dPreviouslyHistogrammed_ConLev.end())
 			{
 				dPreviouslyHistogrammed_ConLev.insert(locSourceObjects_ConLev);
-				dHist_InvaraintMassVsConfidenceLevel->Fill(locConfidenceLevel, locFinalStateP4.M());
-				dHist_InvaraintMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locFinalStateP4.M());
+				dHist_InvariantMassVsConfidenceLevel->Fill(locConfidenceLevel, locFinalStateP4.M());
+				dHist_InvariantMassVsConfidenceLevel_LogX->Fill(locConfidenceLevel, locFinalStateP4.M());
 			}
 		}
 		//don't break: e.g. if multiple pi0's, histogram invariant mass of each one
@@ -1127,7 +1154,7 @@ void DHistogramAction_2DInvariantMass::Initialize(void)
 
 	locHistName = "2DInvariantMass";
 	locHistTitle = string(";") + locParticleNamesForHistX + locMassString + locParticleNamesForHistY + locMassString;
-	dHist_2DInvaraintMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
+	dHist_2DInvariantMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
 
 	//Return to the base directory
 	ChangeTo_BaseDirectory();
@@ -1168,7 +1195,7 @@ bool DHistogramAction_2DInvariantMass::Perform_Action(void)
 					continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
 				dPreviouslyHistogrammed.insert(locAllSourceObjects);
 
-				dHist_2DInvaraintMass->Fill(locXP4.M(), locYP4.M());
+				dHist_2DInvariantMass->Fill(locXP4.M(), locYP4.M());
 			}
 		}
 	}
@@ -1195,7 +1222,7 @@ void DHistogramAction_Dalitz::Initialize(void)
 
 	locHistName = "Dalitz";
 	locHistTitle = string(";") + locParticleNamesForHistX + locMassString + locParticleNamesForHistY + locMassString;
-	dHist_2DInvaraintMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
+	dHist_2DInvariantMass = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumXBins, dMinX, dMaxX, dNumYBins, dMinY, dMaxY);
 
 	//Return to the base directory
 	ChangeTo_BaseDirectory();
@@ -1236,7 +1263,7 @@ bool DHistogramAction_Dalitz::Perform_Action(void)
 					continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
 				dPreviouslyHistogrammed.insert(locAllSourceObjects);
 
-				dHist_2DInvaraintMass->Fill(locXP4.M2(), locYP4.M2());
+				dHist_2DInvariantMass->Fill(locXP4.M2(), locYP4.M2());
 			}
 		}
 	}
