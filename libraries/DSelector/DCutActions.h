@@ -405,5 +405,22 @@ class DCutAction_Energy_UnusedShowers : public DAnalysisAction
                 double dMaxEnergy_UnusedShowersCut;
 };
 
+class DCutAction_NumUnusedTracks : public DAnalysisAction
+{
+        public:
+
+                DCutAction_NumUnusedTracks(const DParticleCombo* locParticleComboWrapper,  uint locMaxUnusedTracks, string locActionUniqueString = "") :
+                DAnalysisAction(locParticleComboWrapper, "Cut_NumUnusedTracks", false, locActionUniqueString), dMaxUnusedTracks(locMaxUnusedTracks) {}
+
+                string Get_ActionName(void) const;
+                void Initialize(void){};
+                void Reset_NewEvent(void){}
+                bool Perform_Action(void);
+
+        private:
+
+                uint dMaxUnusedTracks;
+};
+
 
 #endif // _DCutActions_

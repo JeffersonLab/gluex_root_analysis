@@ -569,3 +569,15 @@ bool DCutAction_Energy_UnusedShowers::Perform_Action(void)
 {
 	return (dParticleComboWrapper->Get_Energy_UnusedShowers() <= dMaxEnergy_UnusedShowersCut);
 }
+
+string DCutAction_NumUnusedTracks::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMaxUnusedTracks;
+	return locStream.str();
+}
+
+bool DCutAction_NumUnusedTracks::Perform_Action(void)
+{
+	return (dParticleComboWrapper->Get_NumUnusedTracks() <= dMaxUnusedTracks);
+}
