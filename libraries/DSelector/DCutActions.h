@@ -25,6 +25,52 @@
 
 using namespace std;
 
+class DCutAction_ChiSqOrCL : public DAnalysisAction
+{
+	public:
+		DCutAction_ChiSqOrCL(const DParticleCombo* locParticleComboWrapper, string locSecondaryReactionName, bool locIsChiSq, double locScaleFactor, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_ChiSqOrCL", true, locActionUniqueString),
+			dNumChiSqPerDFBins(1000), dNumConLevBins(1000), dNumBinsPerConLevPower(18), dMaxChiSqPerDF(50), dConLevLowest10Power(-50),
+			dSecondaryReactionName(locSecondaryReactionName), dIsChiSq(locIsChiSq), dScaleFactor(locScaleFactor) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void);
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+		unsigned int dNumChiSqPerDFBins, dNumConLevBins, dNumBinsPerConLevPower;
+		double dMaxChiSqPerDF;
+		int dConLevLowest10Power;
+
+		string dSecondaryReactionName;
+		bool dIsChiSq;
+		double dScaleFactor;
+
+	private:
+
+		DAnalysisUtilities dAnalysisUtilities;
+		
+                // before comparison cut
+		TH1I* dHist_ChiSqPerDF_Primary;
+		TH1I* dHist_ChiSqPerDF_Secondary;
+		TH2I* dHist_ChiSq_Comparison;
+		TH1I* dHist_ConfidenceLevel_Primary;
+		TH1I* dHist_ConfidenceLevel_Secondary;
+		TH2I* dHist_ConfidenceLevel_Comparison;
+		TH1I* dHist_ConfidenceLevel_LogX_Primary;
+		TH1I* dHist_ConfidenceLevel_LogX_Secondary;
+		TH2I* dHist_ConfidenceLevel_Log_Comparison;
+
+                // after comparison cut
+		TH1I* dHist_ChiSqPerDF_Primary_post;
+		TH1I* dHist_ChiSqPerDF_Secondary_post;
+		TH1I* dHist_ConfidenceLevel_Primary_post;
+		TH1I* dHist_ConfidenceLevel_Secondary_post;
+		TH1I* dHist_ConfidenceLevel_LogX_Primary_post;
+		TH1I* dHist_ConfidenceLevel_LogX_Secondary_post;
+
+};
+
 class DCutAction_PIDDeltaT : public DAnalysisAction
 {
 	public:
