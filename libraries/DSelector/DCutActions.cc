@@ -1,7 +1,5 @@
 #include "DCutActions.h"
 
-#include "DCutActions.h"
-
 string DCutAction_ChiSqOrCL::Get_ActionName(void) const
 {
 	ostringstream locStream;
