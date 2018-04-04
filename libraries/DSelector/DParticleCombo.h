@@ -63,11 +63,8 @@ class DParticleCombo
 
 		// KINFIT:
 		Float_t Get_ChiSq_KinFit(void) const;
-		Float_t Get_ChiSq_KinFit_secondary(void) const;
 		UInt_t Get_NDF_KinFit(void) const;
-		UInt_t Get_NDF_KinFit_secondary(void) const;
 		Float_t Get_ConfidenceLevel_KinFit(void) const;
-		Float_t Get_ConfidenceLevel_KinFit_secondary(void) const;
 
 		// UNUSED ENERGY:
 		Float_t Get_Energy_UnusedShowers(void) const;
@@ -129,9 +126,7 @@ class DParticleCombo
 		TBranch* dBranch_RFTime_KinFit; //only if spacetime kinematic fit performed
 
 		TBranch* dBranch_ChiSq_KinFit; //only if kinematic fit performed
-		TBranch* dBranch_ChiSq_KinFit_secondary; //only if kinematic fit performed
 		TBranch* dBranch_NDF_KinFit; //only if kinematic fit performed // = 0 if kinematic fit doesn't converge
-		TBranch* dBranch_NDF_KinFit_secondary; //only if kinematic fit performed // = 0 if kinematic fit doesn't converge
 		TBranch* dBranch_Energy_UnusedShowers;
 
 		//Target not necessarily in the particle combo, so add the info here (for convenience)
@@ -174,9 +169,7 @@ inline void DParticleCombo::Setup_Branches(void)
 
 	// KINFIT:
 	dBranch_ChiSq_KinFit = dTreeInterface->Get_Branch("ChiSq_KinFit");
-	dBranch_ChiSq_KinFit_secondary = dTreeInterface->Get_Branch("ChiSq_KinFit_secondary");
 	dBranch_NDF_KinFit = dTreeInterface->Get_Branch("NDF_KinFit");
-	dBranch_NDF_KinFit_secondary = dTreeInterface->Get_Branch("NDF_KinFit_secondary");
 
 	// UNUSED ENERGY:
 	dBranch_Energy_UnusedShowers = dTreeInterface->Get_Branch("Energy_UnusedShowers");
@@ -261,25 +254,11 @@ inline Float_t DParticleCombo::Get_ChiSq_KinFit(void) const
 	return ((Float_t*)dBranch_ChiSq_KinFit->GetAddress())[dComboIndex];
 }
 
-inline Float_t DParticleCombo::Get_ChiSq_KinFit_secondary(void) const
-{
-	if(dBranch_ChiSq_KinFit_secondary == NULL)
-		return -1.0;
-	return ((Float_t*)dBranch_ChiSq_KinFit_secondary->GetAddress())[dComboIndex];
-}
-
 inline UInt_t DParticleCombo::Get_NDF_KinFit(void) const
 {
 	if((dBranch_NDF_KinFit == NULL) || (dKinFitConstraints != "NA"))
 		return dNumKinFitConstraints - dNumKinFitUnknowns;
 	return ((UInt_t*)dBranch_NDF_KinFit->GetAddress())[dComboIndex];
-}
-
-inline UInt_t DParticleCombo::Get_NDF_KinFit_secondary(void) const
-{
-	if((dBranch_NDF_KinFit_secondary == NULL) || (dKinFitConstraints != "NA"))
-		return dNumKinFitConstraints - dNumKinFitUnknowns;
-	return ((UInt_t*)dBranch_NDF_KinFit_secondary->GetAddress())[dComboIndex];
 }
 
 inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit(void) const
@@ -288,15 +267,6 @@ inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit(void) const
 	if(locChiSq < 0.0)
 		return -1.0;
 	UInt_t locNDF = Get_NDF_KinFit();
-	return TMath::Prob(locChiSq, locNDF);
-}
-
-inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit_secondary(void) const
-{
-	Float_t locChiSq = Get_ChiSq_KinFit_secondary();
-	if(locChiSq < 0.0)
-		return -1.0;
-	UInt_t locNDF = Get_NDF_KinFit_secondary();
 	return TMath::Prob(locChiSq, locNDF);
 }
 

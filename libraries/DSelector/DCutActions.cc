@@ -1,177 +1,5 @@
 #include "DCutActions.h"
 
-string DCutAction_ChiSqOrCL::Get_ActionName(void) const
-{
-	ostringstream locStream;
-	locStream << DAnalysisAction::Get_ActionName() << "_" << dSecondaryReactionName;
-	return locStream.str();
-}
-
-void DCutAction_ChiSqOrCL::Initialize(void)
-{
-	// CREATE & GOTO MAIN FOLDER
-	CreateAndChangeTo_ActionDirectory();
-        CreateAndChangeTo_Directory("Before");
-
-	string locConstraintString = dParticleComboWrapper->Get_KinFitConstraints();
-	size_t locNumConstraints = dParticleComboWrapper->Get_NumKinFitConstraints();
-	size_t locNumUnknowns = dParticleComboWrapper->Get_NumKinFitUnknowns();
-	size_t locNDF = locNumConstraints - locNumUnknowns;
-
-	ostringstream locHistTitle;
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for primary reaction";
-	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ChiSqPerDF_Primary = new TH1I("ChiSqPerDF_Primary", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
-
-	locHistTitle.str("");
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for " << dSecondaryReactionName;
-	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ChiSqPerDF_Secondary = new TH1I("ChiSqPerDF_Secondary", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
-
-	locHistTitle.str("");
-	locHistTitle << "#chi^{2}/NDF comparison; #chi^{2}_secondary; #chi^{2}_primary";
-	dHist_ChiSq_Comparison = new TH2I("ChiSq_Comparison", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF, dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
-
-	locHistTitle.str("");
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for primary reaction";
-	locHistTitle << ";Confidence Level (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ConfidenceLevel_Primary = new TH1I("ConfidenceLevel_Primary", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
-
-	int locNumBins = 0;
-	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
-	if(locConLevLogBinning != NULL)
-		dHist_ConfidenceLevel_LogX_Primary = new TH1I("ConfidenceLevel_LogX_Primary", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
-	else
-		dHist_ConfidenceLevel_LogX_Primary = NULL;
-
-	locHistTitle.str("");
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for " << dSecondaryReactionName;
-	locHistTitle << ";Confidence Level (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ConfidenceLevel_Secondary = new TH1I("ConfidenceLevel_Secondary", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
-
-	if(locConLevLogBinning != NULL)
-		dHist_ConfidenceLevel_LogX_Secondary = new TH1I("ConfidenceLevel_LogX_Secondary", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
-	else
-		dHist_ConfidenceLevel_LogX_Secondary = NULL;
-
-	locHistTitle.str("");
-	locHistTitle << "Confidence Level comparision; CL_{secondary}; CL_{primary}";
-	dHist_ConfidenceLevel_Comparison = new TH2I("ConfidenceLevel_Comparison", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0, dNumConLevBins, 0.0, 1.0);
-	
-	if(locConLevLogBinning != NULL)
-		dHist_ConfidenceLevel_Log_Comparison = new TH2I("ConfidenceLevel_Log_Comparison", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning, locNumBins, locConLevLogBinning);
-
-	// Return to the base directory
-	ChangeTo_BaseDirectory();
-
-        // Make a new directory to show the result of the cut
-	CreateAndChangeTo_ActionDirectory();
-        CreateAndChangeTo_Directory("After");
-
-	locHistTitle.str("");
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for primary reaction";
-	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ChiSqPerDF_Primary_post = new TH1I("ChiSqPerDF_Primary_post", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
-
-	locHistTitle.str("");
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for " << dSecondaryReactionName;
-	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ChiSqPerDF_Secondary_post = new TH1I("ChiSqPerDF_Secondary_post", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
-
-	locHistTitle.str("");
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for primary reaction";
-	locHistTitle << ";Confidence Level (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ConfidenceLevel_Primary_post = new TH1I("ConfidenceLevel_Primary_post", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
-
-	if(locConLevLogBinning != NULL)
-		dHist_ConfidenceLevel_LogX_Primary_post = new TH1I("ConfidenceLevel_LogX_Primary_post", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
-	else
-		dHist_ConfidenceLevel_LogX_Primary_post = NULL;
-
-	locHistTitle.str("");
-	locHistTitle << "Kinematic Fit Constraints: " << locConstraintString << " for " << dSecondaryReactionName;
-	locHistTitle << ";Confidence Level (" << locNumConstraints;
-	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
-	dHist_ConfidenceLevel_Secondary_post = new TH1I("ConfidenceLevel_Secondary_post", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
-
-	if(locConLevLogBinning != NULL)
-		dHist_ConfidenceLevel_LogX_Secondary_post = new TH1I("ConfidenceLevel_LogX_Secondary_post", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
-	else
-		dHist_ConfidenceLevel_LogX_Secondary_post = NULL;
-
-	// Return to the base directory
-	ChangeTo_BaseDirectory();
-}
-
-bool DCutAction_ChiSqOrCL::Perform_Action(void)
-{
-	// Primary
-	double locKinFitChiSqPerDF = dParticleComboWrapper->Get_ChiSq_KinFit()/dParticleComboWrapper->Get_NDF_KinFit();
-	dHist_ChiSqPerDF_Primary->Fill(locKinFitChiSqPerDF);
-
-	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
-	dHist_ConfidenceLevel_Primary->Fill(locConfidenceLevel);
-	if(dHist_ConfidenceLevel_LogX_Primary != NULL)
-		dHist_ConfidenceLevel_LogX_Primary->Fill(locConfidenceLevel);
-
-	// Secondary
-	// If the secondary reaction did not have a valid chisq, keep the event by returning true.
-	// Skip filling comparison histograms
-	//if ( locKinFitChiSqPerDF_secondary == -1 )
-	if ( dParticleComboWrapper->Get_ChiSq_KinFit_secondary() == -1 )
-		return true;
-
-	double locKinFitChiSqPerDF_secondary = dParticleComboWrapper->Get_ChiSq_KinFit_secondary()/dParticleComboWrapper->Get_NDF_KinFit_secondary();
-	dHist_ChiSqPerDF_Secondary->Fill(locKinFitChiSqPerDF_secondary);
-
-	double locConfidenceLevel_secondary = dParticleComboWrapper->Get_ConfidenceLevel_KinFit_secondary();
-	dHist_ConfidenceLevel_Secondary->Fill(locConfidenceLevel_secondary);
-	if(dHist_ConfidenceLevel_LogX_Secondary != NULL)
-		dHist_ConfidenceLevel_LogX_Secondary->Fill(locConfidenceLevel_secondary);
-
-	dHist_ChiSq_Comparison->Fill( locKinFitChiSqPerDF_secondary, locKinFitChiSqPerDF );
-	dHist_ConfidenceLevel_Comparison->Fill( locConfidenceLevel_secondary, locConfidenceLevel );
-	if(dHist_ConfidenceLevel_Log_Comparison != NULL)
-		dHist_ConfidenceLevel_Log_Comparison->Fill( locConfidenceLevel_secondary, locConfidenceLevel );
-
-	double ratio;
-	bool locIsKept = true;
-	if ( dIsChiSq )
-	{
-		ratio = locKinFitChiSqPerDF / locKinFitChiSqPerDF_secondary;
-		locIsKept = ( ratio < 1.0*dScaleFactor );
-	}
-	else
-	{
-		ratio = locConfidenceLevel / locConfidenceLevel_secondary;
-		locIsKept = ( ratio > 1.0*dScaleFactor );
-	}
-
-	if ( locIsKept )
-	{
-		dHist_ChiSqPerDF_Primary_post->Fill(locKinFitChiSqPerDF);
-        	dHist_ConfidenceLevel_Primary_post->Fill(locConfidenceLevel);
-		if(dHist_ConfidenceLevel_LogX_Primary_post != NULL)
-                	dHist_ConfidenceLevel_LogX_Primary_post->Fill(locConfidenceLevel);
-	}
-	else
-	{
-		dHist_ChiSqPerDF_Secondary_post->Fill(locKinFitChiSqPerDF_secondary);
-		dHist_ConfidenceLevel_Secondary_post->Fill(locConfidenceLevel_secondary);
-		if(dHist_ConfidenceLevel_LogX_Secondary_post != NULL)
-                	dHist_ConfidenceLevel_LogX_Secondary_post->Fill(locConfidenceLevel_secondary);
-	}
-
-	return locIsKept;
-}
-
 string DCutAction_PIDDeltaT::Get_ActionName(void) const
 {
 	ostringstream locStream;
@@ -181,6 +9,18 @@ string DCutAction_PIDDeltaT::Get_ActionName(void) const
 
 void DCutAction_PIDDeltaT::Initialize(void)
 {
+	if (dFunc_PIDCut_SelectPositive == nullptr){
+		dFunc_PIDCut_SelectPositive = new TF1("dFunc_PIDCut_SelectPositive","pol0",0.0, 12.0);
+		dFunc_PIDCut_SelectPositive->SetParameter(0,dDeltaTCut);
+	}
+	else cout << "Using user function for positive PID delta-T cut " << endl;
+
+	if (dFunc_PIDCut_SelectNegative == nullptr){
+		dFunc_PIDCut_SelectNegative = new TF1("dFunc_PIDCut_SelectNegative","pol0",0.0, 12.0);
+		dFunc_PIDCut_SelectNegative->SetParameter(0,-dDeltaTCut);
+	}
+	else cout << "Using user function for negative PID delta-T cut " << endl;	
+	
 	dTargetCenterZ = dParticleComboWrapper->Get_TargetCenter().Z();	
 }
 
@@ -219,15 +59,16 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 				if(locNeutralParticleHypothesis != NULL)
 					locSystem = locNeutralParticleHypothesis->Get_Detector_System_Timing();
 			}
-			
+
 			if((dSystem != SYS_NULL) && (locSystem != dSystem))
 				continue;
 
 			TLorentzVector locX4 = dUseKinFitFlag ? locKinematicData->Get_X4() : locKinematicData->Get_X4_Measured();
+			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
 			double locRFTime = dParticleComboWrapper->Get_RFTime_Measured();
 			double locPropagatedRFTime = locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458;
 			double locDeltaT = locX4.T() - locPropagatedRFTime;
-			if(fabs(locDeltaT) > dDeltaTCut) 
+			if(  locDeltaT > dFunc_PIDCut_SelectPositive->Eval(locP4.P()) || locDeltaT < dFunc_PIDCut_SelectNegative->Eval(locP4.P())) 
 				return false;
 
 		} //end of particle loop
@@ -278,7 +119,7 @@ bool DCutAction_NoPIDHit::Perform_Action(void)
 				if(locNeutralParticleHypothesis != NULL)
 					locSystem = locNeutralParticleHypothesis->Get_Detector_System_Timing();
 			}
-			
+
 			if((dSystem != SYS_NULL) && (locSystem != dSystem))
 				return false;
 
@@ -301,14 +142,14 @@ void DCutAction_dEdx::Initialize(void)
 	{
 		string locFuncName = "df_dEdxCut_SelectHeavy"; //e.g. proton
 		dFunc_dEdxCut_SelectHeavy = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
-		dFunc_dEdxCut_SelectHeavy->SetParameters(2.0, 2.0, 1.0);
+		dFunc_dEdxCut_SelectHeavy->SetParameters(dSelectHeavy_c0, dSelectHeavy_c1, dSelectHeavy_c2);
 	}
 
 	if(dFunc_dEdxCut_SelectLight == NULL)
 	{
 		string locFuncName = "df_dEdxCut_SelectLight"; //e.g. pions, kaons
 		dFunc_dEdxCut_SelectLight = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
-		dFunc_dEdxCut_SelectLight->SetParameters(2.0, 0.8, 3.0);
+		dFunc_dEdxCut_SelectLight->SetParameters(dSelectLight_c0, dSelectLight_c1, dSelectLight_c2);
 	}
 }
 
@@ -351,7 +192,7 @@ bool DCutAction_dEdx::Perform_Action(void)
 				continue;
 
 			if(!(locdEdx > 0.0))
-				return true; // Not enough hits in the detector to report a dE/dx: Don't cut
+				continue; // Not enough hits in the detector to report a dE/dx: Don't cut
 
 			//cut
 			double locP = dUseKinFitFlag ? locChargedTrackHypothesis->Get_P4().Vect().Mag() : locChargedTrackHypothesis->Get_P4_Measured().Vect().Mag();
@@ -520,22 +361,16 @@ bool DCutAction_InvariantMassVeto::Perform_Action(void)
 		//build all possible combinations of the included pids
 		set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locComboWrapperStep, dToIncludePIDs);
 
-		//loop over them: Must fail ALL to fail. if any succeed, go to the next step
+		//loop over them: Must fail only ONE to fail. only if all succeed, go to the next step
 		set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
-		bool locAnyOKFlag = false;
 		for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
 		{
 			TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, loc_i, *locComboIterator, dUseKinFitFlag);
 			double locInvariantMass = locFinalStateP4.M();
-			if((locInvariantMass < dMaxMass) && (locInvariantMass > dMinMass))
-				continue;
-			locAnyOKFlag = true;
-			break;
+			if((dMinMass < locInvariantMass) && (locInvariantMass < dMaxMass))
+			  return false;
 		}
-		if(!locAnyOKFlag)
-			return false;
 	}
-
 	return true;
 }
 
@@ -610,8 +445,8 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 				continue;
 
 			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
-                        double locP = locP4.P();
-                        locShowerEOverP = locShowerEnergy/locP;
+			double locP = locP4.P();
+			locShowerEOverP = locShowerEnergy/locP;
 
 			if((dPID == Electron) || (dPID == Positron))
 			{
@@ -628,54 +463,54 @@ bool DCutAction_TrackShowerEOverP::Perform_Action(void)
 
 string DCutAction_TrackBCALPreshowerFraction::Get_ActionName(void) const
 {
-        ostringstream locStream;
-        locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dPreshowerFractionCut;
-        return locStream.str();
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dPreshowerFractionCut;
+	return locStream.str();
 }
 
 bool DCutAction_TrackBCALPreshowerFraction::Perform_Action(void)
 {
-        for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
-        {
-                DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
 
-                //final particles
-                for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
-                {
-                        DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
-                        if(locKinematicData == NULL)
-                                continue; //e.g. a decaying or missing particle whose params aren't set yet
-			
+		//final particles
+		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
 			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
 			int locDecayStepIndex = locComboWrapperStep->Get_DecayStepIndex(loc_j);
-                        if(locDecayStepIndex != -2)
-                                continue; //not measured
-			
-			if(locKinematicData->Get_PID() != dPID)
-                                continue;
-                        if(ParticleCharge(locKinematicData->Get_PID()) == 0)
-                                continue;
+			if(locDecayStepIndex != -2)
+				continue; //not measured
 
-                        const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
-                        double locBCALPreshowerE = locChargedTrackHypothesis->Get_Energy_BCALPreshower();
-                        double locBCALShowerE = locChargedTrackHypothesis->Get_Energy_BCAL();
-                        if(!(locBCALShowerE > 0.0))
-                                continue;
+			if(locKinematicData->Get_PID() != dPID)
+				continue;
+			if(ParticleCharge(locKinematicData->Get_PID()) == 0)
+				continue;
+
+			const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+			double locBCALPreshowerE = locChargedTrackHypothesis->Get_Energy_BCALPreshower();
+			double locBCALShowerE = locChargedTrackHypothesis->Get_Energy_BCAL();
+			if(!(locBCALShowerE > 0.0))
+				continue;
 
 			double locPreshowerFraction = locBCALPreshowerE/locBCALShowerE*sin(locChargedTrackHypothesis->Get_P4().Theta());
 
-                        if((dPID == Electron) || (dPID == Positron))
-                        {
-                                if(locPreshowerFraction < dPreshowerFractionCut)
-                                        return false;
-                        }       
+			if((dPID == Electron) || (dPID == Positron))
+			{
+				if(locPreshowerFraction < dPreshowerFractionCut)
+					return false;
+			}       
 			//else if(locPreshowerFraction > dPreshowerFractionCut)
 			//	 return false;
 
 		}
-        }
+	}
 
-        return true;
+	return true;
 }
 
 string DCutAction_Kinematics::Get_ActionName(void) const
