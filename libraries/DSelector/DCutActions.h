@@ -10,8 +10,6 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 #include "TF1.h"
-#include "TH1.h"
-#include "TH2.h"
 
 #include "particleType.h"
 
@@ -27,63 +25,19 @@
 
 using namespace std;
 
-class DCutAction_ChiSqOrCL : public DAnalysisAction
-{
-	public:
-		DCutAction_ChiSqOrCL(const DParticleCombo* locParticleComboWrapper, string locSecondaryReactionName, bool locIsChiSq, double locScaleFactor, string locActionUniqueString = "") :
-			DAnalysisAction(locParticleComboWrapper, "Cut_ChiSqOrCL", true, locActionUniqueString),
-			dNumChiSqPerDFBins(1000), dNumConLevBins(1000), dNumBinsPerConLevPower(18), dMaxChiSqPerDF(50), dConLevLowest10Power(-50),
-			dSecondaryReactionName(locSecondaryReactionName), dIsChiSq(locIsChiSq), dScaleFactor(locScaleFactor) {}
-
-		string Get_ActionName(void) const;
-		void Initialize(void);
-		void Reset_NewEvent(void){}
-		bool Perform_Action(void);
-
-		unsigned int dNumChiSqPerDFBins, dNumConLevBins, dNumBinsPerConLevPower;
-		double dMaxChiSqPerDF;
-		int dConLevLowest10Power;
-
-		string dSecondaryReactionName;
-		bool dIsChiSq;
-		double dScaleFactor;
-
-	private:
-
-		DAnalysisUtilities dAnalysisUtilities;
-		
-                // before comparison cut
-		TH1I* dHist_ChiSqPerDF_Primary;
-		TH1I* dHist_ChiSqPerDF_Secondary;
-		TH2I* dHist_ChiSq_Comparison;
-		TH1I* dHist_ConfidenceLevel_Primary;
-		TH1I* dHist_ConfidenceLevel_Secondary;
-		TH2I* dHist_ConfidenceLevel_Comparison;
-		TH1I* dHist_ConfidenceLevel_LogX_Primary;
-		TH1I* dHist_ConfidenceLevel_LogX_Secondary;
-		TH2I* dHist_ConfidenceLevel_Log_Comparison;
-
-                // after comparison cut
-		TH1I* dHist_ChiSqPerDF_Primary_post;
-		TH1I* dHist_ChiSqPerDF_Secondary_post;
-		TH1I* dHist_ConfidenceLevel_Primary_post;
-		TH1I* dHist_ConfidenceLevel_Secondary_post;
-		TH1I* dHist_ConfidenceLevel_LogX_Primary_post;
-		TH1I* dHist_ConfidenceLevel_LogX_Secondary_post;
-
-};
-
 class DCutAction_PIDDeltaT : public DAnalysisAction
 {
 	public:
 		DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_PIDDeltaT", locUseKinFitFlag, locActionUniqueString),
-			dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
+			dFunc_PIDCut_SelectPositive(nullptr), dFunc_PIDCut_SelectNegative(nullptr), dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
 
 		string Get_ActionName(void) const;
 		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
+		TF1 *dFunc_PIDCut_SelectPositive;
+                TF1 *dFunc_PIDCut_SelectNegative;
 
 	private:
 		double dDeltaTCut;
@@ -115,20 +69,35 @@ class DCutAction_dEdx : public DAnalysisAction
 	public:
 		DCutAction_dEdx(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID, DetectorSystem_t locSystem = SYS_CDC, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_dEdx", locUseKinFitFlag, locActionUniqueString),
-			dPID(locPID), dSystem(locSystem), dFunc_dEdxCut_SelectHeavy(NULL), dFunc_dEdxCut_SelectLight(NULL), dMaxRejectionFlag(false) {}
+			dFunc_dEdxCut_SelectHeavy(NULL), dFunc_dEdxCut_SelectLight(NULL), dPID(locPID), dSystem(locSystem), dMaxRejectionFlag(false),
+			dSelectHeavy_c0(2.0), dSelectHeavy_c1(2.0), dSelectHeavy_c2(1.0), dSelectLight_c0(2.0), dSelectLight_c1(0.8), dSelectLight_c2(3.0){}
 
 		string Get_ActionName(void) const;
 		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
 
+		void Set_ParametersHeavy( double c0, double c1, double c2){
+		    if (dFunc_dEdxCut_SelectHeavy != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
+		    dSelectHeavy_c0 = c0, dSelectHeavy_c1 = c1, dSelectHeavy_c2 = c2;
+		    return;
+		}
+		void Set_ParametersLight( double c0, double c1, double c2){
+                    if (dFunc_dEdxCut_SelectLight != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
+                    dSelectLight_c0 = c0, dSelectLight_c1 = c1, dSelectLight_c2 = c2;
+                    return;
+                }
+
+		TF1 *dFunc_dEdxCut_SelectHeavy;
+                TF1 *dFunc_dEdxCut_SelectLight;
+
 	private:
 
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
-		TF1 *dFunc_dEdxCut_SelectHeavy;
-		TF1 *dFunc_dEdxCut_SelectLight;
 		bool dMaxRejectionFlag;
+		double dSelectHeavy_c0, dSelectHeavy_c1, dSelectHeavy_c2;
+		double dSelectLight_c0, dSelectLight_c1, dSelectLight_c2;
 };
 
 class DCutAction_KinFitFOM : public DAnalysisAction
