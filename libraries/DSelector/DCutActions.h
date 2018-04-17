@@ -30,10 +30,12 @@ using namespace std;
 class DCutAction_ChiSqOrCL : public DAnalysisAction
 {
 	public:
-		DCutAction_ChiSqOrCL(const DParticleCombo* locParticleComboWrapper, string locSecondaryReactionName, bool locIsChiSq, double locScaleFactor, string locActionUniqueString = "") :
+		DCutAction_ChiSqOrCL(const DParticleCombo* locParticleComboWrapper, string locSecondaryReactionName, bool locIsChiSq, TF1 *locFunction, string locActionUniqueString = "") :
+		//DCutAction_ChiSqOrCL(const DParticleCombo* locParticleComboWrapper, string locSecondaryReactionName, bool locIsChiSq, double locScaleFactor, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_ChiSqOrCL", true, locActionUniqueString),
 			dNumChiSqPerDFBins(1000), dNumConLevBins(1000), dNumBinsPerConLevPower(18), dMaxChiSqPerDF(50), dConLevLowest10Power(-50),
-			dSecondaryReactionName(locSecondaryReactionName), dIsChiSq(locIsChiSq), dScaleFactor(locScaleFactor) {}
+			//dSecondaryReactionName(locSecondaryReactionName), dIsChiSq(locIsChiSq), dScaleFactor(locScaleFactor) {}
+			dSecondaryReactionName(locSecondaryReactionName), dIsChiSq(locIsChiSq), dFunction(locFunction) {}
 
 		string Get_ActionName(void) const;
 		void Initialize(void);
@@ -46,7 +48,8 @@ class DCutAction_ChiSqOrCL : public DAnalysisAction
 
 		string dSecondaryReactionName;
 		bool dIsChiSq;
-		double dScaleFactor;
+		TF1 *dFunction;
+		//double dScaleFactor;
 
 	private:
 

@@ -139,18 +139,11 @@ bool DCutAction_ChiSqOrCL::Perform_Action(void)
 	if(dHist_ConfidenceLevel_Log_Comparison != NULL)
 		dHist_ConfidenceLevel_Log_Comparison->Fill( locConfidenceLevel_secondary, locConfidenceLevel );
 
-	double ratio;
 	bool locIsKept = true;
 	if ( dIsChiSq )
-	{
-		ratio = locKinFitChiSqPerDF / locKinFitChiSqPerDF_secondary;
-		locIsKept = ( ratio < 1.0*dScaleFactor );
-	}
+		locIsKept = ( locKinFitChiSqPerDF < dFunction->Eval( locKinFitChiSqPerDF_secondary ) );
 	else
-	{
-		ratio = locConfidenceLevel / locConfidenceLevel_secondary;
-		locIsKept = ( ratio > 1.0*dScaleFactor );
-	}
+		locIsKept = ( locConfidenceLevel > dFunction->Eval( locConfidenceLevel_secondary ) );
 
 	if ( locIsKept )
 	{
