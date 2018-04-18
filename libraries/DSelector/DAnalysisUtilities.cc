@@ -21,7 +21,7 @@ TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParti
 {
 	//NOTE: this routine assumes that the p4 of a charged decaying particle with a detached vertex is the same at both vertices!
 	//assumes missing particle is not the beam particle
-	if(locUseKinFitDataFlag && (locParticleComboWrapper->Get_NDF_KinFit() == 0))
+	if(locUseKinFitDataFlag && (locParticleComboWrapper->Get_NDF_KinFit( "" ) == 0))
 		return Calc_MissingP4(locParticleComboWrapper, locStepIndex, locUpToStepIndex, locUpThroughIndices, locSourceObjects, false); //kinematic fit failed
 
 	TLorentzVector locMissingP4;
@@ -93,7 +93,7 @@ TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locPa
 
 TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, set<size_t> locToIncludeIndices, map<unsigned int, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const
 {
-	if(locUseKinFitDataFlag && (locParticleComboWrapper->Get_NDF_KinFit() == 0))
+	if(locUseKinFitDataFlag && (locParticleComboWrapper->Get_NDF_KinFit( "" ) == 0))
 		return Calc_FinalStateP4(locParticleComboWrapper, locStepIndex, locToIncludeIndices, locSourceObjects, false); //kinematic fit failed
 
 	TLorentzVector locFinalStateP4;

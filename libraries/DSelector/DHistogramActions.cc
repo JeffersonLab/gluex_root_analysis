@@ -744,7 +744,7 @@ void DHistogramAction_InvariantMass::Initialize(void)
 
 bool DHistogramAction_InvariantMass::Perform_Action(void)
 {
-	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit( "" );
 
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
@@ -869,7 +869,7 @@ bool DHistogramAction_MissingMass::Perform_Action(void)
 			return true;
 	}
 
-	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit( "" );
 
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
 	double locBeamEnergy = 0.0;
@@ -978,7 +978,7 @@ bool DHistogramAction_MissingMassSquared::Perform_Action(void)
 			return true;
 	}
 
-	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit( "" );
 
 	DKinematicData* locBeamParticle = dParticleComboWrapper->Get_ParticleComboStep(0)->Get_InitialParticle();
 	double locBeamEnergy = 0.0;
@@ -1304,10 +1304,10 @@ void DHistogramAction_KinFitResults::Initialize(void)
 
 bool DHistogramAction_KinFitResults::Perform_Action(void)
 {
-	double locKinFitChiSqPerNDF = dParticleComboWrapper->Get_ChiSq_KinFit()/dParticleComboWrapper->Get_NDF_KinFit();
+	double locKinFitChiSqPerNDF = dParticleComboWrapper->Get_ChiSq_KinFit( "" )/dParticleComboWrapper->Get_NDF_KinFit( "" );
 	dHist_ChiSqPerDF->Fill(locKinFitChiSqPerNDF);
 
-	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit( "" );
 	dHist_ConfidenceLevel->Fill(locConfidenceLevel);
 	if(dHist_ConfidenceLevel_LogX != NULL)
 		dHist_ConfidenceLevel_LogX->Fill(locConfidenceLevel);
