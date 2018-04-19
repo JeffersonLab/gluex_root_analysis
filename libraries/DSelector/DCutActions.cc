@@ -78,6 +78,12 @@ void DCutAction_ChiSqOrCL::Initialize(void)
 	dHist_ChiSqPerDF_Primary_post = new TH1I("ChiSqPerDF_Primary_post", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
 
 	locHistTitle.str("");
+	locHistTitle << "Removed #chi^{2}/ndf for primary reaction";
+	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ChiSqPerDF_Primary_post_removed = new TH1I("ChiSqPerDF_Primary_post_removed", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
 	locHistTitle << "Removed #chi^{2}/ndf for " << dSecondaryReactionName;
 	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
 	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
@@ -159,6 +165,7 @@ bool DCutAction_ChiSqOrCL::Perform_Action(void)
 	}
 	else
 	{
+		dHist_ChiSqPerDF_Primary_post_removed->Fill(locKinFitChiSqPerDF);
 		dHist_ChiSqPerDF_Secondary_post->Fill(locKinFitChiSqPerDF_secondary);
 		dHist_ConfidenceLevel_Secondary_post->Fill(locConfidenceLevel_secondary);
 		if(dHist_ConfidenceLevel_LogX_Secondary_post != NULL)

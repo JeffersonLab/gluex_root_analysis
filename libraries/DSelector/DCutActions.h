@@ -68,6 +68,7 @@ class DCutAction_ChiSqOrCL : public DAnalysisAction
 
                 // after comparison cut
 		TH1I* dHist_ChiSqPerDF_Primary_post;
+		TH1I* dHist_ChiSqPerDF_Primary_post_removed;
 		TH1I* dHist_ChiSqPerDF_Secondary_post;
 		TH1I* dHist_ConfidenceLevel_Primary_post;
 		TH1I* dHist_ConfidenceLevel_Secondary_post;
