@@ -617,8 +617,8 @@ void DSelector::Fill_FlatTree(void)
 	dFlatTreeInterface->Fill_Fundamental<Bool_t>("rftime", dComboWrapper->Get_RFTime());
 	if(dTreeInterface->Get_Branch("ChiSq_KinFit") != NULL)
 	{
-		dFlatTreeInterface->Fill_Fundamental<Float_t>("kin_chisq", dComboWrapper->Get_ChiSq_KinFit());
-		dFlatTreeInterface->Fill_Fundamental<UInt_t>("kin_ndf", dComboWrapper->Get_NDF_KinFit());
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("kin_chisq", dComboWrapper->Get_ChiSq_KinFit( "" ));
+		dFlatTreeInterface->Fill_Fundamental<UInt_t>("kin_ndf", dComboWrapper->Get_NDF_KinFit( "" ));
 	}
 
 	//FILL BRANCHES: COMBO

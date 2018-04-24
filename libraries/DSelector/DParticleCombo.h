@@ -62,12 +62,15 @@ class DParticleCombo
 		TVector3 Get_TargetCenter(void) const;
 
 		// KINFIT:
-		Float_t Get_ChiSq_KinFit(void) const;
-		UInt_t Get_NDF_KinFit(void) const;
-		Float_t Get_ConfidenceLevel_KinFit(void) const;
+		Float_t Get_ChiSq_KinFit(string branch_tag) const;
+		UInt_t Get_NDF_KinFit(string branch_tag) const;
+		Float_t Get_ConfidenceLevel_KinFit(string branch_tag ) const;
 
 		// UNUSED ENERGY:
 		Float_t Get_Energy_UnusedShowers(void) const;
+
+		// UNUSED TRACKS:
+		UChar_t Get_NumUnusedTracks(void) const;
 
 		// EVENT INFO: //Doesn't really belong in DParticleCombo, but much easier to pass into actions this way
 		UInt_t Get_RunNumber(void) const;
@@ -106,6 +109,7 @@ class DParticleCombo
 
 		DTreeInterface* dTreeInterface;
 		UInt_t* dNumCombos;
+		UChar_t* dNumUnusedTracks;
 		UInt_t dComboIndex; //the index in the particle-data arrays to use to grab particle data (e.g. corresponding to this combo)
 
 		deque<DParticleComboStep*> dParticleComboSteps;
@@ -121,8 +125,6 @@ class DParticleCombo
 		TBranch* dBranch_RFTime_Measured;
 		TBranch* dBranch_RFTime_KinFit; //only if spacetime kinematic fit performed
 
-		TBranch* dBranch_ChiSq_KinFit; //only if kinematic fit performed
-		TBranch* dBranch_NDF_KinFit; //only if kinematic fit performed // = 0 if kinematic fit doesn't converge
 		TBranch* dBranch_Energy_UnusedShowers;
 
 		//Target not necessarily in the particle combo, so add the info here (for convenience)
@@ -163,12 +165,11 @@ inline void DParticleCombo::Setup_Branches(void)
 	dBranch_RFTime_Measured = dTreeInterface->Get_Branch("RFTime_Measured");
 	dBranch_RFTime_KinFit = dTreeInterface->Get_Branch("RFTime_KinFit");
 
-	// KINFIT:
-	dBranch_ChiSq_KinFit = dTreeInterface->Get_Branch("ChiSq_KinFit");
-	dBranch_NDF_KinFit = dTreeInterface->Get_Branch("NDF_KinFit");
-
 	// UNUSED ENERGY:
 	dBranch_Energy_UnusedShowers = dTreeInterface->Get_Branch("Energy_UnusedShowers");
+
+	// UNUSED TRACKS:
+	dNumUnusedTracks = (UChar_t*)dTreeInterface->Get_Branch("NumUnusedTracks")->GetAddress();
 }
 
 inline UInt_t DParticleCombo::Get_NumCombos(void) const
@@ -240,26 +241,36 @@ inline TVector3 DParticleCombo::Get_TargetCenter(void) const
 }
 
 // KINFIT:
-inline Float_t DParticleCombo::Get_ChiSq_KinFit(void) const
+inline Float_t DParticleCombo::Get_ChiSq_KinFit(string branch_tag) const
 {
-	if(dBranch_ChiSq_KinFit == NULL)
+	TBranch* branch;
+	string b_name = "ChiSq_KinFit";
+	if ( branch_tag != "" )
+		b_name += "_" + branch_tag;
+	branch = dTreeInterface->Get_Branch( b_name );
+	if ( branch == NULL )
 		return -1.0;
-	return ((Float_t*)dBranch_ChiSq_KinFit->GetAddress())[dComboIndex];
+	return ((Float_t*)branch->GetAddress())[dComboIndex];
 }
 
-inline UInt_t DParticleCombo::Get_NDF_KinFit(void) const
+inline UInt_t DParticleCombo::Get_NDF_KinFit(string branch_tag) const
 {
-	if((dBranch_NDF_KinFit == NULL) || (dKinFitConstraints != "NA"))
+	TBranch* branch;
+	string b_name = "NDF_KinFit";
+	if ( branch_tag != "" )
+		b_name += "_" + branch_tag;
+	branch = dTreeInterface->Get_Branch( b_name );
+	if((branch == NULL) || (dKinFitConstraints != "NA"))
 		return dNumKinFitConstraints - dNumKinFitUnknowns;
-	return ((UInt_t*)dBranch_NDF_KinFit->GetAddress())[dComboIndex];
+	return ((UInt_t*)branch->GetAddress())[dComboIndex];
 }
 
-inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit(void) const
+inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit( string branch_tag ) const
 {
-	Float_t locChiSq = Get_ChiSq_KinFit();
+	Float_t locChiSq = Get_ChiSq_KinFit( branch_tag );
 	if(locChiSq < 0.0)
 		return -1.0;
-	UInt_t locNDF = Get_NDF_KinFit();
+	UInt_t locNDF = Get_NDF_KinFit( branch_tag );
 	return TMath::Prob(locChiSq, locNDF);
 }
 
@@ -269,6 +280,12 @@ inline Float_t DParticleCombo::Get_Energy_UnusedShowers(void) const
 	if(dBranch_Energy_UnusedShowers == NULL)
 		return -1.0;
 	return ((Float_t*)dBranch_Energy_UnusedShowers->GetAddress())[dComboIndex];
+}
+
+// UNUSED TRACKS:
+inline UChar_t DParticleCombo::Get_NumUnusedTracks(void) const
+{
+	return *dNumUnusedTracks;
 }
 
 // MISSING

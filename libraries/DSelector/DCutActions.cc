@@ -1,5 +1,180 @@
 #include "DCutActions.h"
 
+string DCutAction_ChiSqOrCL::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dSecondaryReactionName;
+	return locStream.str();
+}
+
+void DCutAction_ChiSqOrCL::Initialize(void)
+{
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+        CreateAndChangeTo_Directory("Before");
+
+	size_t locNumConstraints = dParticleComboWrapper->Get_NumKinFitConstraints();
+	size_t locNumUnknowns = dParticleComboWrapper->Get_NumKinFitUnknowns();
+	size_t locNDF = locNumConstraints - locNumUnknowns;
+
+	ostringstream locHistTitle;
+	locHistTitle << "Initial #chi^{2}/ndf for primary reaction";
+	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ChiSqPerDF_Primary = new TH1I("ChiSqPerDF_Primary", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
+	locHistTitle << "Initial #chi^{2}/ndf for " << dSecondaryReactionName;
+	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ChiSqPerDF_Secondary = new TH1I("ChiSqPerDF_Secondary", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
+	locHistTitle << "#chi^{2}/NDF comparison; #chi^{2}_secondary; #chi^{2}_primary";
+	dHist_ChiSq_Comparison = new TH2I("ChiSq_Comparison", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF, dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
+	locHistTitle << "Initial confidence level for primary reaction";
+	locHistTitle << ";Confidence Level (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ConfidenceLevel_Primary = new TH1I("ConfidenceLevel_Primary", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
+
+	int locNumBins = 0;
+	double* locConLevLogBinning = dAnalysisUtilities.Generate_LogBinning(dConLevLowest10Power, 0, dNumBinsPerConLevPower, locNumBins);
+	if(locConLevLogBinning != NULL)
+		dHist_ConfidenceLevel_LogX_Primary = new TH1I("ConfidenceLevel_LogX_Primary", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
+	else
+		dHist_ConfidenceLevel_LogX_Primary = NULL;
+
+	locHistTitle.str("");
+	locHistTitle << "Initial confidence level for " << dSecondaryReactionName;
+	locHistTitle << ";Confidence Level (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ConfidenceLevel_Secondary = new TH1I("ConfidenceLevel_Secondary", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
+
+	if(locConLevLogBinning != NULL)
+		dHist_ConfidenceLevel_LogX_Secondary = new TH1I("ConfidenceLevel_LogX_Secondary", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
+	else
+		dHist_ConfidenceLevel_LogX_Secondary = NULL;
+
+	locHistTitle.str("");
+	locHistTitle << "Confidence Level comparision; CL_{secondary}; CL_{primary}";
+	dHist_ConfidenceLevel_Comparison = new TH2I("ConfidenceLevel_Comparison", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0, dNumConLevBins, 0.0, 1.0);
+	
+	if(locConLevLogBinning != NULL)
+		dHist_ConfidenceLevel_Log_Comparison = new TH2I("ConfidenceLevel_Log_Comparison", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning, locNumBins, locConLevLogBinning);
+
+	// Return to the base directory
+	ChangeTo_BaseDirectory();
+
+        // Make a new directory to show the result of the cut
+        CreateAndChangeTo_ActionDirectory();
+        CreateAndChangeTo_Directory("After");
+
+	locHistTitle.str("");
+	locHistTitle << "Kept #chi^{2}/ndf for primary reaction";
+	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ChiSqPerDF_Primary_post = new TH1I("ChiSqPerDF_Primary_post", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
+	locHistTitle << "Removed #chi^{2}/ndf for primary reaction";
+	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ChiSqPerDF_Primary_post_removed = new TH1I("ChiSqPerDF_Primary_post_removed", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
+	locHistTitle << "Removed #chi^{2}/ndf for " << dSecondaryReactionName;
+	locHistTitle << ";Fit #chi^{2}/NDF (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ChiSqPerDF_Secondary_post = new TH1I("ChiSqPerDF_Secondary_post", locHistTitle.str().c_str(), dNumChiSqPerDFBins, 0.0, dMaxChiSqPerDF);
+
+	locHistTitle.str("");
+	locHistTitle << "Kept confidence level for primary reaction";
+	locHistTitle << ";Confidence Level (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ConfidenceLevel_Primary_post = new TH1I("ConfidenceLevel_Primary_post", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
+
+	if(locConLevLogBinning != NULL)
+		dHist_ConfidenceLevel_LogX_Primary_post = new TH1I("ConfidenceLevel_LogX_Primary_post", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
+	else
+		dHist_ConfidenceLevel_LogX_Primary_post = NULL;
+
+	locHistTitle.str("");
+	locHistTitle << "Removed confidence level for " << dSecondaryReactionName;
+	locHistTitle << ";Confidence Level (" << locNumConstraints;
+	locHistTitle << " Constraints, " << locNumUnknowns << " Unknowns: " << locNDF << "-C Fit);# Combos";
+	dHist_ConfidenceLevel_Secondary_post = new TH1I("ConfidenceLevel_Secondary_post", locHistTitle.str().c_str(), dNumConLevBins, 0.0, 1.0);
+	if(locConLevLogBinning != NULL)
+		dHist_ConfidenceLevel_LogX_Secondary_post = new TH1I("ConfidenceLevel_LogX_Secondary_post", locHistTitle.str().c_str(), locNumBins, locConLevLogBinning);
+	else
+		dHist_ConfidenceLevel_LogX_Secondary_post = NULL;
+
+	// Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+bool DCutAction_ChiSqOrCL::Perform_Action(void)
+{
+	// Primary
+	double locKinFitChiSqPerDF = dParticleComboWrapper->Get_ChiSq_KinFit( "" )/dParticleComboWrapper->Get_NDF_KinFit( "" );
+	dHist_ChiSqPerDF_Primary->Fill(locKinFitChiSqPerDF);
+
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit( "" );
+	dHist_ConfidenceLevel_Primary->Fill(locConfidenceLevel);
+	if(dHist_ConfidenceLevel_LogX_Primary != NULL)
+		dHist_ConfidenceLevel_LogX_Primary->Fill(locConfidenceLevel);
+
+	// Secondary
+	// If the secondary reaction did not have a valid chisq, keep the event by returning true.
+	// Skip filling comparison histograms
+	if ( dParticleComboWrapper->Get_ChiSq_KinFit( dSecondaryReactionName ) == -1 )
+	{
+		dHist_ChiSqPerDF_Primary_post->Fill(locKinFitChiSqPerDF);
+        	dHist_ConfidenceLevel_Primary_post->Fill(locConfidenceLevel);
+		if(dHist_ConfidenceLevel_LogX_Primary_post != NULL)
+                	dHist_ConfidenceLevel_LogX_Primary_post->Fill(locConfidenceLevel);
+		return true;
+	}
+
+	double locKinFitChiSqPerDF_secondary = dParticleComboWrapper->Get_ChiSq_KinFit( dSecondaryReactionName ) / dParticleComboWrapper->Get_NDF_KinFit( dSecondaryReactionName );
+	dHist_ChiSqPerDF_Secondary->Fill(locKinFitChiSqPerDF_secondary);
+
+	double locConfidenceLevel_secondary = dParticleComboWrapper->Get_ConfidenceLevel_KinFit( dSecondaryReactionName );
+	dHist_ConfidenceLevel_Secondary->Fill(locConfidenceLevel_secondary);
+	if(dHist_ConfidenceLevel_LogX_Secondary != NULL)
+		dHist_ConfidenceLevel_LogX_Secondary->Fill(locConfidenceLevel_secondary);
+
+	dHist_ChiSq_Comparison->Fill( locKinFitChiSqPerDF_secondary, locKinFitChiSqPerDF );
+	dHist_ConfidenceLevel_Comparison->Fill( locConfidenceLevel_secondary, locConfidenceLevel );
+	if(dHist_ConfidenceLevel_Log_Comparison != NULL)
+		dHist_ConfidenceLevel_Log_Comparison->Fill( locConfidenceLevel_secondary, locConfidenceLevel );
+
+	bool locIsKept = true;
+	if ( dIsChiSq )
+		locIsKept = ( locKinFitChiSqPerDF < dFunction->Eval( locKinFitChiSqPerDF_secondary ) );
+	else
+		locIsKept = ( locConfidenceLevel > dFunction->Eval( locConfidenceLevel_secondary ) );
+
+	if ( locIsKept )
+	{
+		dHist_ChiSqPerDF_Primary_post->Fill(locKinFitChiSqPerDF);
+        	dHist_ConfidenceLevel_Primary_post->Fill(locConfidenceLevel);
+		if(dHist_ConfidenceLevel_LogX_Primary_post != NULL)
+                	dHist_ConfidenceLevel_LogX_Primary_post->Fill(locConfidenceLevel);
+	}
+	else
+	{
+		dHist_ChiSqPerDF_Primary_post_removed->Fill(locKinFitChiSqPerDF);
+		dHist_ChiSqPerDF_Secondary_post->Fill(locKinFitChiSqPerDF_secondary);
+		dHist_ConfidenceLevel_Secondary_post->Fill(locConfidenceLevel_secondary);
+		if(dHist_ConfidenceLevel_LogX_Secondary_post != NULL)
+                	dHist_ConfidenceLevel_LogX_Secondary_post->Fill(locConfidenceLevel_secondary);
+	}
+
+	return locIsKept;
+}
+
 string DCutAction_PIDDeltaT::Get_ActionName(void) const
 {
 	ostringstream locStream;
@@ -383,7 +558,7 @@ string DCutAction_KinFitFOM::Get_ActionName(void) const
 
 bool DCutAction_KinFitFOM::Perform_Action(void)
 {
-	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit();
+	double locConfidenceLevel = dParticleComboWrapper->Get_ConfidenceLevel_KinFit( "" );
 	return (locConfidenceLevel > dMinimumConfidenceLevel);
 }
 
@@ -568,4 +743,16 @@ string DCutAction_Energy_UnusedShowers::Get_ActionName(void) const
 bool DCutAction_Energy_UnusedShowers::Perform_Action(void)
 {
 	return (dParticleComboWrapper->Get_Energy_UnusedShowers() <= dMaxEnergy_UnusedShowersCut);
+}
+
+string DCutAction_NumUnusedTracks::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMaxUnusedTracks;
+	return locStream.str();
+}
+
+bool DCutAction_NumUnusedTracks::Perform_Action(void)
+{
+	return (dParticleComboWrapper->Get_NumUnusedTracks() <= dMaxUnusedTracks);
 }
