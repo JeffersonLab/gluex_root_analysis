@@ -71,45 +71,11 @@ bool DHistogramAction_AnalyzeCutActions::Perform_Action(void)
 		}
 	
 		if (locFill)
-		{
 			Fill_Hists(cut_iter.second, locIndexCombos);
-/*
-			set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
-			for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
-			{
-				map<unsigned int, set<Int_t> > locSourceObjects;
-				TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, dStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
-				locMass = locFinalStateP4.M();
-				if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
-				{
-					dPreviouslyHistogrammed.insert(locSourceObjects);
-					cut_iter.second->Fill(locMass);
-				}
-			}
-*/
-			//don't break: e.g. if multiple pi0's, histogram invariant mass of each one
-		}
 	}
 
 	if (!locComboCut)
-	{
 		Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos);
-/*
-		dPreviouslyHistogrammed.clear();
-		set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
-		for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
-		{
-			map<unsigned int, set<Int_t> > locSourceObjects;
-			TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, dStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
-			locMass = locFinalStateP4.M();
-			if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
-			{
-				dPreviouslyHistogrammed.insert(locSourceObjects);
-				dHist_InvariantMass_allcuts->Fill(locMass);
-			}
-		}
-*/
-	}
 
 	return true;
 }
