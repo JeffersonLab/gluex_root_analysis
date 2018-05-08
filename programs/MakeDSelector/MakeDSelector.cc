@@ -106,7 +106,7 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		bool dIsPARAFlag; //else is PERP or AMO" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "		// ANALYZE CUT ACTIONS" << endl;
-	locHeaderStream << "		// // Automatically makes mass histograms where one cut is missing
+	locHeaderStream << "		// // Automatically makes mass histograms where one cut is missing" << endl;
 	locHeaderStream << "		DHistogramAction_AnalyzeCutActions* dAnalyzeCutActions;" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "		//CREATE REACTION-SPECIFIC PARTICLE ARRAYS" << endl;
