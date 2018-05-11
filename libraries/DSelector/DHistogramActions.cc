@@ -28,7 +28,8 @@ void DHistogramAction_AnalyzeCutActions::Initialize(void)
 	for (auto const &action_iter : dAllAnalysisActions)
 	{
 		string locActionName = action_iter->Get_ActionName();
-		if (locActionName.find("Cut") != string::npos)
+		string::size_type n = locActionName.find("Cut");
+		if (n == 0)
 		{
 			locHistTitle = locActionName + locHistTitleBase;
 			dHistsWithoutCuts[locActionName] = new TH1I( (locHistName + string("_") + locActionName).c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
