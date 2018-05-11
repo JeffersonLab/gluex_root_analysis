@@ -28,6 +28,38 @@
 
 using namespace std;
 
+class DHistogramAction_AnalyzeCutActions : public DAnalysisAction
+{
+	public:
+		DHistogramAction_AnalyzeCutActions(vector<DAnalysisAction*> locAllAnalysisActions, const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_AnalyzeCutActions", locUseKinFitFlag, locActionUniqueString),
+			dAllAnalysisActions(locAllAnalysisActions), dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass) {}
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		bool Fill_Hists(TH1I* locHist, set<set<size_t>> locIndexCombos);
+		vector<DAnalysisAction*> dAllAnalysisActions;
+		Particle_t dInitialPID;
+		int dStepIndex;
+		deque<Particle_t> dToIncludePIDs;
+
+		unsigned int dNumMassBins;
+		double dMinMass, dMaxMass;
+
+		DAnalysisUtilities dAnalysisUtilities;
+		TH1I* dHist_InvariantMass_allcuts = nullptr;
+
+		// string comes from Get_ActionName() and TH1I* is the histogram without that cut
+		map<string, TH1I*> dHistsWithoutCuts;
+
+		// uniqueness tracking
+		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
+};
+
 class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 {
 	public:
