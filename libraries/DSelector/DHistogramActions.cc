@@ -1,5 +1,105 @@
 #include "DHistogramActions.h"
 
+void DHistogramAction_AnalyzeCutActions::Initialize(void)
+{
+	// CREATE & GO TO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	double locMassPerBin = 1000.0*(dMaxMass - dMinMass)/( (double)dNumMassBins );
+
+	string locHistTitleBase, locHistTitle;
+	string locHistName = "InvariantMass";
+	string locParticleNamesForHist = "";
+
+	if(dInitialPID != Unknown)
+		locParticleNamesForHist = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(dInitialPID, dUseKinFitFlag);
+	else
+	{
+		for(size_t loc_i = 0; loc_i < dToIncludePIDs.size(); ++loc_i)
+			locParticleNamesForHist += ParticleName_ROOT(dToIncludePIDs[loc_i]);
+	}
+
+	ostringstream locStream;
+	locStream << locMassPerBin;
+	locHistTitleBase = string(";") + locParticleNamesForHist + string(" Invariant Mass (GeV/c^{2}); # Combos / ") + locStream.str() + string(" MeV/c^{2}");
+	locHistTitle = string("After all cuts") + locHistTitleBase;
+	dHist_InvariantMass_allcuts = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
+
+	for (auto const &action_iter : dAllAnalysisActions)
+	{
+		string locActionName = action_iter->Get_ActionName();
+		string::size_type n = locActionName.find("Cut");
+		if (n == 0)
+		{
+			locHistTitle = locActionName + locHistTitleBase;
+			dHistsWithoutCuts[locActionName] = new TH1I( (locHistName + string("_") + locActionName).c_str(), locHistTitle.c_str(), dNumMassBins, dMinMass, dMaxMass);
+		}
+	}
+
+	// RETURN TO BASE DIRECTORY
+	ChangeTo_BaseDirectory();
+	
+}
+
+bool DHistogramAction_AnalyzeCutActions::Perform_Action(void)
+{
+	bool locComboCut = false;
+	//double locMass = 0.0;
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(dStepIndex);
+
+	//build all possible combinations of the included pids
+	set<set<size_t> > locIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dToIncludePIDs);
+	
+	for (auto const &cut_iter : dHistsWithoutCuts)
+	{
+		dPreviouslyHistogrammed.clear();
+		bool locFill = true;
+		for (auto const &action_iter : dAllAnalysisActions)
+		{
+			string locActionName = action_iter->Get_ActionName();
+			if (locActionName.find("Cut") == string::npos) continue;
+			if (cut_iter.first == locActionName)
+			{
+				if (!action_iter->Perform_Action())
+					locComboCut = true;
+				continue;
+			}
+			if (!action_iter->Perform_Action())
+			{
+				locFill = false;
+				locComboCut = true;
+			}
+		}
+	
+		if (locFill)
+			Fill_Hists(cut_iter.second, locIndexCombos);
+	}
+
+	if (!locComboCut)
+		Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos);
+
+	return true;
+}
+
+bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_t> > locIndexCombos)
+{
+	dPreviouslyHistogrammed.clear();
+	double locMass = 0.0;
+	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
+	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
+	{
+		map<unsigned int, set<Int_t> > locSourceObjects;
+		TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, dStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
+		locMass = locFinalStateP4.M();
+		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
+		{
+			dPreviouslyHistogrammed.insert(locSourceObjects);
+			locHist->Fill(locMass);
+		}
+	}
+	return true;
+}
+
 void DHistogramAction_ParticleComboKinematics::Initialize(void)
 {
 	string locDirName, locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
