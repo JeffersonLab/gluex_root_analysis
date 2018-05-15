@@ -62,6 +62,9 @@ class DParticleCombo
 		TVector3 Get_TargetCenter(void) const;
 
 		// KINFIT:
+		Float_t Get_ChiSq_KinFit(void) const;
+		UInt_t Get_NDF_KinFit(void) const;
+		Float_t Get_ConfidenceLevel_KinFit(void) const;
 		Float_t Get_ChiSq_KinFit(string branch_tag) const;
 		UInt_t Get_NDF_KinFit(string branch_tag) const;
 		Float_t Get_ConfidenceLevel_KinFit(string branch_tag ) const;
@@ -241,6 +244,16 @@ inline TVector3 DParticleCombo::Get_TargetCenter(void) const
 }
 
 // KINFIT:
+inline Float_t DParticleCombo::Get_ChiSq_KinFit(void) const
+{
+	TBranch* branch;
+	string b_name = "ChiSq_KinFit";
+	branch = dTreeInterface->Get_Branch( b_name );
+	if ( branch == NULL )
+		return -1.0;
+	return ((Float_t*)branch->GetAddress())[dComboIndex];
+}
+
 inline Float_t DParticleCombo::Get_ChiSq_KinFit(string branch_tag) const
 {
 	TBranch* branch;
@@ -253,6 +266,16 @@ inline Float_t DParticleCombo::Get_ChiSq_KinFit(string branch_tag) const
 	return ((Float_t*)branch->GetAddress())[dComboIndex];
 }
 
+inline UInt_t DParticleCombo::Get_NDF_KinFit(void) const
+{
+	TBranch* branch;
+	string b_name = "NDF_KinFit";
+	branch = dTreeInterface->Get_Branch( b_name );
+	if((branch == NULL) || (dKinFitConstraints != "NA"))
+		return dNumKinFitConstraints - dNumKinFitUnknowns;
+	return ((UInt_t*)branch->GetAddress())[dComboIndex];
+}
+
 inline UInt_t DParticleCombo::Get_NDF_KinFit(string branch_tag) const
 {
 	TBranch* branch;
@@ -263,6 +286,15 @@ inline UInt_t DParticleCombo::Get_NDF_KinFit(string branch_tag) const
 	if((branch == NULL) || (dKinFitConstraints != "NA"))
 		return dNumKinFitConstraints - dNumKinFitUnknowns;
 	return ((UInt_t*)branch->GetAddress())[dComboIndex];
+}
+
+inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit(void) const
+{
+	Float_t locChiSq = Get_ChiSq_KinFit();
+	if(locChiSq < 0.0)
+		return -1.0;
+	UInt_t locNDF = Get_NDF_KinFit();
+	return TMath::Prob(locChiSq, locNDF);
 }
 
 inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit( string branch_tag ) const
