@@ -85,18 +85,19 @@ inline void DMCThrown::ReInitialize(void)
 
 inline Int_t DMCThrown::Get_ParentIndex(void) const
 {
-	return ((Bool_t*)dBranch_ParentIndex->GetAddress())[dMeasuredArrayIndex];
+	return ((Int_t*)dBranch_ParentIndex->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Int_t DMCThrown::Get_MatchID(void) const
 {
-	return ((Bool_t*)dBranch_MatchID->GetAddress())[dMeasuredArrayIndex];
+	return ((Int_t*)dBranch_MatchID->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DMCThrown::Get_MatchFOM(void) const
 {
-	return ((Bool_t*)dBranch_MatchFOM->GetAddress())[dMeasuredArrayIndex];
+	return ((Float_t*)dBranch_MatchFOM->GetAddress())[dMeasuredArrayIndex];
 }
+
 
 #endif //DMCThrown_h
 
