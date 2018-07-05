@@ -1,6 +1,6 @@
 #! gnumake
 
-INCLUDE = -I. -I$(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/include -I$(HALLD_HOME)/$(BMS_OSNAME)/include
+INCLUDE = -I. -I$(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/include -I$(HALLD_RECON_HOME)/$(BMS_OSNAME)/include
 ROOTFLAGS = $(shell $(ROOTSYS)/bin/root-config --cflags)
 CXXFLAGS = -O -Wall -fPIC
 FLAGS = $(CXXFLAGS) $(ROOTFLAGS) $(INCLUDE)

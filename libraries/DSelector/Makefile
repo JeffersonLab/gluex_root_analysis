@@ -1,7 +1,7 @@
 #! gnumake
 # DOCUMENTATION: https://root.cern.ch/root/htmldoc/guides/users-guide/ROOTUsersGuideChapters/AddingaClass.pdf
 
-INCLUDE = -I. -I$(HALLD_HOME)/$(BMS_OSNAME)/include
+INCLUDE = -I. -I$(HALLD_RECON_HOME)/$(BMS_OSNAME)/include
 ROOTFLAGS = $(shell $(ROOTSYS)/bin/root-config --cflags)
 CXXFLAGS = -O -Wall -fPIC
 FLAGS = $(CXXFLAGS) $(ROOTFLAGS) $(INCLUDE)
