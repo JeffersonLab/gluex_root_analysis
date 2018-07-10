@@ -42,8 +42,9 @@ int main(int argc, char* argv[])
 
 	string locInputFileName = argv[1];
 	string locInputTreeName = argv[2];
-	for(int loc_i = 3; loc_i < argc; ++loc_i)
+	for(int loc_i = 3; loc_i < argc; ++loc_i) {
 		gDesiredPIDOrder.push_back((Particle_t)atoi(argv[loc_i]));
+	}
 
 	TFile* locInputFile = new TFile(locInputFileName.c_str(), "READ");
 	TTree* locInputTree = (TTree*)locInputFile->Get(locInputTreeName.c_str());
@@ -208,7 +209,11 @@ cout << endl;
 		}
 		if(Check_IfDecayProduct(locDecayProductMap, locParticleName))
 			continue;
-		locTreeParticleNames->AddLast(locNameObject);
+		//locTreeParticleNames->AddLast(locNameObject);
+		if (locParticleName == "Proton") // AmpTools wants protons in first place
+		        locTreeParticleNames->AddFirst(locNameObject);
+		else
+		        locTreeParticleNames->AddLast(locNameObject);
 	}
 
 	cout << endl;
@@ -653,6 +658,47 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 	for(Long64_t locEntry = 0; locEntry < locNumEntries; ++locEntry)
 	{
 		locInputTree->GetEntry(locEntry);
+
+		// UGLY HACK
+		if(locNumThrown!=7) continue;
+		
+		/**
+		//// HACKKKKKKK
+		// Pick out final state thrown particles
+		map<Particle_t, deque<UInt_t> > locFinalStateIndices;
+		for(UInt_t loc_i = 0; loc_i < locNumThrown; ++loc_i)
+		  {
+		    if(locParentIndexArray[loc_i] != -1)
+		      continue;
+		    Particle_t locPID = PDGtoPType(locPIDArray[loc_i]);
+		    locFinalStateIndices[locPID].push_back(loc_i);
+		  }
+		
+		bool GIVE_UP = false;
+		//sort by desired pid order
+		cout << endl;
+		cout << "Names & array indices of the particles whose four-momenta are included in the tree (in order):" << endl;
+		vector<UInt_t> locSortedFinalStateIndices;
+		map<Particle_t, size_t> locCurrentIndices;
+		for(size_t loc_i = 0; loc_i < gDesiredPIDOrder.size(); ++loc_i)
+		  {
+		    Particle_t locPID = gDesiredPIDOrder[loc_i];
+		    if(locCurrentIndices.find(locPID) == locCurrentIndices.end())
+		      locCurrentIndices[locPID] = 0;
+		    size_t locCurrentIndex = locCurrentIndices[locPID];   // ERROR CHECKK!!!
+		    //if(locCurrentIndex > 10000) locCurrentIndex = 0;   // FUGLY HACK
+		    
+		    UInt_t locArrayIndex = locFinalStateIndices[locPID][locCurrentIndex]; // This is -1 sometimes??? =(
+		    locSortedFinalStateIndices.push_back(locArrayIndex);
+		    //if(locArrayIndex > 10000) locArrayIndex = 0;   // FUGLY HACK
+		    if(locArrayIndex > 10000) {GIVE_UP = true; continue;}  // give up for now, hope this doesn't break everything
+		    cout << ParticleType(locPID) << ", " << locArrayIndex << endl;
+		    ++locCurrentIndices[locPID];
+		  }
+		cout << endl;
+		if(GIVE_UP) continue;
+		// END UGLY HACK CODE
+		**/
 
 		//weight
 		*locBranchPointer_Weight = locMCWeight;
