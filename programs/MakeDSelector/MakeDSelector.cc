@@ -105,6 +105,10 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		bool dIsPolarizedFlag; //else is AMO" << endl;
 	locHeaderStream << "		bool dIsPARAFlag; //else is PERP or AMO" << endl;
 	locHeaderStream << endl;
+	locHeaderStream << "		// ANALYZE CUT ACTIONS" << endl;
+	locHeaderStream << "		// // Automatically makes mass histograms where one cut is missing" << endl;
+	locHeaderStream << "		DHistogramAction_AnalyzeCutActions* dAnalyzeCutActions;" << endl;
+	locHeaderStream << endl;
 	locHeaderStream << "		//CREATE REACTION-SPECIFIC PARTICLE ARRAYS" << endl;
 	locHeaderStream << endl;
 
@@ -248,6 +252,12 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	/*********************************** EXAMPLE USER INITIALIZATION: ANALYSIS ACTIONS **********************************/" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	// EXAMPLE: Create deque for histogramming particle masses:" << endl;
+	locSourceStream << "	// // For histogramming the phi mass in phi -> K+ K-" << endl;
+	locSourceStream << "	// // Be sure to change this and dAnalyzeCutActions to match reaction" << endl;
+	locSourceStream << "	std::deque<Particle_t> MyPhi;" << endl;
+	locSourceStream << "	MyPhi.push_back(KPlus); MyPhi.push_back(KMinus);" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	//ANALYSIS ACTIONS: //Executed in order if added to dAnalysisActions" << endl;
 	locSourceStream << "	//false/true below: use measured/kinfit data" << endl;
 	locSourceStream << endl;
@@ -273,9 +283,14 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//KINEMATICS" << endl;
 	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleComboKinematics(dComboWrapper, false));" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	// ANALYZE CUT ACTIONS" << endl;
+	locSourceStream << "	// // Change MyPhi to match reaction" << endl;
+	locSourceStream << "	dAnalyzeCutActions = new DHistogramAction_AnalyzeCutActions( dAnalysisActions, dComboWrapper, false, 0, MyPhi, 1000, 0.9, 2.4, \"CutActionEffect\" );" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	//INITIALIZE ACTIONS" << endl;
 	locSourceStream << "	//If you create any actions that you want to run manually (i.e. don't add to dAnalysisActions), be sure to initialize them here as well" << endl;
 	locSourceStream << "	Initialize_Actions();" << endl;
+	locSourceStream << "	dAnalyzeCutActions->Initialize(); // manual action, must call Initialize()" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/******************************** EXAMPLE USER INITIALIZATION: STAND-ALONE HISTOGRAMS *******************************/" << endl;
 	locSourceStream << endl;
@@ -356,6 +371,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//ANALYSIS ACTIONS: Reset uniqueness tracking for each action" << endl;
 	locSourceStream << "	//For any actions that you are executing manually, be sure to call Reset_NewEvent() on them here" << endl;
 	locSourceStream << "	Reset_Actions_NewEvent();" << endl;
+	locSourceStream << "	dAnalyzeCutActions->Reset_NewEvent(); // manual action, must call Reset_NewEvent()" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//PREVENT-DOUBLE COUNTING WHEN HISTOGRAMMING" << endl;
 	locSourceStream << "		//Sometimes, some content is the exact same between one combo and the next" << endl;
@@ -551,6 +567,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		/******************************************** EXECUTE ANALYSIS ACTIONS *******************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		// Loop through the analysis actions, executing them in order for the active particle combo" << endl;
+	locSourceStream <<"		dAnalyzeCutActions->Perform_Action(); // Must be executed before Execute_Actions()" << endl;
 	locSourceStream << "		if(!Execute_Actions()) //if the active combo fails a cut, IsComboCutFlag automatically set" << endl;
 	locSourceStream << "			continue;" << endl;
 	locSourceStream << endl;

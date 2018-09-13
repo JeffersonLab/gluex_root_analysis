@@ -28,14 +28,48 @@
 
 using namespace std;
 
+class DHistogramAction_AnalyzeCutActions : public DAnalysisAction
+{
+	public:
+		DHistogramAction_AnalyzeCutActions(vector<DAnalysisAction*> locAllAnalysisActions, const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_AnalyzeCutActions", locUseKinFitFlag, locActionUniqueString),
+			dAllAnalysisActions(locAllAnalysisActions), dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
+			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass) {}
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		bool Fill_Hists(TH1I* locHist, set<set<size_t>> locIndexCombos);
+		vector<DAnalysisAction*> dAllAnalysisActions;
+		Particle_t dInitialPID;
+		int dStepIndex;
+		deque<Particle_t> dToIncludePIDs;
+
+		unsigned int dNumMassBins;
+		double dMinMass, dMaxMass;
+
+		DAnalysisUtilities dAnalysisUtilities;
+		TH1I* dHist_InvariantMass_allcuts = nullptr;
+
+		// string comes from Get_ActionName() and TH1I* is the histogram without that cut
+		map<string, TH1I*> dHistsWithoutCuts;
+
+		// uniqueness tracking
+		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
+};
+
 class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 {
 	public:
 		DHistogramAction_ParticleComboKinematics(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_ParticleComboKinematics", locUseKinFitFlag, locActionUniqueString),
-			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumVertexZBins(600), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
+
+			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumVertexZBins(750), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumDeltaTRFBins(500), dNumPathLengthBins(750), dNumLifetimeBins(500), dNumPathLengthSignificanceBins(500), 
-			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
+			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(-50.0), dMaxVertexZ(200.0),
+
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0), dMinDeltaTRF(-10.0), dMaxDeltaTRF(10.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0), dMaxPathLengthSignificance(10.0) {}
 
@@ -98,7 +132,7 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
 			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100),
-			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
+			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(-50.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
 			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0),
@@ -115,7 +149,7 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
 			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100),
-			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(0.0), dMaxVertexZ(200.0),
+			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(-50.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
 			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0),
