@@ -369,6 +369,9 @@ void DSelector::Create_FlatTree(void)
 	TTree* locFlatTree = new TTree(locTreeName.c_str(), locTreeName.c_str());
 	dFlatTreeInterface = new DTreeInterface(locFlatTree, false); //false: is output
 
+	if(dOption.Contains("flat_empty"))
+                return;
+
 	//set user info
 	TList* locInputUserInfo = dTreeInterface->Get_UserInfo();
 	TList* locOutputUserInfo = locFlatTree->GetUserInfo();
@@ -599,6 +602,11 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 
 void DSelector::Fill_FlatTree(void)
 {
+	if(dOption.Contains("flat_empty")) {
+                dFlatTreeInterface->Fill_OutputTree("");
+                return;
+        }
+
 	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
 	bool locIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
 
