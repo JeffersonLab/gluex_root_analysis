@@ -65,6 +65,9 @@ class DParticleCombo
 		Float_t Get_ChiSq_KinFit(string branch_tag) const;
 		UInt_t Get_NDF_KinFit(string branch_tag) const;
 		Float_t Get_ConfidenceLevel_KinFit(string branch_tag ) const;
+		Float_t Get_ChiSq_KinFit() const;
+                UInt_t Get_NDF_KinFit() const;
+                Float_t Get_ConfidenceLevel_KinFit() const;
 
 		// UNUSED ENERGY:
 		Float_t Get_Energy_UnusedShowers(void) const;
@@ -272,6 +275,18 @@ inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit( string branch_tag ) c
 		return -1.0;
 	UInt_t locNDF = Get_NDF_KinFit( branch_tag );
 	return TMath::Prob(locChiSq, locNDF);
+}
+inline Float_t DParticleCombo::Get_ChiSq_KinFit() const
+{
+	return Get_ChiSq_KinFit("");
+}
+inline UInt_t DParticleCombo::Get_NDF_KinFit() const
+{
+        return Get_NDF_KinFit("");
+}
+inline Float_t DParticleCombo::Get_ConfidenceLevel_KinFit() const
+{
+        return Get_ConfidenceLevel_KinFit("");
 }
 
 // UNUSED ENERGY:
