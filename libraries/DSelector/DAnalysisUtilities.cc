@@ -508,6 +508,36 @@ double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_3BodyDecay(double locBeamEn
 	return 180.0*locDeltaPhi/TMath::Pi();
 }
 
+std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector locBeamP4, Particle_t locTargetPID, TLorentzVector locXP4, TLorentzVector locYP4, TLorentzVector locZP4)
+{
+	TLorentzVector locInitialStateP4 = locBeamP4 + TLorentzVector(TVector3(), ParticleMass(locTargetPID));
+	TVector3 locBoostVector_ProdCMS = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
+	TLorentzVector locXP4_ProdCMS(locXP4);
+	locXP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	TLorentzVector locYP4_ProdCMS(locYP4);
+	locYP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	TLorentzVector locZP4_ProdCMS(locZP4);
+	locZP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	
+	
+	double loclong1 = locXP4_ProdCMS.Pz();
+	double loclong2 = locYP4_ProdCMS.Pz();
+	double loclong3 = locZP4_ProdCMS.Pz();
+	double locphi = 0;
+	
+	double locq = TMath::Sqrt(loclong1*loclong1+loclong2*loclong2+loclong3*loclong3);
+	double locomega = TMath::ASin(TMath::Sqrt(3./2.)*loclong1/locq);
+	
+	
+	if(loclong2>0&&loclong3<0) locphi=TMath::Pi()-locomega;
+	else if(loclong2<0&&loclong3<0&&loclong3<loclong2)  locphi=TMath::Pi()-locomega;
+	else if(loclong2>0&&loclong3>0&&loclong3<loclong2)  locphi=TMath::Pi()-locomega;
+	else if(loclong1<0) locphi=2*TMath::Pi()+locomega;
+	else locphi=locomega;
+	
+	return std::make_tuple(locq, locphi);
+}
+
 bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const
 {
 	//RCDB environment must be setup!!
