@@ -523,19 +523,11 @@ std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector l
 	double loclong1 = locXP4_ProdCMS.Pz();
 	double loclong2 = locYP4_ProdCMS.Pz();
 	double loclong3 = locZP4_ProdCMS.Pz();
-	double locphi = 0;
 	
 	double locq = TMath::Sqrt(loclong1*loclong1+loclong2*loclong2+loclong3*loclong3);
-	double locomega = TMath::ASin(TMath::Sqrt(3./2.)*loclong1/locq);
+	double locomega = TMath::ATan2(-1.*TMath::Sqrt(3.)*loclong1,2.*loclong2+loclong1);
 	
-	
-	if(loclong2>0&&loclong3<0) locphi=TMath::Pi()-locomega;
-	else if(loclong2<0&&loclong3<0&&loclong3<loclong2)  locphi=TMath::Pi()-locomega;
-	else if(loclong2>0&&loclong3>0&&loclong3<loclong2)  locphi=TMath::Pi()-locomega;
-	else if(loclong1<0) locphi=2*TMath::Pi()+locomega;
-	else locphi=locomega;
-	
-	return std::make_tuple(locq, locphi);
+	return std::make_tuple(locq, locomega);
 }
 
 bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const
