@@ -545,6 +545,35 @@ class DHistogramAction_Dalitz : public DAnalysisAction
 		set<set<map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed;
 };
 
+class DHistogramAction_vanHove : public DAnalysisAction
+{
+	public:
+		DHistogramAction_vanHove(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locXPIDs, Particle_t locYPIDs, Particle_t locZPIDs, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_vanHove", locUseKinFitFlag, locActionUniqueString),
+			dXPIDs(deque<Particle_t>(1,locXPIDs)), dYPIDs(deque<Particle_t>(1,locYPIDs)), dZPIDs(deque<Particle_t>(1,locZPIDs)) {}
+			
+		DHistogramAction_vanHove(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, deque<Particle_t> locXPIDs, deque<Particle_t> locYPIDs, deque<Particle_t> locZPIDs, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Hist_vanHove", locUseKinFitFlag, locActionUniqueString),
+			dXPIDs(locXPIDs), dYPIDs(locYPIDs), dZPIDs(locZPIDs) {}
+
+		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+		void Initialize(void);
+		bool Perform_Action(void);
+
+	private:
+		deque<Particle_t> dXPIDs, dYPIDs, dZPIDs;
+		unsigned int dNumXBins, dNumYBins;
+		double dMinX, dMaxX, dMinY, dMaxY;
+
+		DAnalysisUtilities dAnalysisUtilities;
+		TH2I* dHist_vanHove;
+		TH2I* dHist_invMassXY_vs_angle;
+		TH2I* dHist_invMassYZ_vs_angle;
+		TH2I* dHist_invMassZX_vs_angle;
+
+		set<set<map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed;
+};
+
 class DHistogramAction_KinFitResults : public DAnalysisAction
 {
 	public:

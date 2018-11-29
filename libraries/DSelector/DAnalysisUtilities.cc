@@ -508,6 +508,28 @@ double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_3BodyDecay(double locBeamEn
 	return 180.0*locDeltaPhi/TMath::Pi();
 }
 
+std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector locXP4, TLorentzVector locYP4, TLorentzVector locZP4)
+{
+	TLorentzVector locInitialStateP4 = locXP4 + locYP4 + locZP4;
+	TVector3 locBoostVector_ProdCMS = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
+	TLorentzVector locXP4_ProdCMS(locXP4);
+	locXP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	TLorentzVector locYP4_ProdCMS(locYP4);
+	locYP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	TLorentzVector locZP4_ProdCMS(locZP4);
+	locZP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	
+	
+	double loclong1 = locXP4_ProdCMS.Pz();
+	double loclong2 = locYP4_ProdCMS.Pz();
+	double loclong3 = locZP4_ProdCMS.Pz();
+	
+	double locq = TMath::Sqrt(loclong1*loclong1+loclong2*loclong2+loclong3*loclong3);
+	double locomega = TMath::ATan2(-1.*TMath::Sqrt(3.)*loclong1,2.*loclong2+loclong1)+TMath::Pi(); // add pi to map [-pi,pi] on [0,2pi]
+	
+	return std::make_tuple(locq, locomega);
+}
+
 bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const
 {
 	//RCDB environment must be setup!!

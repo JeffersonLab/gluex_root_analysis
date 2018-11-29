@@ -1371,6 +1371,122 @@ bool DHistogramAction_Dalitz::Perform_Action(void)
 	return true;
 }
 
+void DHistogramAction_vanHove::Initialize(void)
+{
+	string locHistName, locHistTitle;
+
+	string locParticleNamesForHistX = "";
+	string locParticleNamesForHistNameX = "";
+	for(size_t loc_i = 0; loc_i < dXPIDs.size(); ++loc_i){
+		locParticleNamesForHistX += ParticleName_ROOT(dXPIDs[loc_i]);
+		locParticleNamesForHistNameX += Get_ShortName(dXPIDs[loc_i]);
+	}
+
+	string locParticleNamesForHistY = "";
+	string locParticleNamesForHistNameY = "";
+	for(size_t loc_i = 0; loc_i < dYPIDs.size(); ++loc_i){
+		locParticleNamesForHistY += ParticleName_ROOT(dYPIDs[loc_i]);
+		locParticleNamesForHistNameY += Get_ShortName(dYPIDs[loc_i]);
+	}
+	
+	string locParticleNamesForHistZ = "";
+	string locParticleNamesForHistNameZ = "";
+	for(size_t loc_i = 0; loc_i < dZPIDs.size(); ++loc_i){
+		locParticleNamesForHistZ += ParticleName_ROOT(dZPIDs[loc_i]);
+		locParticleNamesForHistNameZ += Get_ShortName(dZPIDs[loc_i]);
+	}
+
+	string locMassString = " Invariant Mass (GeV/c^{2});";
+
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	dHist_vanHove = new TH2I("vanHove", " ; X; Y", 200, -5, 5, 200, -5, 5);
+	
+	locHistName = string("InvariantMass_") + locParticleNamesForHistNameX + locParticleNamesForHistNameY + string("_vs_vanHoveAngle");
+	locHistTitle = string(";") + locParticleNamesForHistX + locParticleNamesForHistY + locMassString + string("van Hove angle");
+	dHist_invMassXY_vs_angle = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 400, 0, 4.0, 320, 0, 6.4);
+	
+	locHistName = string("InvariantMass_") + locParticleNamesForHistNameY + locParticleNamesForHistNameZ + string("_vs_vanHoveAngle");
+	locHistTitle = string(";") + locParticleNamesForHistY + locParticleNamesForHistZ + locMassString + string("van Hove angle");
+	dHist_invMassYZ_vs_angle = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 400, 0, 4.0, 320, 0, 6.4);
+	
+	locHistName = string("InvariantMass_") + locParticleNamesForHistNameZ + locParticleNamesForHistNameX + string("_vs_vanHoveAngle");
+	locHistTitle = string(";") + locParticleNamesForHistZ + locParticleNamesForHistX + locMassString + string("van Hove angle");
+	dHist_invMassZX_vs_angle = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 400, 0, 4.0, 320, 0, 6.4);
+	
+	//Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+bool DHistogramAction_vanHove::Perform_Action(void)
+{
+	double locVanHoveQ, locVanHovePhi;
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(0);
+	DKinematicData* locBeamParticle = locParticleComboStepWrapper->Get_InitialParticle();
+	Int_t locBeamID = locBeamParticle->Get_ID();
+	map<unsigned int, set<Int_t> > locBeamObject;
+	locBeamObject[Unknown].insert(locBeamID);
+	
+	TLorentzVector locBeam_P4;
+	if(dUseKinFitFlag){
+		locBeam_P4 = locBeamParticle->Get_P4();
+	}
+	else{
+		locBeam_P4 = locBeamParticle->Get_P4_Measured();
+	}
+	
+	//build all possible combinations of the included pids
+	set<set<size_t> > locXIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dXPIDs);
+	set<set<size_t> > locYIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dYPIDs);
+	set<set<size_t> > locZIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dZPIDs);
+	
+	//(triple) loop over them
+	set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
+	for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
+	{
+		map<unsigned int, set<Int_t> > locXSourceObjects;
+		TLorentzVector locXP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locXComboIterator, locXSourceObjects, dUseKinFitFlag);
+		
+		set<set<size_t> >::iterator locYComboIterator = locYIndexCombos.begin();
+		for(; locYComboIterator != locYIndexCombos.end(); ++locYComboIterator)
+		{
+			map<unsigned int, set<Int_t> > locYSourceObjects;
+			TLorentzVector locYP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locYComboIterator, locYSourceObjects, dUseKinFitFlag);
+			
+			set<set<size_t> >::iterator locZComboIterator = locZIndexCombos.begin();
+			for(; locZComboIterator != locZIndexCombos.end(); ++locZComboIterator)
+			{
+				map<unsigned int, set<Int_t> > locZSourceObjects;
+				TLorentzVector locZP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locZComboIterator, locZSourceObjects, dUseKinFitFlag);
+				
+				if(locXSourceObjects == locYSourceObjects || locXSourceObjects == locZSourceObjects || locYSourceObjects == locZSourceObjects)
+					continue; //the same!
+				
+				set<map<unsigned int, set<Int_t> > > locAllSourceObjects;
+				locAllSourceObjects.insert(locXSourceObjects);
+				locAllSourceObjects.insert(locYSourceObjects);
+				locAllSourceObjects.insert(locZSourceObjects);
+// 				locAllSourceObjects.insert(locBeamObject); \\take out of uniqueness tracking to be consistent with other HistogramActions
+				if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
+					continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
+				dPreviouslyHistogrammed.insert(locAllSourceObjects);
+				
+				std::tie (locVanHoveQ,locVanHovePhi) = dAnalysisUtilities.Calc_vanHoveCoord(locXP4, locYP4, locZP4);
+				double vHX = locVanHoveQ*TMath::Cos(locVanHovePhi);
+				double vHY = locVanHoveQ*TMath::Sin(locVanHovePhi);
+				
+				dHist_vanHove->Fill(vHX,vHY);
+				dHist_invMassXY_vs_angle->Fill((locXP4+locYP4).M(),locVanHovePhi);
+				dHist_invMassYZ_vs_angle->Fill((locYP4+locZP4).M(),locVanHovePhi);
+				dHist_invMassZX_vs_angle->Fill((locZP4+locXP4).M(),locVanHovePhi);
+			}
+		}
+	}
+	
+	return true;
+}
+
 void DHistogramAction_KinFitResults::Initialize(void)
 {
 	// CREATE & GOTO MAIN FOLDER
