@@ -508,9 +508,9 @@ double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_3BodyDecay(double locBeamEn
 	return 180.0*locDeltaPhi/TMath::Pi();
 }
 
-std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector locBeamP4, Particle_t locTargetPID, TLorentzVector locXP4, TLorentzVector locYP4, TLorentzVector locZP4)
+std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector locXP4, TLorentzVector locYP4, TLorentzVector locZP4)
 {
-	TLorentzVector locInitialStateP4 = locBeamP4 + TLorentzVector(TVector3(), ParticleMass(locTargetPID));
+	TLorentzVector locInitialStateP4 = locXP4 + locYP4 + locZP4;
 	TVector3 locBoostVector_ProdCMS = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
 	TLorentzVector locXP4_ProdCMS(locXP4);
 	locXP4_ProdCMS.Boost(locBoostVector_ProdCMS);

@@ -1441,7 +1441,7 @@ bool DHistogramAction_vanHove::Perform_Action(void)
 	set<set<size_t> > locYIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dYPIDs);
 	set<set<size_t> > locZIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dZPIDs);
 	
-	//(double) loop over them
+	//(triple) loop over them
 	set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
 	for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
 	{
@@ -1467,12 +1467,12 @@ bool DHistogramAction_vanHove::Perform_Action(void)
 				locAllSourceObjects.insert(locXSourceObjects);
 				locAllSourceObjects.insert(locYSourceObjects);
 				locAllSourceObjects.insert(locZSourceObjects);
-				locAllSourceObjects.insert(locBeamObject);
+// 				locAllSourceObjects.insert(locBeamObject); \\take out of uniqueness tracking to be consistent with other HistogramActions
 				if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
 					continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
 				dPreviouslyHistogrammed.insert(locAllSourceObjects);
 				
-				std::tie (locVanHoveQ,locVanHovePhi) = dAnalysisUtilities.Calc_vanHoveCoord(locBeam_P4,Proton, locXP4, locYP4, locZP4);
+				std::tie (locVanHoveQ,locVanHovePhi) = dAnalysisUtilities.Calc_vanHoveCoord(locXP4, locYP4, locZP4);
 				double vHX = locVanHoveQ*TMath::Cos(locVanHovePhi);
 				double vHY = locVanHoveQ*TMath::Sin(locVanHovePhi);
 				
