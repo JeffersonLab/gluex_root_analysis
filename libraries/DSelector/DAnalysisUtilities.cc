@@ -525,7 +525,7 @@ std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector l
 	double loclong3 = locZP4_ProdCMS.Pz();
 	
 	double locq = TMath::Sqrt(loclong1*loclong1+loclong2*loclong2+loclong3*loclong3);
-	double locomega = TMath::ATan2(-1.*TMath::Sqrt(3.)*loclong1,2.*loclong2+loclong1);
+	double locomega = TMath::ATan2(-1.*TMath::Sqrt(3.)*loclong1,2.*loclong2+loclong1)+TMath::Pi(); // add pi to map [-pi,pi] on [0,2pi]
 	
 	return std::make_tuple(locq, locomega);
 }
