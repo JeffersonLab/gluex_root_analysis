@@ -131,12 +131,14 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			dChargedHypoWrapper(NULL), dTargetCenterZ(0.0), 
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
-			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100),
+			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100), dDIRCNumPhotonsBins(100), dDIRCThetaCBins(100), dDIRCLikelihoodBins(100),
 			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(-50.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
 			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0),
-			dMinPreshowerFraction(0.0), dMaxPreshowerFraction(1.0)
+		        dMinPreshowerFraction(0.0), dMaxPreshowerFraction(1.0),
+			dDIRCMinNumPhotons(0), dDIRCMaxNumPhotons(100),
+                        dDIRCMinThetaC(0), dDIRCMaxThetaC(60), dDIRCMinLikelihood(0), dDIRCMaxLikelihood(1000)
 			{
 				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
 				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
@@ -148,12 +150,14 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			dChargedHypoWrapper(locChargedHypoWrapper), dTargetCenterZ(0.0), 
 			dNumPBins(500), dNumThetaBins(560), dNumPhiBins(360), dNumTBins(200), dNumVertexXYBins(200), dNumBetaBins(400), dNumDeltaBetaBins(400),
 			dNum2DPBins(250), dNum2DThetaBins(140), dNum2DPhiBins(180), dNumPathLengthBins(750), dNumLifetimeBins(500),
-			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100),
+			dNumDeltaTBins(500), dNum2DdEdxBins(250), dNumEoverPBins(200), dNumPreshowerFractionBins(100), dDIRCNumPhotonsBins(100), dDIRCThetaCBins(100), dDIRCLikelihoodBins(100),
 			dMinT(-5.0), dMaxT(5.0), dMinP(0.0), dMaxP(10.0), dMinTheta(0.0), dMaxTheta(140.0), dMinPhi(-180.0), dMaxPhi(180.0), dMinVertexZ(-50.0), dMaxVertexZ(200.0),
 			dMinVertexXY(-5.0), dMaxVertexXY(5.0), dMinBeta(-0.2), dMaxBeta(1.2), dMinDeltaBeta(-1.0), dMaxDeltaBeta(1.0),
 			dMaxPathLength(15), dMaxLifetime(5.0), dMaxBeamE(12.0),
 			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0),
-			dMinPreshowerFraction(0.0), dMaxPreshowerFraction(1.0)
+			dMinPreshowerFraction(0.0), dMaxPreshowerFraction(1.0),
+                        dDIRCMinNumPhotons(0), dDIRCMaxNumPhotons(100),
+                        dDIRCMinThetaC(0), dDIRCMaxThetaC(60), dDIRCMinLikelihood(0), dDIRCMaxLikelihood(1000)
 			{
 				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
 				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
@@ -175,11 +179,14 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 	public:
 		unsigned int dNumPBins, dNumThetaBins, dNumPhiBins, dNumTBins, dNumVertexXYBins, dNumBetaBins, dNumDeltaBetaBins;
 		unsigned int dNum2DPBins, dNum2DThetaBins, dNum2DPhiBins, dNumDeltaTRFBins, dNumPathLengthBins, dNumLifetimeBins;
-		unsigned int dNumDeltaTBins, dNum2DdEdxBins, dNumEoverPBins, dNumPreshowerFractionBins;
+		unsigned int dNumDeltaTBins, dNum2DdEdxBins, dNumEoverPBins, dNumPreshowerFractionBins, dDIRCNumPhotonsBins, dDIRCThetaCBins, dDIRCLikelihoodBins;
 		double dMinT, dMaxT, dMinP, dMaxP, dMinTheta, dMaxTheta, dMinPhi, dMaxPhi, dMinVertexZ, dMaxVertexZ, dMinVertexXY, dMaxVertexXY;
 		double dMinBeta, dMaxBeta, dMinDeltaBeta, dMaxDeltaBeta, dMinDeltaTRF, dMaxDeltaTRF, dMaxPathLength, dMaxLifetime, dMaxBeamE;
 		double dMinDeltaT, dMaxDeltaT, dMindEdx, dMaxdEdx, dMinEoverP, dMaxEoverP;
 		double dMinPreshowerFraction, dMaxPreshowerFraction;
+		unsigned int dDIRCMinNumPhotons, dDIRCMaxNumPhotons;
+                double dDIRCMinThetaC, dDIRCMaxThetaC;
+                double dDIRCMinLikelihood, dDIRCMaxLikelihood;
 
 		set<Particle_t> dBackgroundPIDs;
 
@@ -214,6 +221,11 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerZVsParticleZ;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerTVsParticleT;
+
+		map<size_t, map<Particle_t, TH1I*> > dHistMap_NumPhotons_DIRC;
+                map<size_t, map<Particle_t, TH2I*> > dHistMap_ThetaCVsP_DIRC;
+                map<size_t, map<Particle_t, TH2I*> > dHistMap_Ldiff_kpiVsP_DIRC;
+                map<size_t, map<Particle_t, TH2I*> > dHistMap_Ldiff_pkVsP_DIRC;
 
 		//background histograms
 		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_BCAL;	

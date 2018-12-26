@@ -63,9 +63,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_Energy_BCALLayer3(void) const;
 		Float_t Get_Energy_BCALLayer4(void) const;
 		Float_t Get_SigLong_BCAL(void) const;
-        Float_t Get_SigTheta_BCAL(void) const;
-        Float_t Get_SigTrans_BCAL(void) const;
-        Float_t Get_RMSTime_BCAL(void) const;
+		Float_t Get_SigTheta_BCAL(void) const;
+		Float_t Get_SigTrans_BCAL(void) const;
+		Float_t Get_RMSTime_BCAL(void) const;
         
 		Float_t Get_Energy_FCAL(void) const;
 		Float_t Get_E1E9_FCAL(void) const;
@@ -77,6 +77,14 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_TrackBCAL_DeltaPhi(void) const; //999.0 if not matched //units are radians
 		Float_t Get_TrackBCAL_DeltaZ(void) const; //999.0 if not matched
 		Float_t Get_TrackFCAL_DOCA(void) const; //999.0 if not matched
+
+		//DIRC INFORMATION
+                Int_t Get_Track_NumPhotons_DIRC(void) const;
+                Float_t Get_Track_ThetaC_DIRC(void) const;
+                Float_t Get_Track_Lele_DIRC(void) const;
+                Float_t Get_Track_Lpi_DIRC(void) const;
+                Float_t Get_Track_Lk_DIRC(void) const;
+                Float_t Get_Track_Lp_DIRC(void) const;
 
 	private:
 		DChargedTrackHypothesis(void); //Cannot call default constructor!
@@ -122,9 +130,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_Energy_BCALLayer3;
 		TBranch* dBranch_Energy_BCALLayer4;
 		TBranch* dBranch_SigLong_BCAL;
-        TBranch* dBranch_SigTheta_BCAL;
-        TBranch* dBranch_SigTrans_BCAL;
-        TBranch* dBranch_RMSTime_BCAL;
+		TBranch* dBranch_SigTheta_BCAL;
+		TBranch* dBranch_SigTrans_BCAL;
+		TBranch* dBranch_RMSTime_BCAL;
         
 		TBranch* dBranch_Energy_FCAL;
 		TBranch* dBranch_E1E9_FCAL;
@@ -136,6 +144,14 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_TrackBCAL_DeltaPhi;
 		TBranch* dBranch_TrackBCAL_DeltaZ;
 		TBranch* dBranch_TrackFCAL_DOCA;
+
+		// DIRC INFORMATION
+                TBranch* dBranch_Track_NumPhotons_DIRC;
+                TBranch* dBranch_Track_ThetaC_DIRC;
+                TBranch* dBranch_Track_Lele_DIRC;
+                TBranch* dBranch_Track_Lpi_DIRC;
+                TBranch* dBranch_Track_Lk_DIRC;
+                TBranch* dBranch_Track_Lp_DIRC;
 };
 
 /******************************************************************** CONSTRUCTOR *********************************************************************/
@@ -237,17 +253,17 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	dBranch_Energy_BCALLayer4 = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "ChargedHypo__SigLong_BCAL";
-    dBranch_SigLong_BCAL = dTreeInterface->Get_Branch(locBranchName);
-
-    locBranchName = "ChargedHypo__SigTheta_BCAL";
-    dBranch_SigTheta_BCAL = dTreeInterface->Get_Branch(locBranchName);
-
-    locBranchName = "ChargedHypo__SigTrans_BCAL";
-    dBranch_SigTrans_BCAL = dTreeInterface->Get_Branch(locBranchName);
-
-    locBranchName = "ChargedHypo__RMSTime_BCAL";
-    dBranch_RMSTime_BCAL = dTreeInterface->Get_Branch(locBranchName);
-
+	dBranch_SigLong_BCAL = dTreeInterface->Get_Branch(locBranchName);
+	
+	locBranchName = "ChargedHypo__SigTheta_BCAL";
+	dBranch_SigTheta_BCAL = dTreeInterface->Get_Branch(locBranchName);
+	
+	locBranchName = "ChargedHypo__SigTrans_BCAL";
+	dBranch_SigTrans_BCAL = dTreeInterface->Get_Branch(locBranchName);
+	
+	locBranchName = "ChargedHypo__RMSTime_BCAL";
+	dBranch_RMSTime_BCAL = dTreeInterface->Get_Branch(locBranchName);
+	
 	locBranchName = "ChargedHypo__Energy_FCAL";
 	dBranch_Energy_FCAL = dTreeInterface->Get_Branch(locBranchName);
 
@@ -272,6 +288,25 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "ChargedHypo__TrackFCAL_DOCA";
 	dBranch_TrackFCAL_DOCA = dTreeInterface->Get_Branch(locBranchName);
+
+	//DIRC INFORMATION:
+        locBranchName = "ChargedHypo__NumPhotons_DIRC";
+        dBranch_Track_NumPhotons_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__ThetaC_DIRC";
+        dBranch_Track_ThetaC_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__Lele_DIRC";
+        dBranch_Track_Lele_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__Lpi_DIRC";
+        dBranch_Track_Lpi_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__Lk_DIRC";
+        dBranch_Track_Lk_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__Lp_DIRC";
+        dBranch_Track_Lp_DIRC = dTreeInterface->Get_Branch(locBranchName);
 }
 
 inline void DChargedTrackHypothesis::ReInitialize(void)
@@ -503,6 +538,38 @@ inline Float_t DChargedTrackHypothesis::Get_TrackFCAL_DOCA(void) const
 {
 	return ((Float_t*)dBranch_TrackFCAL_DOCA->GetAddress())[dMeasuredArrayIndex];
 }
+
+//DIRC INFORMATION
+inline Int_t DChargedTrackHypothesis::Get_Track_NumPhotons_DIRC(void) const
+{
+        return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_ThetaC_DIRC(void) const
+{
+        return ((Float_t*)dBranch_Track_ThetaC_DIRC->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_Lele_DIRC(void) const
+{
+        return ((Float_t*)dBranch_Track_Lele_DIRC->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_Lpi_DIRC(void) const
+{
+        return ((Float_t*)dBranch_Track_Lpi_DIRC->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_Lk_DIRC(void) const
+{
+        return ((Float_t*)dBranch_Track_Lk_DIRC->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_Lp_DIRC(void) const
+{
+        return ((Float_t*)dBranch_Track_Lp_DIRC->GetAddress())[dMeasuredArrayIndex];
+}
+
 
 #endif //DChargedTrackHypothesis_h
 

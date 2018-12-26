@@ -582,7 +582,25 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
 		locHistName = "EoverPVs_PreshowerFraction_BCAL";
 		locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
-		dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
+		dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);
+
+		// DIRC PID INFORMATION
+                locHistName = "NumPhotons_DIRC";
+                locHistTitle = locParticleROOTName + string("; DIRC NumPhotons");
+                dHistMap_NumPhotons_DIRC[locStepIndex][locPID] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dDIRCNumPhotonsBins, dDIRCMinNumPhotons, dDIRCMaxNumPhotons);
+
+                locHistName = "ThetaCVsP_DIRC";
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC #theta_{C}");
+                dHistMap_ThetaCVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCThetaCBins, dDIRCMinThetaC, dDIRCMaxThetaC);
+
+                locHistName = "Ldiff_kpiVsP_DIRC";
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{K}-L_{#pi}");
+                dHistMap_Ldiff_kpiVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCLikelihoodBins, -1*dDIRCMaxLikelihood, dDIRCMaxLikelihood);
+		
+		locHistName = "Ldiff_pkVsP_DIRC";
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{p}-L_{K}");
+                dHistMap_Ldiff_pkVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCLikelihoodBins, -1*dDIRCMaxLikelihood, dDIRCMaxLikelihood);
+
 	}
 	else
 	{
@@ -750,6 +768,18 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 				dHistMap_EoverPVsP_FCAL[locStepIndex][locPID]->Fill(locP, locEoverP);
 				dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID]->Fill(locTheta, locEoverP);
 			}
+
+			// DIRC
+                        int locNumPhotons_DIRC = locChargedTrackHypothesis->Get_Track_NumPhotons_DIRC();
+                        double locThetaC_DIRC = locChargedTrackHypothesis->Get_Track_ThetaC_DIRC()*TMath::RadToDeg();
+                        dHistMap_NumPhotons_DIRC[locStepIndex][locPID]->Fill(locNumPhotons_DIRC);
+                        dHistMap_ThetaCVsP_DIRC[locStepIndex][locPID]->Fill(locP, locThetaC_DIRC);
+                        //double locLele_DIRC = locChargedTrackHypothesis->Get_Track_Lele_DIRC();
+                        double locLpi_DIRC = locChargedTrackHypothesis->Get_Track_Lpi_DIRC();
+                        double locLk_DIRC = locChargedTrackHypothesis->Get_Track_Lk_DIRC();
+                        double locLp_DIRC = locChargedTrackHypothesis->Get_Track_Lp_DIRC();
+                        dHistMap_Ldiff_kpiVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLk_DIRC-locLpi_DIRC);
+                        dHistMap_Ldiff_pkVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLp_DIRC-locLk_DIRC);
 		}
 	}
 	else
