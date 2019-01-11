@@ -756,3 +756,61 @@ bool DCutAction_NumUnusedTracks::Perform_Action(void)
 {
 	return (dParticleComboWrapper->Get_NumUnusedTracks() <= dMaxUnusedTracks);
 }
+
+string DCutAction_VanHoveAngle::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinAngle << "_" << dMaxAngle;
+	return locStream.str();
+}
+
+bool DCutAction_VanHoveAngle::Perform_Action(void)
+{
+	double locVanHoveQ, locVanHovePhi;
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(0);
+
+	//build all possible combinations of the included pids
+	set<set<size_t> > locXIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dXPIDs);
+	set<set<size_t> > locYIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dYPIDs);
+	set<set<size_t> > locZIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dZPIDs);
+	
+	bool locAnyOKFlag = false;
+	//(triple) loop over them
+	set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
+	for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
+	{
+		map<unsigned int, set<Int_t> > locXSourceObjects;
+		TLorentzVector locXP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locXComboIterator, locXSourceObjects, dUseKinFitFlag);
+		
+		set<set<size_t> >::iterator locYComboIterator = locYIndexCombos.begin();
+		for(; locYComboIterator != locYIndexCombos.end(); ++locYComboIterator)
+		{
+			map<unsigned int, set<Int_t> > locYSourceObjects;
+			TLorentzVector locYP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locYComboIterator, locYSourceObjects, dUseKinFitFlag);
+			
+			set<set<size_t> >::iterator locZComboIterator = locZIndexCombos.begin();
+			for(; locZComboIterator != locZIndexCombos.end(); ++locZComboIterator)
+			{
+				map<unsigned int, set<Int_t> > locZSourceObjects;
+				TLorentzVector locZP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locZComboIterator, locZSourceObjects, dUseKinFitFlag);
+				
+				if(locXSourceObjects == locYSourceObjects || locXSourceObjects == locZSourceObjects || locYSourceObjects == locZSourceObjects)
+					continue; //the same!
+				
+				std::tie (locVanHoveQ,locVanHovePhi) = dAnalysisUtilities.Calc_vanHoveCoord(locXP4, locYP4, locZP4);
+				if((locVanHovePhi > dMaxAngle) || (locVanHovePhi < dMinAngle))
+					continue;
+				locAnyOKFlag = true;
+				break;
+			}
+		}
+	}
+	
+	if(!locAnyOKFlag)
+		return false;
+	
+	
+	return true;
+}
+
+
