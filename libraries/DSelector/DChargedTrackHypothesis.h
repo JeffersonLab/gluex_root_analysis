@@ -541,8 +541,11 @@ inline Float_t DChargedTrackHypothesis::Get_TrackFCAL_DOCA(void) const
 
 //DIRC INFORMATION
 inline Int_t DChargedTrackHypothesis::Get_Track_NumPhotons_DIRC(void) const
-{
-        return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
+{	
+	if(dBranch_Track_NumPhotons_DIRC)
+	        return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
+	else 
+		return 0;
 }
 
 inline Float_t DChargedTrackHypothesis::Get_Track_ThetaC_DIRC(void) const
