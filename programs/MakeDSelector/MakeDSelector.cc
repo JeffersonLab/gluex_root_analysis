@@ -10,23 +10,44 @@
 
 //function declarations
 void Print_Usage(void);
-void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
-void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
+void Print_Config(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
+void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap, string locConfiguration);
+void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap, string locConfiguration);
 void Print_HeaderFile_MCGen(string locSelectorBaseName, DTreeInterface* locTreeInterface);
 void Print_SourceFile_MCGen(string locSelectorBaseName, DTreeInterface* locTreeInterface);
 
+//utilities declarations
+void Add_Action(std::ofstream& locOfStream, string locConfig);
+void Add_HistogramDefinition(std::ofstream& locOfStream, string locConfig);
+void Add_HistogramInitialization(std::ofstream& locOfStream, string locConfig);
+void Add_UniquenessTrackingDefinition(std::ofstream& locOfStream, string locConfig);
+void FillHist(std::ofstream& locOfStream, string locConfig, string UniquenessName);
+void Add_UniqueHistogramFilling(std::ofstream& locOfStream, string locConfig);
+void Add_KinematicCalculation(std::ofstream& locOfStream, string locConfig);
+void Add_LorentzBoost(std::ofstream& locOfStream, string locConfig, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap);
+
+
+
+
+
+
+
 int main(int argc, char* argv[])
 {
-	if(argc != 4)
+	if( argc!=4 && argc!=5)
 	{
 		Print_Usage();
+		//Print_Config("example");
 		return 0;
 	}
 
 	string locInputFileName = argv[1];
 	string locTreeName = argv[2];
 	string locSelectorBaseName = argv[3];
-
+	string locConfiguration;
+	if( argc == 4 ) locConfiguration = "0";
+	if( argc == 5 ) locConfiguration= argv[4];
+	
 	TFile* locInputFile = new TFile(locInputFileName.c_str(), "READ");
 	TTree* locTree = (TTree*)locInputFile->Get(locTreeName.c_str());
 
@@ -46,11 +67,16 @@ int main(int argc, char* argv[])
 	map<int, map<int, pair<Particle_t, string> > > locComboInfoMap;
 	locTreeInterface->Get_ComboInfo(locComboInfoMap);
 
-	Print_HeaderFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
-	Print_SourceFile(locSelectorBaseName, locTreeInterface, locComboInfoMap);
+	Print_HeaderFile(locSelectorBaseName, locTreeInterface, locComboInfoMap, locConfiguration);
+	Print_SourceFile(locSelectorBaseName, locTreeInterface, locComboInfoMap, locConfiguration);
 
 	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	cout << "Selector files " << locSelectorName << ".* generated." << endl;
+
+	if(argc == 4)
+	{
+		Print_Config(locSelectorBaseName, locTreeInterface, locComboInfoMap);
+	}
 
 	return 0;
 }
@@ -62,11 +88,152 @@ void Print_Usage(void)
 	cout << "1st argument: The input ROOT TTree file name." << endl;
 	cout << "2nd argument: The name of the TTree in the input ROOT file that you want to make a selector for." << endl;
 	cout << "3rd argument: The base-name of the selector class & files you want to generate." << endl;
+	cout << "4th argument(optional): The name of configuration file." << endl;
 	cout << "The generated files will be named \"DSelector_<base-name>.C\" and \"DSelector_<base-name>.h\"." << endl;
 	cout << endl;
 }
 
-void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+void Print_Config(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+{
+	//write out the configuration template
+	string locConfigName = locSelectorBaseName + string(".config");
+	ofstream locConfigStream;
+	locConfigStream.open(locConfigName.c_str());
+
+	locConfigStream << "## This is a templete of the DSelector's configuration file" << endl;
+	locConfigStream << "## To turn on this feature in \"MakeDSelector\" command, use the fullpath name of this configuration file as the 4th argument" << endl;
+	locConfigStream << endl;
+	locConfigStream << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "[SECTION: ANALYSIS ACTION]" << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "## uncomment to book actions (or add more with locActionUniqueString specified)" << endl;
+	locConfigStream << "## DSelector will preserve the sequence of all actions" << endl;
+	locConfigStream << "## specify cut values and options after \"=\", (items separated by space or comma)" << endl;
+	locConfigStream << "## a list of available actions, and the required option fields:" << endl;
+	locConfigStream << "#CUT: ChiSqOrCL                =      ## SecondaryReactionName, IsChiSq, Function, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: PIDDeltaT                =      ## UseKinFitFlag, DeltaTCut, PID, System, ActionUniqueString " << endl;
+	locConfigStream << "#CUT: NoPIDHit                 =      ## PID, System, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: dEdx                     =      ## UseKinFitFlag, PID, System, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: KinFitFOM                =      ## MinimumConfidenceLevel, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: MissingMass              =      ## UseKinFitFlag, MinimumMissingMass, MaximumMissingMass, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: MissingMassSquared       =      ## UseKinFitFlag, MinimumMissingMassSq, MaximumMissingMassSq, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: MissingEnergy            =      ## UseKinFitFlag, MinimumMissingEnergy, MaximumMissingEnergy, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: MissingEnergy            =      ## UseKinFitFlag, MissingEnergyOffOfStepIndex, MissingEnergyOffOfPIDs, MinimumMissingEnergy, MaximumMissingEnergy, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: MissingEnergy            =      ## UseKinFitFlag, MissingEnergyOffOfStepIndex, MissingEnergyOffOfPID, MinimumMissingEnergy, MaximumMissingEnergy, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: InvariantMass            =      ## UseKinFitFlag, InitialPID, MinMass, MaxMass, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: InvariantMass            =      ## UseKinFitFlag, StepIndex, ToIncludePIDs, MinMass, MaxMass, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: InvariantMassVeto        =      ## UseKinFitFlag, InitialPID, MinMass, MaxMass, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: InvariantMassVeto        =      ## UseKinFitFlag, StepIndex, ToIncludePIDs, MinMass, MaxMass, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: BeamEnergy               =      ## UseKinFitFlag, MinBeamEnergy, MaxBeamEnergy, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: TrackShowerEOverP        =      ## UseKinFitFlag, Detector, PID, ShowerEOverPCut, ActionUniqueString" << endl;
+	locConfigStream << "#CUT: Kinematics               =      ## StepIndex, PID, UseKinFitFlag, CutMinP, CutMaxP, CutMinTheta, CutMaxTheta, CutMinPhi, CutMaxPhi" << endl;
+	locConfigStream << "#HIST: ParticleComboKinematics =      ## UseKinFitFlag, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: ParticleID              =      ## UseKinFitFlag, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: InvariantMass           =      ## UseKinFitFlag, InitialPID, NumMassBins, MinMass, MaxMass, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: MissingMass             =      ## UseKinFitFlag, NumMassBins, MinMass, MaxMass, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: MissingMassSquared      =      ## UseKinFitFlag, NumMassBins, MinMassSq, MaxMassSq, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: MissingP4               =      ## UseKinFitFlag, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: 2DInvariantMass         =      ## UseKinFitFlag, StepIndex, XPIDs, YPIDs, NumXBins, MinX, MaxX, NumYBins, MinY, MaxY, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: Dalitz                  =      ## UseKinFitFlag, StepIndex, XPIDs, YPIDs, NumXBins, MinX, MaxX, NumYBins, MinY, MaxY, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: vanHove                 =      ## UseKinFitFlag, XPIDs, YPIDs, ZPIDs, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: KinFitResults           =      ## ActionUniqueString" << endl;
+	locConfigStream << "#HIST: BeamEnergy              =      ## UseKinFitFlag, ActionUniqueString" << endl;
+	locConfigStream << "#HIST: Energy_UnusedShowers    =      ## ActionUniqueString" << endl;
+	locConfigStream << endl;
+	locConfigStream << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "[SECTION: KINEMATIC CALCULATION]" << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "## For lorentz transformation on TLorentzVector," << endl;
+	locConfigStream << "## fill out as: LorentzTransformation = frameName, fromWhichFrame, \"expression of the boostVector\" " << endl;
+	locConfigStream << "## by default, all particle's P4 will be boosted, new LorentzVector will come with suffix \"_frameName\" " << endl;
+	locConfigStream << "## note that the default suffix for LAB FRAME is blank" << endl;
+	locConfigStream << "LorentzTransformation = COM LAB \"locBeamP4 + dTargetP4\" ## An example of boost from lab frame to center-of-mass frame" << endl;
+	locConfigStream << endl;
+	locConfigStream << "## For Kinematics: " << endl;
+	locConfigStream << "## Format: variableType variableName = Expression(using TLorentzVector and TMath library)" << endl;
+	locConfigStream << "## VariableName goes to \"FillVariable\" in \"[HISTOGRAMS]\" section" << endl;
+	locConfigStream << "## Comments start with // will be passed to your DSelector as well."<< endl;
+	locConfigStream << endl;
+	locConfigStream << "//Kinfit Confidence Level" << endl;
+	locConfigStream << "Double_t locConfidenceLevel = dComboWrapper->Get_ConfidenceLevel_KinFit(\"\");" << endl;
+	locConfigStream << "// BeamRFDeltaT" << endl;
+	locConfigStream << "TLorentzVector locBeamX4 = dComboBeamWrapper->Get_X4();" << endl;
+	locConfigStream << "Double_t locBeamRFDeltaT = locBeamX4.T() - (dComboWrapper->Get_RFTime() + (locBeamX4.Z() - dComboWrapper->Get_TargetCenter().Z())/29.9792458);" << endl;
+	locConfigStream << endl;
+	locConfigStream << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "[SECTION: UNIQUENESS TRACKING]" << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "## Prevent double-counting for specified particles or set of particles" << endl;
+	locConfigStream << "## String before \"=\" goes to \"UniquenessTracking\" in \"[HISTOGRAMS]\" section" << endl;
+	locConfigStream << "## String after \"=\" will be the particles used during calculation of the variable to be filled" << endl;
+	//get particles
+	string locFinalStateParticles;
+	map<int, map<int, pair<Particle_t, string> > >::iterator locStepIterator = locComboInfoMap.begin();
+	for(; locStepIterator != locComboInfoMap.end(); ++locStepIterator)
+	{
+		//int locStepIndex = locStepIterator->first;
+		//locSourceStream << "		//Step " << locStepIndex << endl;
+		map<int, pair<Particle_t, string> >& locStepInfoMap = locStepIterator->second;
+		map<int, pair<Particle_t, string> >::iterator locParticleIterator = locStepInfoMap.begin();
+		for(; locParticleIterator != locStepInfoMap.end(); ++locParticleIterator)
+		{
+			Particle_t locPID = locParticleIterator->second.first;
+			string locParticleName = locParticleIterator->second.second;
+
+			if(locPID == Unknown)
+				continue;
+			else if(locParticleName == "ComboBeam")
+				locFinalStateParticles += "Beam";
+			else if(locParticleName.substr(0, 6) == "Target")
+				continue;
+			else if(locParticleName.substr(0, 8) == "Decaying")
+				continue;
+			else if(locParticleName.substr(0, 7) == "Missing")
+				continue;
+			else if(ParticleCharge(locPID) != 0)
+				locFinalStateParticles += locParticleName;
+			else
+				locFinalStateParticles += locParticleName;
+
+			locFinalStateParticles += " ";
+		}
+		
+	}
+	locConfigStream << "No-Uniqueness-Tracking ## Example: use this if you do not wish to keep uniqueness tracking (for example plotting kinfitCL)." << endl;
+	locConfigStream << "Particle-specific(Beam)      = Beam ## Example: plot for every beam photon." << endl;
+	locConfigStream << "Combo-specific(All)          = "<< locFinalStateParticles << " ## Example: plot for every combo." << endl;
+	locConfigStream << endl;                           
+	locConfigStream << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "[SECTION: HISTOGRAMS]" << endl;
+	locConfigStream << "######################################################" << endl;
+	locConfigStream << "## Specify after \"HISTOGRAM = \": histType, keyName, histTitles (\"Main Title; X Title; Y Title\"), " << endl;
+	locConfigStream << "## binxN, xMin, xMax, binyN, yMin, yMax, xVariable, yVariable, UniquenessTracking" << endl;
+	locConfigStream << "##" << endl;
+	locConfigStream << "## For 1-dimensional histogram, place \"-\" for binyN, yMin, yMax, yVariable" << endl;
+	locConfigStream << "## For histTitle, latex is available. Use \"\\\" as the control. For example, \\frac{}{} for fraction" << endl;
+	locConfigStream << "## FillVariable's formula need to be specified in \"[KINEMATIC CALCULATION]\" section" << endl;
+	locConfigStream << "## UniquenessTracking need to be specified in \"[UNIQUENESS TRACKING]\" section" << endl;
+	locConfigStream << "## If you don't need uniqueness tracking i.e add one entry per combo, just specified Uniqueness as \"No-Uniqueness-Tracking\" ." << endl;
+	locConfigStream << "HISTOGRAM = TH1D KinFitCL \";Kinematic Fit Confidence Level\" 100 0 1.0 - - - locConfidenceLevel No-Uniqueness-Tracking" << endl;
+	locConfigStream << endl;
+
+	locConfigStream.close();
+
+	cout << "Add a 4th argument(config) to turn on more features." << endl;
+	cout << "Config file template " << locSelectorBaseName << ".config generated." << endl;
+
+	cout << endl;
+
+
+}
+
+
+
+void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap, string locConfiguration)
 {
 	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	string locHeaderName = locSelectorName + string(".h");
@@ -84,6 +251,9 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << endl;
 	locHeaderStream << "#include \"TH1I.h\"" << endl;
 	locHeaderStream << "#include \"TH2I.h\"" << endl;
+	locHeaderStream << "#include \"TH1D.h\"" << endl;
+	locHeaderStream << "#include \"TH2D.h\"" << endl;
+	locHeaderStream << "#include \"TMath.h\"" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "class " << locSelectorName << " : public DSelector" << endl;
 	locHeaderStream << "{" << endl;
@@ -159,7 +329,11 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		// EXAMPLES:" << endl;
 	locHeaderStream << "		TH1I* dHist_MissingMassSquared;" << endl;
 	locHeaderStream << "		TH1I* dHist_BeamEnergy;" << endl;
-	locHeaderStream << endl;
+	//writing out all the self-defined histograms
+	locHeaderStream << "		/*************** Begin of definition of histograms **************/" << endl;
+	if(locConfiguration != "0") Add_HistogramDefinition(locHeaderStream, locConfiguration);
+	locHeaderStream << "		/*************** End of definition of histograms **************/" << endl;
+
 	locHeaderStream << "	ClassDef(" << locSelectorName << ", 0);" << endl;
 	locHeaderStream << "};" << endl;
 	locHeaderStream << endl;
@@ -216,7 +390,7 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream.close();
 }
 
-void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap, string locConfiguration)
 {
 	string locSelectorName = string("DSelector_") + locSelectorBaseName;
 	string locSourceName = locSelectorName + string(".C");
@@ -252,6 +426,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	/*********************************** EXAMPLE USER INITIALIZATION: ANALYSIS ACTIONS **********************************/" << endl;
 	locSourceStream << endl;
+
+	if(locConfiguration != "0") Add_Action(locSourceStream, locConfiguration);
+
 	locSourceStream << "	// EXAMPLE: Create deque for histogramming particle masses:" << endl;
 	locSourceStream << "	// // For histogramming the phi mass in phi -> K+ K-" << endl;
 	locSourceStream << "	// // Be sure to change this and dAnalyzeCutActions to match reaction" << endl;
@@ -262,7 +439,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//false/true below: use measured/kinfit data" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//PID" << endl;
-	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleID(dComboWrapper, false));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_ParticleID(dComboWrapper, false));" << endl;
 	locSourceStream << "	//below: value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDDeltaT(dComboWrapper, false, 0.5, KPlus, SYS_BCAL));" << endl;
 	locSourceStream << endl;
@@ -281,7 +458,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, false, 8.4, 9.05));" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//KINEMATICS" << endl;
-	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleComboKinematics(dComboWrapper, false));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_ParticleComboKinematics(dComboWrapper, false));" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	// ANALYZE CUT ACTIONS" << endl;
 	locSourceStream << "	// // Change MyPhi to match reaction" << endl;
@@ -298,6 +475,12 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dHist_MissingMassSquared = new TH1I(\"MissingMassSquared\", \";Missing Mass Squared (GeV/c^{2})^{2}\", 600, -0.06, 0.06);" << endl;
 	locSourceStream << "	dHist_BeamEnergy = new TH1I(\"BeamEnergy\", \";Beam Energy (GeV)\", 600, 0.0, 12.0);" << endl;
 	locSourceStream << endl;
+
+	//writing out all the self-defined histograms
+	if(locConfiguration != "0") locSourceStream << "	/*************** Begin of histogram initialization **************/" << endl;
+	if(locConfiguration != "0") Add_HistogramInitialization(locSourceStream, locConfiguration);
+
+
 	locSourceStream << "	/************************** EXAMPLE USER INITIALIZATION: CUSTOM OUTPUT BRANCHES - MAIN TREE *************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE MAIN TREE CUSTOM BRANCHES (OUTPUT ROOT FILE NAME MUST FIRST BE GIVEN!!!! (ABOVE: TOP)):" << endl;
@@ -390,6 +573,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	set<map<Particle_t, set<Int_t> > > locUsedSoFar_MissingMass;" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//INSERT USER ANALYSIS UNIQUENESS TRACKING HERE" << endl;
+
+	if(locConfiguration != "0") Add_UniquenessTrackingDefinition(locSourceStream, locConfiguration);
+
 	locSourceStream << endl;
 	locSourceStream << "	/**************************************** EXAMPLE: FILL CUSTOM OUTPUT BRANCHES **************************************/" << endl;
 	locSourceStream << endl;
@@ -452,7 +638,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 		}
 		locSourceStream << endl;
 	}
-	locSourceStream << "		/*********************************************** GET FOUR-MOMENTUM **********************************************/" << endl;
+	locSourceStream << "		/*********************************************** GET FOUR-MOMENTUM and FOUR-POSITION **********************************************/" << endl;
 	locSourceStream << endl;
 
 	//get p4's
@@ -489,8 +675,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 				if(locTreeInterface->Get_Branch(locBranchName) != NULL) //else not reconstructed
 					locSourceStream << "		TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
 			}
-			else //detected
+			else//detected
 				locSourceStream << "		TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
+				if(locStepIndex != 0) locSourceStream << "		TLorentzVector loc" << locParticleName << "X4 = d" << locParticleName << "Wrapper->Get_X4();" << endl;
 		}
 	}
 	locSourceStream << endl;
@@ -521,10 +708,13 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 				continue;
 			else //detected
 				locSourceStream << "		TLorentzVector loc" << locParticleName << "P4_Measured = d" << locParticleName << "Wrapper->Get_P4_Measured();" << endl;
+				if(locStepIndex != 0) locSourceStream << "		TLorentzVector loc" << locParticleName << "X4_Measured = d" << locParticleName << "Wrapper->Get_X4_Measured();" << endl;
 		}
 	}
 
 	locSourceStream << endl;
+	if(locConfiguration != "0") Add_LorentzBoost(locSourceStream, locConfiguration, locTreeInterface, locComboInfoMap);
+
 	locSourceStream << "		/********************************************* COMBINE FOUR-MOMENTUM ********************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		// DO YOUR STUFF HERE" << endl;
@@ -574,6 +764,12 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//if you manually execute any actions, and it fails a cut, be sure to call:" << endl;
 	locSourceStream << "			//dComboWrapper->Set_IsComboCut(true);" << endl;
 	locSourceStream << endl;
+	if(locConfiguration != "0") locSourceStream << "		/**************************************** KINEMATIC CALCULATION **************************************/" << endl;
+	if(locConfiguration != "0") locSourceStream << endl;
+
+	if(locConfiguration != "0") Add_KinematicCalculation(locSourceStream, locConfiguration);
+
+
 	locSourceStream << "		/**************************************** EXAMPLE: FILL CUSTOM OUTPUT BRANCHES **************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/*" << endl;
@@ -594,7 +790,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "			locUsedSoFar_BeamEnergy.insert(locBeamID);" << endl;
 	locSourceStream << "		}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/************************************ EXAMPLE: HISTOGRAM MISSING MASS SQUARED ************************************/" << endl;
+	locSourceStream << "		/**************************************** EXAMPLE: MISSINGMASS UNIQUENESS TRACKING  ************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//Missing Mass Squared" << endl;
 	locSourceStream << "		double locMissingMassSquared = locMissingP4_Measured.M2();" << endl;
@@ -647,6 +843,14 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//	continue;" << endl;
 	locSourceStream << "		//}" << endl;
 	locSourceStream << endl;
+
+
+	if(locConfiguration != "0") locSourceStream << "		/****************************************** FILL HISTOGRAM WHILE KEEPING UNIQUENESSTRACKING ******************************************/" << endl;
+	if(locConfiguration != "0") locSourceStream << endl;
+
+	if(locConfiguration != "0") locSourceStream << "        Double_t histWeight = 1.0;" << endl;
+	if(locConfiguration != "0") Add_UniqueHistogramFilling(locSourceStream, locConfiguration);
+
 	locSourceStream << "		/****************************************** FILL FLAT TREE (IF DESIRED) ******************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/*" << endl;
@@ -953,3 +1157,487 @@ void Print_SourceFile_MCGen(string locSelectorBaseName, DTreeInterface* locTreeI
 	locSourceStream.close();
 }
 
+
+void Add_Action(std::ofstream& locOfStream, string locConfig)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;
+	bool SectionEndFlag = 0;
+
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		//std::cout << lineReader << std::endl;
+		if(lineReader.find("[SECTION: ANALYSIS ACTION]") <lineReader.length()) SectionBeginFlag = 1;
+		if(lineReader.find("[SECTION: KINEMATIC CALCULATION]") <lineReader.length())                  SectionEndFlag = 1;
+
+		if(SectionBeginFlag==1 && SectionEndFlag==0)
+		{
+			bool CutActionFlag = (lineReader.find("CUT:")<lineReader.length() );
+			bool HistActionFlag = (lineReader.find("HIST:")<lineReader.length() );
+			std::string Options;
+			if(CutActionFlag || HistActionFlag) Options = lineReader.substr(lineReader.find('=')+1, lineReader.length()-lineReader.find('='));
+			while( Options.find(',')!= string::npos ) Options.replace(Options.find(','), 1, " ");
+			//std::cout << Options << std::endl;
+			
+			if(CutActionFlag==1)
+			{
+				//write the Cut Action Initiallization in DSelector
+				if( lineReader.find("ChiSqOrCL") < lineReader.length() )
+				{
+					std::string SecondaryReactionName, IsChiSq, Function, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> SecondaryReactionName >> IsChiSq >> Function >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DCutAction_ChiSqOrCL(dComboWrapper, \"" << SecondaryReactionName << "\", " << IsChiSq << ", " << Function << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				}  
+				if( lineReader.find("KinFitFOM") < lineReader.length() )
+				{
+					std::string MinimumConfidenceLevel, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> MinimumConfidenceLevel >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DCutAction_KinFitFOM(dComboWrapper, " << MinimumConfidenceLevel << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				} 
+				if( lineReader.find("BeamEnergy") < lineReader.length() )
+				{
+					std::string UseKinFitFlag, MinBeamEnergy, MaxBeamEnergy, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> UseKinFitFlag >> MinBeamEnergy >> MaxBeamEnergy >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, " << UseKinFitFlag << ", " << MinBeamEnergy << ", " << MaxBeamEnergy << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				} 
+			}
+			
+			if(HistActionFlag==1)
+			{
+				//write the Cut Action Initiallization in DSelector
+				if( lineReader.find("ParticleComboKinematics") < lineReader.length() )
+				{
+					std::string UseKinFitFlag, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> UseKinFitFlag >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleComboKinematics(dComboWrapper, " << UseKinFitFlag << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				}  
+				if( lineReader.find("ParticleID") < lineReader.length() )
+				{
+					std::string UseKinFitFlag, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> UseKinFitFlag >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleID(dComboWrapper, " << UseKinFitFlag << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				}
+				if( lineReader.find("InvariantMass") < lineReader.length() )
+				{
+					std::string UseKinFitFlag, InitialPID, NumMassBins, MinMass, MaxMass, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> UseKinFitFlag >> InitialPID >> NumMassBins >> MinMass >> MaxMass >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DHistogramAction_InvariantMass(dComboWrapper, " << UseKinFitFlag  << ", " << InitialPID  << ", " << NumMassBins  << ", " << MinMass  << ", " << MaxMass << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				} 
+				if( lineReader.find("MissingMass") < lineReader.length() && !(lineReader.find("MissingMassSquared") < lineReader.length()))
+				{
+					std::string UseKinFitFlag, NumMassBins, MinMass, MaxMass, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> UseKinFitFlag >> NumMassBins >> MinMass >> MaxMass >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DHistogramAction_MissingMass(dComboWrapper, " << UseKinFitFlag  << ", " << NumMassBins  << ", " << MinMass  << ", " << MaxMass << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				}
+				if( lineReader.find("MissingMassSquared") < lineReader.length() )
+				{
+					std::string UseKinFitFlag, NumMassBins, MinMass, MaxMass, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> UseKinFitFlag >> NumMassBins >> MinMass >> MaxMass >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DHistogramAction_MissingMassSquared(dComboWrapper, " << UseKinFitFlag  << ", " << NumMassBins  << ", " << MinMass  << ", " << MaxMass << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				}
+
+				if( lineReader.find("MissingP4") < lineReader.length() )
+				{
+					std::string UseKinFitFlag, ActionUniqueString;
+					std::istringstream iss(Options);
+					iss >> UseKinFitFlag >> ActionUniqueString;
+					locOfStream << "	dAnalysisActions.push_back(new DHistogramAction_MissingP4(dComboWrapper, " << UseKinFitFlag << ", \"" << ActionUniqueString << "\"));" << std::endl;
+				}
+			}
+		}
+	}
+	infile.close();
+}
+
+void Add_HistogramDefinition(std::ofstream& locOfStream, string locConfig)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;	
+
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		if(lineReader.find("[SECTION: HISTOGRAMS]") <lineReader.length()) SectionBeginFlag = 1;
+		
+		if(SectionBeginFlag==1)
+		{	
+			if(lineReader.substr(0,9) != "HISTOGRAM") continue;
+
+			std::size_t firstQuote = lineReader.find("\"");
+			std::size_t secondQuote = lineReader.find("\"", firstQuote+1);
+			std::string titles = line.substr(firstQuote+1, secondQuote-firstQuote-1);
+			lineReader.erase(firstQuote, secondQuote-firstQuote+1);
+			std::string histOptions = lineReader.substr(lineReader.find("=")+1, lineReader.length()-lineReader.find("=")-1);
+			std::istringstream iss(histOptions);
+			string histType, keyName;//, binxN, xMin, xMax, binyN, yMin, yMax, xVariable, yVariable, UniquenessTracking;
+			iss >> histType >> keyName;// >> binxN >> xMin >> xMax >> binyN >> yMin >> yMax >> xVariable >> yVariable >> UniquenessTracking;
+	    	locOfStream << "		" << histType << "* " << "dHist_" << keyName << ";"<< endl;
+	    }
+	}
+	infile.close();
+}
+
+void Add_HistogramInitialization(std::ofstream& locOfStream, string locConfig)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;
+
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		if(lineReader.find("[SECTION: HISTOGRAMS]") <lineReader.length()) SectionBeginFlag = 1;
+		if(SectionBeginFlag==1)
+		{	
+			if(lineReader.substr(0,9) != "HISTOGRAM") continue;
+
+			std::size_t firstQuote = lineReader.find("\"");
+			std::size_t secondQuote = lineReader.find("\"", firstQuote+1);
+			std::string titles = line.substr(firstQuote+1, secondQuote-firstQuote-1);
+			while(titles.find("\\")<titles.length()) titles.replace(titles.find("\\"), 1, "#");
+			lineReader.erase(firstQuote, secondQuote-firstQuote+1);
+			std::string histOptions = lineReader.substr(lineReader.find("=")+1, lineReader.length()-lineReader.find("=")-1);
+			std::istringstream iss(histOptions);
+			string histType, keyName, binxN, xMin, xMax, binyN, yMin, yMax, xVariable, yVariable, UniquenessTracking;
+			iss >> histType >> keyName >> binxN >> xMin >> xMax >> binyN >> yMin >> yMax >> xVariable >> yVariable >> UniquenessTracking;
+			if(histType.at(2) == '1') locOfStream << "	dHist_" << keyName << " = new " << histType << "(\"" << keyName << "\", \"" << titles << "\", " << binxN << ", " << xMin << ", " << xMax << ");"<< std::endl;
+	    	if(histType.at(2) == '2') locOfStream << "	dHist_" << keyName << " = new " << histType << "(\"" << keyName << "\", \"" << titles << "\", " << binxN << ", " << xMin << ", " << xMax << ", " << binyN << ", " << yMin << ", " << yMax << ");"<< std::endl;
+		}	
+	}
+	infile.close();
+}
+
+void Add_UniquenessTrackingDefinition(std::ofstream& locOfStream, string locConfig)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;
+	bool SectionEndFlag = 0;
+	bool ComboSpecificFlag, ParticleSpecificFlag;
+
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		if(lineReader.find("[SECTION: UNIQUENESS TRACKING]") <lineReader.length()) SectionBeginFlag = 1;
+		if(lineReader.find("[SECTION: HISTOGRAMS]") <lineReader.length()) SectionEndFlag = 1;
+
+		ComboSpecificFlag    = 0;
+		ParticleSpecificFlag = 0;
+		if(SectionBeginFlag==1 && SectionEndFlag ==0)
+		{	
+			if(lineReader.find("Particle-specific")<lineReader.length()) ParticleSpecificFlag = 1;
+			if(lineReader.find("Combo-specific")<lineReader.length()) ComboSpecificFlag = 1;
+			std::size_t leftParanthesis = lineReader.find("(");
+			std::size_t rightParanthesis = lineReader.find(")", leftParanthesis+1);
+			std::string UnqName = line.substr(leftParanthesis+1, rightParanthesis-leftParanthesis-1);
+
+			if(ParticleSpecificFlag == 1) locOfStream << "    set<Int_t> locUsedSoFar_" << UnqName << ";" << std::endl;
+			if(ComboSpecificFlag == 1) locOfStream << "    set<map<Particle_t, set<Int_t> > > locUsedSoFar_" << UnqName << ";" << std::endl;
+		}
+	}
+	infile.close();
+}
+
+void FillHist(std::ofstream& locOfStream, string locConfig, string UniquenessName)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;
+
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		if(lineReader.find("[SECTION: HISTOGRAMS]") <lineReader.length()) SectionBeginFlag = 1;
+		if(SectionBeginFlag==1)
+		{	
+			if(lineReader.substr(0,9) != "HISTOGRAM") continue;
+
+			std::size_t firstQuote = lineReader.find("\"");
+			std::size_t secondQuote = lineReader.find("\"", firstQuote+1);
+			std::string titles = line.substr(firstQuote+1, secondQuote-firstQuote-1);
+			lineReader.erase(firstQuote, secondQuote-firstQuote+1);
+			std::string histOptions = lineReader.substr(lineReader.find("=")+1, lineReader.length()-lineReader.find("=")-1);
+			std::istringstream iss(histOptions);
+			string histType, keyName, binxN, xMin, xMax, binyN, yMin, yMax, xVariable, yVariable, UniquenessTracking;
+			iss >> histType >> keyName >> binxN >> xMin >> xMax >> binyN >> yMin >> yMax >> xVariable >> yVariable >> UniquenessTracking;
+			if(UniquenessName != UniquenessTracking) continue;
+			if(histType.at(2) == '1') locOfStream << "	        dHist_" << keyName << " -> Fill( " << xVariable << ", histWeight);"<< std::endl;
+	    	if(histType.at(2) == '2') locOfStream << "	        dHist_" << keyName << " -> Fill( " << xVariable << ", " << yVariable << ", histWeight);"<< std::endl;
+		}	
+	}
+	infile.close();
+}
+
+void Add_UniqueHistogramFilling(std::ofstream& locOfStream, string locConfig)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;
+	bool SectionEndFlag = 0;
+
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		if(lineReader.find("[SECTION: UNIQUENESS TRACKING]") <lineReader.length()) SectionBeginFlag = 1;
+		if(lineReader.find("[SECTION: HISTOGRAMS]") <lineReader.length()) SectionEndFlag = 1;
+		if(SectionBeginFlag==1 && SectionEndFlag==0)
+		{	
+			if(lineReader.find("No-Uniqueness-Tracking")<lineReader.length())
+				{
+					locOfStream << "        //No Uniqueness tracking: Add one entry to histograms for every combo." << std::endl;
+					locOfStream << "        //Carefully choose histograms to be filled in this section. Be aware of double-counting." << std::endl;
+					std::string Unq = "-";
+					FillHist(locOfStream, locConfig, Unq);
+				} 
+
+			std::size_t leftParanthesis = lineReader.find("(");
+			std::size_t rightParanthesis = lineReader.find(")", leftParanthesis+1);
+			std::string UnqName = line.substr(leftParanthesis+1, rightParanthesis-leftParanthesis-1);
+			std::string particleList = lineReader.substr(lineReader.find("=")+1, lineReader.length()-lineReader.find("=")-1);
+			std::istringstream iss(particleList);
+
+			if(lineReader.find("Particle-specific")<lineReader.length())
+				{
+					std::string particleName;
+					iss >> particleName;
+					locOfStream << "        //Uniqueness tracking: Build the map of particle used for the " << UnqName << std::endl;
+					locOfStream << "        if(locUsedSoFar_" << UnqName << ".find(loc" << particleName << "ID) == locUsedSoFar_" << UnqName << ".end())" << std::endl;
+					locOfStream << "        {" << std::endl;
+					std::string Unq = "Particle-specific("; Unq += UnqName; Unq += ")";
+					FillHist(locOfStream, locConfig, Unq);
+					locOfStream << "        	locUsedSoFar_" << UnqName << ".insert(loc" << particleName << "ID);" << std::endl;
+					locOfStream << "        }" << std::endl;
+				} 
+
+			if(lineReader.find("Combo-specific")<lineReader.length()) 
+				{
+					locOfStream << "        //Uniqueness tracking: Build the map of particles used for the " << UnqName << std::endl;
+					locOfStream << "        map<Particle_t, set<Int_t> > locUsedThisCombo_" << UnqName << ";" << std::endl;
+					std::string locParticleStr, lastStr;
+					while(iss)
+					{
+						iss >> locParticleStr;
+						if(locParticleStr == lastStr) continue;
+						lastStr = locParticleStr;
+						std::string locPID = locParticleStr;
+						if(locParticleStr == "Beam")
+						{
+							locPID = "Unknown";//For beam: Don't want to group with final-state photons. Instead use "Unknown" PID (not ideal, but it's easy).
+							locOfStream << "        locUsedThisCombo_" << UnqName << "[" << locPID << "].insert(loc" << locParticleStr << "ID);" << std::endl;
+						} 
+						else
+						{
+							for(int locIndex = 1; locIndex<10; locIndex++)
+							{
+								std::size_t locPIDIndex = locParticleStr.find(std::to_string(locIndex));
+								if( locPIDIndex < locParticleStr.length() ) locPID.erase(locPIDIndex, locParticleStr.length()-locPIDIndex+1);
+							}
+							locOfStream << "        locUsedThisCombo_" << UnqName << "[" << locPID << "].insert(loc" << locParticleStr << "TrackID);" << std::endl;
+						}
+					}
+					locOfStream << "        //compare to what's been used so far" << std::endl;
+					locOfStream << "        if(locUsedSoFar_" << UnqName << ".find(locUsedThisCombo_" << UnqName << ") == locUsedSoFar_" << UnqName << ".end())" << std::endl;
+					locOfStream << "        {" << std::endl;
+					std::string Unq = "Combo-specific("; Unq += UnqName; Unq += ")";
+					FillHist(locOfStream, locConfig, Unq);
+					locOfStream << "	        locUsedSoFar_" << UnqName << ".insert(locUsedThisCombo_" << UnqName << ");" << std::endl;
+					locOfStream << "        }" << std::endl;
+					locOfStream << endl;
+					locOfStream << endl;
+				}
+		}	
+	}
+	infile.close();
+}
+void Add_KinematicCalculation(std::ofstream& locOfStream, string locConfig)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;
+	bool SectionEndFlag = 0;
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		if(lineReader.find("[SECTION: KINEMATIC CALCULATION]") <lineReader.length()) SectionBeginFlag = 1; 
+		if(lineReader.find("[SECTION: UNIQUENESS TRACKING]") <lineReader.length()) 
+		{
+			SectionEndFlag = 1; 
+		}
+
+		if(lineReader.find("[SECTION: KINEMATIC CALCULATION]") <lineReader.length()) continue;
+		if(lineReader.find("LorentzTransformation") <lineReader.length()) continue;
+		if(SectionBeginFlag==1 && SectionEndFlag==0 )
+		{	
+			std::string locLine = "        ";
+			locLine += lineReader;
+			locOfStream << locLine << std::endl;
+		}
+	}
+	infile.close();
+}
+void Add_LorentzBoost(std::ofstream& locOfStream, string locConfig, DTreeInterface* locTreeInterface, map<int, map<int, pair<Particle_t, string> > >& locComboInfoMap)
+{
+	std::ifstream infile(locConfig);	
+	std::string line;
+	bool SectionBeginFlag = 0;
+	bool SectionEndFlag = 0;
+	while(std::getline(infile, line))
+	{
+		std::string lineReader = line.substr(0,line.find("#"));
+		if(lineReader == "") continue;
+		if(lineReader.find("[SECTION: KINEMATIC CALCULATION]") <lineReader.length()) SectionBeginFlag = 1;
+		if(lineReader.find("[SECTION: UNIQUENESS TRACKING]") <lineReader.length()) 
+		{
+			SectionEndFlag = 1; 
+			continue;
+		}
+		if(!(lineReader.find("LorentzTransformation") <lineReader.length())) continue;
+
+		if(SectionBeginFlag==1 && SectionEndFlag==0 )
+		{	
+			string BoostName;
+			string originFrameName;
+			string boostVector;
+			std::size_t firstQuote = lineReader.find("\"");
+			std::size_t secondQuote = lineReader.find("\"", firstQuote+1);
+			boostVector = line.substr(firstQuote+1, secondQuote-firstQuote-1);
+			std::string boostOpt = lineReader.substr(lineReader.find("=")+1, firstQuote-lineReader.find("=")-1);
+			std::istringstream iss(boostOpt);
+			iss >> BoostName >> originFrameName;
+
+			if(originFrameName == "LAB") originFrameName = "";
+			else originFrameName = "_" + originFrameName;
+
+			locOfStream << "		/*********************************************** BOOST: " << BoostName << " FRAME **********************************************/" << endl;
+			locOfStream << endl;
+
+			//kinfit value
+				locOfStream << "		// Get P4\'s: //is kinfit if kinfit performed, else is measured" << endl;
+				locOfStream << "        TLorentzVector locBoostP4_" << BoostName << " = " << boostVector << "; " << endl;
+				map<int, map<int, pair<Particle_t, string> > >::iterator locStepIterator = locComboInfoMap.begin();
+				for(locStepIterator = locComboInfoMap.begin(); locStepIterator != locComboInfoMap.end(); ++locStepIterator)
+				{
+					int locStepIndex = locStepIterator->first;
+					locOfStream << "		//Step " << locStepIndex << endl;
+
+					map<int, pair<Particle_t, string> >& locStepInfoMap = locStepIterator->second;
+					map<int, pair<Particle_t, string> >::iterator locParticleIterator = locStepInfoMap.begin();
+					for(; locParticleIterator != locStepInfoMap.end(); ++locParticleIterator)
+					{
+						int locParticleIndex = locParticleIterator->first;
+						Particle_t locPID = locParticleIterator->second.first;
+						string locParticleName = locParticleIterator->second.second;
+
+						if(locPID == Unknown)
+							continue;
+						else if(locParticleName == "ComboBeam")
+						{
+							locOfStream << "		TLorentzVector locBeamP4_" << BoostName << " = locBeamP4" << originFrameName << ";" << endl;
+							locOfStream << "		locBeamP4_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+						}
+
+						else if(locParticleName.substr(0, 6) == "Target")
+						{
+							locOfStream << "		TLorentzVector dTargetP4_" << BoostName << " = dTargetP4" << originFrameName << ";" << endl;
+							locOfStream << "		dTargetP4_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+						}
+						else if(locParticleName.substr(0, 8) == "Decaying")
+						{
+							string locBranchName = locParticleName + string("__P4_KinFit");
+							if((locTreeInterface->Get_Branch(locBranchName) != NULL) && (locParticleIndex < 0)) //else not reconstructed
+							{
+								locOfStream << "		TLorentzVector loc" << locParticleName << "P4_" << BoostName << " = loc" << locParticleName << "P4" << originFrameName << ";" << endl;
+								locOfStream << "		loc" << locParticleName << "P4_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+							}
+						}
+						else if(locParticleName.substr(0, 7) == "Missing")
+						{
+							string locBranchName = locParticleName + string("__P4_KinFit");
+							if(locTreeInterface->Get_Branch(locBranchName) != NULL) //else not reconstructed
+							{
+								locOfStream << "		TLorentzVector loc" << locParticleName << "P4_" << BoostName << " = loc" << locParticleName << "P4" << originFrameName << ";" << endl;
+								locOfStream << "		loc" << locParticleName << "P4_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+							}
+						}
+						else //detected
+						{
+							locOfStream << "		TLorentzVector loc" << locParticleName << "P4_" << BoostName << " = loc" << locParticleName << "P4" << originFrameName << ";" << endl;
+							locOfStream << "		loc" << locParticleName << "P4_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+						}	
+					}
+				}
+				locOfStream << endl;
+
+			//measured value
+
+				locOfStream << "		// Measured values" << endl;
+
+				for(locStepIterator = locComboInfoMap.begin(); locStepIterator != locComboInfoMap.end(); ++locStepIterator)
+				{
+					int locStepIndex = locStepIterator->first;
+					locOfStream << "		//Step " << locStepIndex << endl;
+
+					map<int, pair<Particle_t, string> >& locStepInfoMap = locStepIterator->second;
+					map<int, pair<Particle_t, string> >::iterator locParticleIterator = locStepInfoMap.begin();
+					for(; locParticleIterator != locStepInfoMap.end(); ++locParticleIterator)
+					{
+						//int locParticleIndex = locParticleIterator->first;
+						Particle_t locPID = locParticleIterator->second.first;
+						string locParticleName = locParticleIterator->second.second;
+
+						if(locPID == Unknown)
+							continue;
+						else if(locParticleName == "ComboBeam")
+						{
+							locOfStream << "		TLorentzVector locBeamP4_Measured_" << BoostName << " = locBeamP4_Measured" << originFrameName << ";" << endl;
+							locOfStream << "		locBeamP4_Measured_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+						}
+
+						else if(locParticleName.substr(0, 6) == "Target")
+						{
+							continue;
+						}
+						else if(locParticleName.substr(0, 8) == "Decaying")
+						{
+							continue;
+						}
+						else if(locParticleName.substr(0, 7) == "Missing")
+						{
+							string locBranchName = locParticleName + string("__P4_KinFit");
+							if(locTreeInterface->Get_Branch(locBranchName) != NULL) //else not reconstructed
+							{
+								locOfStream << "		TLorentzVector loc" << locParticleName << "P4_Measured_" << BoostName << " = loc" << locParticleName << "P4_Measured" << originFrameName << ";" << endl;
+								locOfStream << "		loc" << locParticleName << "P4_Measured_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+							}
+						}
+						else //detected
+						{
+							locOfStream << "		TLorentzVector loc" << locParticleName << "P4_Measured_" << BoostName << " = loc" << locParticleName << "P4_Measured" << originFrameName << ";" << endl;
+							locOfStream << "		loc" << locParticleName << "P4_Measured_" << BoostName << ".Boost(-locBoostP4_" << BoostName << ".BoostVector());" << endl;
+						}	
+					}
+				}
+				locOfStream << endl;
+
+		}
+	}
+	infile.close();
+}
