@@ -530,6 +530,43 @@ std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector l
 	return std::make_tuple(locq, locomega);
 }
 
+std::tuple<double,double,double> DAnalysisUtilities::Calc_vanHoveCoordFour(TLorentzVector locVec1P4, TLorentzVector locVec2P4, TLorentzVector locVec3P4, TLorentzVector locVec4P4)
+{
+  //create CM vector from final state particles
+  TLorentzVector locInitialStateP4 = locVec1P4 + locVec2P4 + locVec3P4 + locVec4P4;
+  
+  TVector3 locBoostVector_ProdCMS = (-1)*(locInitialStateP4.BoostVector());
+  
+  TLorentzVector lcoVec1P4_ProdCMS(locVec1P4);
+  lcoVec1P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  TLorentzVector lcoVec2P4_ProdCMS(locVec2P4);
+  lcoVec2P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  TLorentzVector lcoVec3P4_ProdCMS(locVec3P4);
+  lcoVec3P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  TLorentzVector lcoVec4P4_ProdCMS(locVec4P4);
+  lcoVec4P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  
+  double loclong1 = lcoVec1P4_ProdCMS.Pz();
+  double loclong2 = lcoVec2P4_ProdCMS.Pz();
+  double loclong3 = lcoVec3P4_ProdCMS.Pz();
+  
+  //Calculate (x,y,z) and VH spherical polar angles
+  double locx = (TMath::Sqrt(3./8.))*(loclong3-loclong2);
+  double locy = (TMath::Sqrt(1./8.))*(2.*loclong1 + 3.*loclong2 + 3.*loclong3);
+  double locz = loclong1;
+  
+  //r = sqrt(x^2 + y^2 + z^2)
+  double locr = TMath::Sqrt(locx*locx+locy*locy+locz*locz);
+  //theta = arccos(z / sqrt(x^2 + y^2))
+  //inverse cosine calculation from the ATan2 expression, via trig identies
+  double loctheta = 2*(TMath::ATan2((TMath::Sqrt(1- ((locz/(TMath::Sqrt(locx*locx + locy*locy))) * (locz/(TMath::Sqrt(locx*locx + locy*locy)))))), (1 + (locz/(TMath::Sqrt(locx*locx + locy*locy))))));
+  //phi = arctan(y/z)
+  //as for the 3-particle implementation, this is better defined by the ATan2 function, pi added to return angles in range [0,2pi]
+  double locphi = TMath::ATan2(locy,locx) + TMath::Pi();
+  
+  return std::make_tuple(locr, loctheta, locphi);
+}
+
 bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const
 {
 	//RCDB environment must be setup!!

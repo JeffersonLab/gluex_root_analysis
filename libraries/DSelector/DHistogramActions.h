@@ -586,6 +586,32 @@ class DHistogramAction_vanHove : public DAnalysisAction
 		set<set<map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed;
 };
 
+class DHistogramAction_vanHoveFour : public DAnalysisAction
+{
+public:
+  DHistogramAction_vanHoveFour(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locVec1PIDs, Particle_t locVec2PIDs, Particle_t locVec3PIDs, Particle_t locVec4PIDs, string locActionUniqueString = "") :
+    DAnalysisAction(locParticleComboWrapper, "Hist_vanHoveGreatCircle", locUseKinFitFlag, locActionUniqueString),
+    dVec1PIDs(deque<Particle_t>(1,locVec1PIDs)), dVec2PIDs(deque<Particle_t>(1,locVec2PIDs)), dVec3PIDs(deque<Particle_t>(1,locVec3PIDs)), dVec4PIDs(deque<Particle_t>(1,locVec4PIDs)) {}
+  
+  DHistogramAction_vanHoveFour(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, deque<Particle_t> locVec1PIDs, deque<Particle_t> locVec2PIDs, deque<Particle_t> locVec3PIDs, deque<Particle_t> locVec4PIDs, string locActionUniqueString = "") :
+    DAnalysisAction(locParticleComboWrapper, "Hist_vanHoveGreatCircle", locUseKinFitFlag, locActionUniqueString),
+    dVec1PIDs(locVec1PIDs), dVec2PIDs(locVec2PIDs), dVec3PIDs(locVec3PIDs), dVec4PIDs(locVec4PIDs) {}
+  
+  void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
+  void Initialize(void);
+  bool Perform_Action(void);
+  
+private:
+  deque<Particle_t> dVec1PIDs, dVec2PIDs, dVec3PIDs, dVec4PIDs;
+  unsigned int dNumXBins, dNumYBins;
+  double dMinX, dMaxX, dMinY, dMaxY;
+  
+  DAnalysisUtilities dAnalysisUtilities;
+  TH2I* dHist_vanHoveGreatCircle;
+  
+  set<set<map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed;
+};
+
 class DHistogramAction_KinFitResults : public DAnalysisAction
 {
 	public:
