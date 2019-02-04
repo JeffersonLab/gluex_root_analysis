@@ -1524,7 +1524,7 @@ void DHistogramAction_vanHoveFour::Initialize(void)
   // CREATE & GOTO MAIN FOLDER
   CreateAndChangeTo_ActionDirectory();
   
-  dHist_vanHoveGreatCircle = new TH2I("vanHoveGreatCircle", " ; Phi; Theta", 260, 0.0, 6.5, 130, 0.0, 3.25);
+  dHist_vanHoveGreatCircle = new TH2I("vanHoveGreatCircle", "Great Circle Plot; #phi (rad); #theta (rad)", 260, 0.0, 6.5, 130, 0.0, 3.25);
   
   //Return to the base directory
   ChangeTo_BaseDirectory();
