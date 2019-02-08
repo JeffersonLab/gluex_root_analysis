@@ -499,4 +499,30 @@ class DCutAction_VanHoveAngle : public DAnalysisAction
 };
 
 
+class DCutAction_VanHoveAngleFour : public DAnalysisAction
+{
+	public:
+  DCutAction_VanHoveAngleFour(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, deque<Particle_t> locVec1PIDs, deque<Particle_t> locVec2PIDs, deque<Particle_t> locVec3PIDs, deque<Particle_t> locVec4PIDs, double locMinThetaAngle, double locMaxThetaAngle, double locMinPhiAngle, double locMaxPhiAngle, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_VanHoveAngleFour", locUseKinFitFlag, locActionUniqueString),
+			dVec1PIDs(locVec1PIDs), dVec2PIDs(locVec2PIDs), dVec3PIDs(locVec3PIDs), dVec4PIDs(locVec4PIDs), dMinThetaAngle(locMinThetaAngle), dMaxThetaAngle(locMaxThetaAngle), dMinPhiAngle(locMinPhiAngle), dMaxPhiAngle(locMaxPhiAngle){}
+
+  DCutAction_VanHoveAngleFour(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locVec1PIDs, Particle_t locVec2PIDs, Particle_t locVec3PIDs, Particle_t locVec4PIDs, double locMinThetaAngle, double locMaxThetaAngle, double locMinPhiAngle, double locMaxPhiAngle, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_VanHoveAngleFour", locUseKinFitFlag, locActionUniqueString),
+			dVec1PIDs(deque<Particle_t>(1,locVec1PIDs)), dVec2PIDs(deque<Particle_t>(1,locVec2PIDs)), dVec3PIDs(deque<Particle_t>(1,locVec3PIDs)), dVec4PIDs(deque<Particle_t>(1,locVec4PIDs)), dMinThetaAngle(locMinThetaAngle), dMaxThetaAngle(locMaxThetaAngle), dMinPhiAngle(locMinPhiAngle), dMaxPhiAngle(locMaxPhiAngle) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		deque<Particle_t> dVec1PIDs, dVec2PIDs, dVec3PIDs, dVec4PIDs;
+
+		double dMinThetaAngle;
+		double dMaxThetaAngle;
+		double dMinPhiAngle;
+		double dMaxPhiAngle;
+		DAnalysisUtilities dAnalysisUtilities;
+};
+
 #endif // _DCutActions_
