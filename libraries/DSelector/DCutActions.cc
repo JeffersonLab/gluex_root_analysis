@@ -814,3 +814,67 @@ bool DCutAction_VanHoveAngle::Perform_Action(void)
 }
 
 
+string DCutAction_VanHoveAngleFour::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinThetaAngle << "_" << dMaxThetaAngle << "_" << dMinPhiAngle << "_" << dMaxPhiAngle;
+	return locStream.str();
+}
+
+bool DCutAction_VanHoveAngleFour::Perform_Action(void)
+{
+	double locVanHoveR, locVanHoveTheta, locVanHovePhi;
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(0);
+
+	//build all possible combinations of the included pids
+	set<set<size_t> > locVec1IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec1PIDs);
+	set<set<size_t> > locVec2IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec2PIDs);
+	set<set<size_t> > locVec3IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec3PIDs);
+	set<set<size_t> > locVec4IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec4PIDs);
+
+	bool locAnyOKFlag = false;
+	//(triple) loop over them
+	//(quadruple) loop over them
+	set<set<size_t> >::iterator locVec1ComboIterator = locVec1IndexCombos.begin();
+	for(; locVec1ComboIterator != locVec1IndexCombos.end(); ++locVec1ComboIterator)
+	{
+		map<unsigned int, set<Int_t> > locVec1SourceObjects;
+		TLorentzVector locVec1P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec1ComboIterator, locVec1SourceObjects, dUseKinFitFlag);
+
+		set<set<size_t> >::iterator locVec2ComboIterator = locVec2IndexCombos.begin();
+		for(; locVec2ComboIterator != locVec2IndexCombos.end(); ++locVec2ComboIterator)
+		{
+			map<unsigned int, set<Int_t> > locVec2SourceObjects;
+			TLorentzVector locVec2P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec2ComboIterator, locVec2SourceObjects, dUseKinFitFlag);
+
+			set<set<size_t> >::iterator locVec3ComboIterator = locVec3IndexCombos.begin();
+			for(; locVec3ComboIterator != locVec3IndexCombos.end(); ++locVec3ComboIterator)
+			{
+				map<unsigned int, set<Int_t> > locVec3SourceObjects;
+				TLorentzVector locVec3P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec3ComboIterator, locVec3SourceObjects, dUseKinFitFlag);
+
+				set<set<size_t> >::iterator locVec4ComboIterator = locVec4IndexCombos.begin();
+				for(; locVec4ComboIterator != locVec4IndexCombos.end(); ++locVec4ComboIterator)
+				  {
+				    map<unsigned int, set<Int_t> > locVec4SourceObjects;
+				    TLorentzVector locVec4P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec4ComboIterator, locVec4SourceObjects, dUseKinFitFlag);
+				    
+				    if(locVec1SourceObjects == locVec2SourceObjects || locVec1SourceObjects == locVec3SourceObjects || locVec1SourceObjects == locVec4SourceObjects || locVec2SourceObjects == locVec3SourceObjects || locVec2SourceObjects == locVec4SourceObjects || locVec3SourceObjects == locVec4SourceObjects)
+				      continue; //the same!
+				    
+				    std::tie (locVanHoveR,locVanHoveTheta,locVanHovePhi) = dAnalysisUtilities.Calc_vanHoveCoordFour(locVec1P4, locVec2P4, locVec3P4, locVec4P4);
+				    if(((locVanHovePhi > dMaxPhiAngle) || (locVanHovePhi < dMinPhiAngle)) || ((locVanHoveTheta > dMaxThetaAngle) || (locVanHoveTheta < dMinThetaAngle)))
+				      continue;
+				    locAnyOKFlag = true;
+				    break;
+				  }
+			}
+		}
+	}
+
+	if(!locAnyOKFlag)
+		return false;
+
+
+	return true;
+}

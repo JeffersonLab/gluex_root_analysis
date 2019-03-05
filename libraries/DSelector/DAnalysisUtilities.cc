@@ -557,12 +557,18 @@ std::tuple<double,double,double> DAnalysisUtilities::Calc_vanHoveCoordFour(TLore
   
   //r = sqrt(x^2 + y^2 + z^2)
   double locr = TMath::Sqrt(locx*locx+locy*locy+locz*locz);
-  //theta = arccos(z / sqrt(x^2 + y^2))
-  //inverse cosine calculation from the ATan2 expression, via trig identies
-  double loctheta = 2*(TMath::ATan2((TMath::Sqrt(1- ((locz/(TMath::Sqrt(locx*locx + locy*locy))) * (locz/(TMath::Sqrt(locx*locx + locy*locy)))))), (1 + (locz/(TMath::Sqrt(locx*locx + locy*locy))))));
+
+  //theta = arctan(sqrt(x^2 + y^2)/z)
+  //Better defined by the ATan2 expression
+  double loctheta = TMath::ATan2((TMath::Sqrt(locx*locx + locy*locy)),locz);
+
   //phi = arctan(y/z)
   //as for the 3-particle implementation, this is better defined by the ATan2 function, pi added to return angles in range [0,2pi]
-  double locphi = TMath::ATan2(locy,locx) + TMath::Pi();
+  double locphi = TMath::ATan2(locy,locx);
+  if(locphi<0)
+    {
+      locphi = locphi + 2*(TMath::Pi());
+    }
   
   return std::make_tuple(locr, loctheta, locphi);
 }
