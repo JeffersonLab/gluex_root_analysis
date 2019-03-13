@@ -388,6 +388,27 @@ class DCutAction_TrackShowerEOverP : public DAnalysisAction
 		double dShowerEOverPCut;
 };
 
+class DCutAction_ShowerQuality : public DAnalysisAction
+{
+	// For all photons in FCal, cuts those with ShowerQuality < input value
+
+	public:
+
+		DCutAction_ShowerQuality(const DParticleCombo* locParticleComboWrapper, DetectorSystem_t locDetector, double locShowerQualityCut, string locActionUniqueString = "") :
+                DAnalysisAction(locParticleComboWrapper, "Cut_ShowerQuality", false, locActionUniqueString),
+		dDetector(locDetector), dShowerQualityCut(locShowerQualityCut) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+
+		DetectorSystem_t dDetector;
+		double dShowerQualityCut;
+};
+
 class DCutAction_Kinematics : public DAnalysisAction
 {
 	//input range is what is cut: cut is ignored if min > max

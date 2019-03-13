@@ -688,6 +688,49 @@ bool DCutAction_TrackBCALPreshowerFraction::Perform_Action(void)
 	return true;
 }
 
+string DCutAction_ShowerQuality::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dShowerQualityCut;
+	return locStream.str();
+}
+
+bool DCutAction_ShowerQuality::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//final particles
+		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locComboWrapperStep->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			// Only cut on photons in FCal
+			if(locKinematicData->Get_PID() != 1)
+				continue;
+			if(ParticleCharge(locKinematicData->Get_PID()) != 0)
+				continue;
+			if (dDetector != SYS_FCAL)
+			        continue;
+
+			const DNeutralParticleHypothesis* locNeutralParticleHypothesis = dynamic_cast<const DNeutralParticleHypothesis*>(locKinematicData);
+			double locShowerQuality = locNeutralParticleHypothesis->Get_Shower_Quality();
+			if(locShowerQuality < dShowerQualityCut)
+			        return false;
+		}
+	}
+
+	return true;
+}
+
 string DCutAction_Kinematics::Get_ActionName(void) const
 {
 	ostringstream locStream;
