@@ -582,7 +582,25 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		dHistMap_PreshowerFractionVsTheta_BCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 260, 10., 140., dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction);
 		locHistName = "EoverPVs_PreshowerFraction_BCAL";
 		locHistTitle = locParticleROOTName + string("; BCAL Preshower Energy / Shower Energy;  BCAL E/p");
-		dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);	
+		dHistMap_EoverPVs_PreshowerFraction[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNumPreshowerFractionBins, dMinPreshowerFraction, dMaxPreshowerFraction, dNumEoverPBins, dMinEoverP, dMaxEoverP);
+
+		// DIRC PID INFORMATION
+                locHistName = "NumPhotons_DIRC";
+                locHistTitle = locParticleROOTName + string("; DIRC NumPhotons");
+                dHistMap_NumPhotons_DIRC[locStepIndex][locPID] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dDIRCNumPhotonsBins, dDIRCMinNumPhotons, dDIRCMaxNumPhotons);
+
+                locHistName = "ThetaCVsP_DIRC";
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC #theta_{C}");
+                dHistMap_ThetaCVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCThetaCBins, dDIRCMinThetaC, dDIRCMaxThetaC);
+
+                locHistName = "Ldiff_kpiVsP_DIRC";
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{K}-L_{#pi}");
+                dHistMap_Ldiff_kpiVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCLikelihoodBins, -1*dDIRCMaxLikelihood, dDIRCMaxLikelihood);
+		
+		locHistName = "Ldiff_pkVsP_DIRC";
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{p}-L_{K}");
+                dHistMap_Ldiff_pkVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCLikelihoodBins, -1*dDIRCMaxLikelihood, dDIRCMaxLikelihood);
+
 	}
 	else
 	{
@@ -749,6 +767,20 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 				double locEoverP = locChargedTrackHypothesis->Get_Energy_FCAL()/locP;
 				dHistMap_EoverPVsP_FCAL[locStepIndex][locPID]->Fill(locP, locEoverP);
 				dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID]->Fill(locTheta, locEoverP);
+			}
+
+			// DIRC
+                        int locNumPhotons_DIRC = locChargedTrackHypothesis->Get_Track_NumPhotons_DIRC();
+			if(locNumPhotons_DIRC > 0) {
+	                        double locThetaC_DIRC = locChargedTrackHypothesis->Get_Track_ThetaC_DIRC()*TMath::RadToDeg();
+        	                dHistMap_NumPhotons_DIRC[locStepIndex][locPID]->Fill(locNumPhotons_DIRC);
+                	        dHistMap_ThetaCVsP_DIRC[locStepIndex][locPID]->Fill(locP, locThetaC_DIRC);
+                        	//double locLele_DIRC = locChargedTrackHypothesis->Get_Track_Lele_DIRC();
+	                        double locLpi_DIRC = locChargedTrackHypothesis->Get_Track_Lpi_DIRC();
+        	                double locLk_DIRC = locChargedTrackHypothesis->Get_Track_Lk_DIRC();
+                	        double locLp_DIRC = locChargedTrackHypothesis->Get_Track_Lp_DIRC();
+	                        dHistMap_Ldiff_kpiVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLk_DIRC-locLpi_DIRC);
+        	                dHistMap_Ldiff_pkVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLp_DIRC-locLk_DIRC);
 			}
 		}
 	}
@@ -1369,6 +1401,209 @@ bool DHistogramAction_Dalitz::Perform_Action(void)
 	}
 
 	return true;
+}
+
+void DHistogramAction_vanHove::Initialize(void)
+{
+	string locHistName, locHistTitle;
+
+	string locParticleNamesForHistX = "";
+	string locParticleNamesForHistNameX = "";
+	for(size_t loc_i = 0; loc_i < dXPIDs.size(); ++loc_i){
+		locParticleNamesForHistX += ParticleName_ROOT(dXPIDs[loc_i]);
+		locParticleNamesForHistNameX += Get_ShortName(dXPIDs[loc_i]);
+	}
+
+	string locParticleNamesForHistY = "";
+	string locParticleNamesForHistNameY = "";
+	for(size_t loc_i = 0; loc_i < dYPIDs.size(); ++loc_i){
+		locParticleNamesForHistY += ParticleName_ROOT(dYPIDs[loc_i]);
+		locParticleNamesForHistNameY += Get_ShortName(dYPIDs[loc_i]);
+	}
+	
+	string locParticleNamesForHistZ = "";
+	string locParticleNamesForHistNameZ = "";
+	for(size_t loc_i = 0; loc_i < dZPIDs.size(); ++loc_i){
+		locParticleNamesForHistZ += ParticleName_ROOT(dZPIDs[loc_i]);
+		locParticleNamesForHistNameZ += Get_ShortName(dZPIDs[loc_i]);
+	}
+
+	string locMassString = " Invariant Mass (GeV/c^{2});";
+
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	dHist_vanHove = new TH2I("vanHove", " ; X; Y", 200, -5, 5, 200, -5, 5);
+	
+	locHistName = string("InvariantMass_") + locParticleNamesForHistNameX + locParticleNamesForHistNameY + string("_vs_vanHoveAngle");
+	locHistTitle = string(";") + locParticleNamesForHistX + locParticleNamesForHistY + locMassString + string("van Hove angle");
+	dHist_invMassXY_vs_angle = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 400, 0, 4.0, 320, 0, 6.4);
+	
+	locHistName = string("InvariantMass_") + locParticleNamesForHistNameY + locParticleNamesForHistNameZ + string("_vs_vanHoveAngle");
+	locHistTitle = string(";") + locParticleNamesForHistY + locParticleNamesForHistZ + locMassString + string("van Hove angle");
+	dHist_invMassYZ_vs_angle = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 400, 0, 4.0, 320, 0, 6.4);
+	
+	locHistName = string("InvariantMass_") + locParticleNamesForHistNameZ + locParticleNamesForHistNameX + string("_vs_vanHoveAngle");
+	locHistTitle = string(";") + locParticleNamesForHistZ + locParticleNamesForHistX + locMassString + string("van Hove angle");
+	dHist_invMassZX_vs_angle = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 400, 0, 4.0, 320, 0, 6.4);
+	
+	//Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+bool DHistogramAction_vanHove::Perform_Action(void)
+{
+	double locVanHoveQ, locVanHovePhi;
+	const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(0);
+	DKinematicData* locBeamParticle = locParticleComboStepWrapper->Get_InitialParticle();
+	Int_t locBeamID = locBeamParticle->Get_ID();
+	map<unsigned int, set<Int_t> > locBeamObject;
+	locBeamObject[Unknown].insert(locBeamID);
+	
+	TLorentzVector locBeam_P4;
+	if(dUseKinFitFlag){
+		locBeam_P4 = locBeamParticle->Get_P4();
+	}
+	else{
+		locBeam_P4 = locBeamParticle->Get_P4_Measured();
+	}
+	
+	//build all possible combinations of the included pids
+	set<set<size_t> > locXIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dXPIDs);
+	set<set<size_t> > locYIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dYPIDs);
+	set<set<size_t> > locZIndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dZPIDs);
+	
+	//(triple) loop over them
+	set<set<size_t> >::iterator locXComboIterator = locXIndexCombos.begin();
+	for(; locXComboIterator != locXIndexCombos.end(); ++locXComboIterator)
+	{
+		map<unsigned int, set<Int_t> > locXSourceObjects;
+		TLorentzVector locXP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locXComboIterator, locXSourceObjects, dUseKinFitFlag);
+		
+		set<set<size_t> >::iterator locYComboIterator = locYIndexCombos.begin();
+		for(; locYComboIterator != locYIndexCombos.end(); ++locYComboIterator)
+		{
+			map<unsigned int, set<Int_t> > locYSourceObjects;
+			TLorentzVector locYP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locYComboIterator, locYSourceObjects, dUseKinFitFlag);
+			
+			set<set<size_t> >::iterator locZComboIterator = locZIndexCombos.begin();
+			for(; locZComboIterator != locZIndexCombos.end(); ++locZComboIterator)
+			{
+				map<unsigned int, set<Int_t> > locZSourceObjects;
+				TLorentzVector locZP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locZComboIterator, locZSourceObjects, dUseKinFitFlag);
+				
+				if(locXSourceObjects == locYSourceObjects || locXSourceObjects == locZSourceObjects || locYSourceObjects == locZSourceObjects)
+					continue; //the same!
+				
+				set<map<unsigned int, set<Int_t> > > locAllSourceObjects;
+				locAllSourceObjects.insert(locXSourceObjects);
+				locAllSourceObjects.insert(locYSourceObjects);
+				locAllSourceObjects.insert(locZSourceObjects);
+// 				locAllSourceObjects.insert(locBeamObject); \\take out of uniqueness tracking to be consistent with other HistogramActions
+				if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
+					continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
+				dPreviouslyHistogrammed.insert(locAllSourceObjects);
+				
+				std::tie (locVanHoveQ,locVanHovePhi) = dAnalysisUtilities.Calc_vanHoveCoord(locXP4, locYP4, locZP4);
+				double vHX = locVanHoveQ*TMath::Cos(locVanHovePhi);
+				double vHY = locVanHoveQ*TMath::Sin(locVanHovePhi);
+				
+				dHist_vanHove->Fill(vHX,vHY);
+				dHist_invMassXY_vs_angle->Fill((locXP4+locYP4).M(),locVanHovePhi);
+				dHist_invMassYZ_vs_angle->Fill((locYP4+locZP4).M(),locVanHovePhi);
+				dHist_invMassZX_vs_angle->Fill((locZP4+locXP4).M(),locVanHovePhi);
+			}
+		}
+	}
+	
+	return true;
+}
+
+void DHistogramAction_vanHoveFour::Initialize(void)
+{
+  // CREATE & GOTO MAIN FOLDER
+  CreateAndChangeTo_ActionDirectory();
+  
+  dHist_vanHoveGreatCircle = new TH2I("vanHoveGreatCircle", "Great Circle Plot; #phi (rad); #theta (rad)", 260, 0.0, 6.5, 130, 0.0, 3.25);
+  
+  //Return to the base directory
+  ChangeTo_BaseDirectory();
+  
+}
+
+bool DHistogramAction_vanHoveFour::Perform_Action(void)
+{
+  double locVanHoveR, locVanHoveTheta, locVanHovePhi;
+  const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(0);
+  DKinematicData* locBeamParticle = locParticleComboStepWrapper->Get_InitialParticle();
+  Int_t locBeamID = locBeamParticle->Get_ID();
+  map<unsigned int, set<Int_t> > locBeamObject;
+  locBeamObject[Unknown].insert(locBeamID);
+  
+  TLorentzVector locBeam_P4;
+  if(dUseKinFitFlag){
+    locBeam_P4 = locBeamParticle->Get_P4();
+  }
+  else{
+    locBeam_P4 = locBeamParticle->Get_P4_Measured();
+  }
+  
+  //build all possible combinations of the included pids
+  set<set<size_t> > locVec1IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec1PIDs);
+  set<set<size_t> > locVec2IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec2PIDs);
+  set<set<size_t> > locVec3IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec3PIDs);
+  set<set<size_t> > locVec4IndexCombos = dAnalysisUtilities.Build_IndexCombos(locParticleComboStepWrapper, dVec4PIDs);
+  
+  //(quadruple) loop over them
+  set<set<size_t> >::iterator locVec1ComboIterator = locVec1IndexCombos.begin();
+  for(; locVec1ComboIterator != locVec1IndexCombos.end(); ++locVec1ComboIterator)
+    {
+      map<unsigned int, set<Int_t> > locVec1SourceObjects;
+      TLorentzVector locVec1P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec1ComboIterator, locVec1SourceObjects, dUseKinFitFlag);
+      
+      set<set<size_t> >::iterator locVec2ComboIterator = locVec2IndexCombos.begin();
+      for(; locVec2ComboIterator != locVec2IndexCombos.end(); ++locVec2ComboIterator)
+	{
+	  map<unsigned int, set<Int_t> > locVec2SourceObjects;
+	  TLorentzVector locVec2P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec2ComboIterator, locVec2SourceObjects, dUseKinFitFlag);
+	  
+	  set<set<size_t> >::iterator locVec3ComboIterator = locVec3IndexCombos.begin();
+	  for(; locVec3ComboIterator != locVec3IndexCombos.end(); ++locVec3ComboIterator)
+	    {
+	      map<unsigned int, set<Int_t> > locVec3SourceObjects;
+	      TLorentzVector locVec3P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec3ComboIterator, locVec3SourceObjects, dUseKinFitFlag);
+	      
+	      set<set<size_t> >::iterator locVec4ComboIterator = locVec4IndexCombos.begin();
+	      for(; locVec4ComboIterator != locVec4IndexCombos.end(); ++locVec4ComboIterator)
+		{
+		  map<unsigned int, set<Int_t> > locVec4SourceObjects;
+		  TLorentzVector locVec4P4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, 0, *locVec4ComboIterator, locVec4SourceObjects, dUseKinFitFlag);
+		  
+		  
+		  if(locVec1SourceObjects == locVec2SourceObjects || locVec1SourceObjects == locVec3SourceObjects || locVec1SourceObjects == locVec4SourceObjects || locVec2SourceObjects == locVec3SourceObjects || locVec2SourceObjects == locVec4SourceObjects || locVec3SourceObjects == locVec4SourceObjects)
+		    continue; //the same!
+		  
+		  set<map<unsigned int, set<Int_t> > > locAllSourceObjects;
+		  locAllSourceObjects.insert(locVec1SourceObjects);
+		  locAllSourceObjects.insert(locVec2SourceObjects);
+		  locAllSourceObjects.insert(locVec3SourceObjects);
+		  locAllSourceObjects.insert(locVec4SourceObjects);
+		  // 				locAllSourceObjects.insert(locBeamObject); \\take out of uniqueness tracking to be consistent with other HistogramActions
+		  if(dPreviouslyHistogrammed.find(locAllSourceObjects) != dPreviouslyHistogrammed.end())
+		    continue; //dupe: already histed! (also, could be that the X/Y swapped combo has already been histed: don't double-count!
+		  dPreviouslyHistogrammed.insert(locAllSourceObjects);
+		  
+		  std::tie (locVanHoveR,locVanHoveTheta,locVanHovePhi) = dAnalysisUtilities.Calc_vanHoveCoordFour(locVec1P4, locVec2P4, locVec3P4, locVec4P4);
+		  double vHPhi = locVanHovePhi;
+		  double vHTheta = locVanHoveTheta;
+		  
+		  dHist_vanHoveGreatCircle->Fill(vHPhi,vHTheta);
+		  
+		}
+	    }
+	}
+    }
+  return true;
 }
 
 void DHistogramAction_KinFitResults::Initialize(void)

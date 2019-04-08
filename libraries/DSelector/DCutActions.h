@@ -388,6 +388,27 @@ class DCutAction_TrackShowerEOverP : public DAnalysisAction
 		double dShowerEOverPCut;
 };
 
+class DCutAction_ShowerQuality : public DAnalysisAction
+{
+	// For all photons in FCal, cuts those with ShowerQuality < input value
+
+	public:
+
+		DCutAction_ShowerQuality(const DParticleCombo* locParticleComboWrapper, DetectorSystem_t locDetector, double locShowerQualityCut, string locActionUniqueString = "") :
+                DAnalysisAction(locParticleComboWrapper, "Cut_ShowerQuality", false, locActionUniqueString),
+		dDetector(locDetector), dShowerQualityCut(locShowerQualityCut) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+
+		DetectorSystem_t dDetector;
+		double dShowerQualityCut;
+};
+
 class DCutAction_Kinematics : public DAnalysisAction
 {
 	//input range is what is cut: cut is ignored if min > max
@@ -474,5 +495,55 @@ class DCutAction_NumUnusedTracks : public DAnalysisAction
                 uint dMaxUnusedTracks;
 };
 
+class DCutAction_VanHoveAngle : public DAnalysisAction
+{
+	public:
+		DCutAction_VanHoveAngle(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, deque<Particle_t> locXPIDs, deque<Particle_t> locYPIDs, deque<Particle_t> locZPIDs, double locMinAngle, double locMaxAngle, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_VanHoveAngle", locUseKinFitFlag, locActionUniqueString),
+			dXPIDs(locXPIDs), dYPIDs(locYPIDs), dZPIDs(locZPIDs), dMinAngle(locMinAngle), dMaxAngle(locMaxAngle){}
+		
+		DCutAction_VanHoveAngle(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locXPIDs, Particle_t locYPIDs, Particle_t locZPIDs, double locMinAngle, double locMaxAngle, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_VanHoveAngle", locUseKinFitFlag, locActionUniqueString),
+			dXPIDs(deque<Particle_t>(1,locXPIDs)), dYPIDs(deque<Particle_t>(1,locYPIDs)), dZPIDs(deque<Particle_t>(1,locZPIDs)), dMinAngle(locMinAngle), dMaxAngle(locMaxAngle){}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		deque<Particle_t> dXPIDs, dYPIDs, dZPIDs;
+
+		double dMinAngle;
+		double dMaxAngle;
+		DAnalysisUtilities dAnalysisUtilities;
+};
+
+
+class DCutAction_VanHoveAngleFour : public DAnalysisAction
+{
+	public:
+  DCutAction_VanHoveAngleFour(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, deque<Particle_t> locVec1PIDs, deque<Particle_t> locVec2PIDs, deque<Particle_t> locVec3PIDs, deque<Particle_t> locVec4PIDs, double locMinThetaAngle, double locMaxThetaAngle, double locMinPhiAngle, double locMaxPhiAngle, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_VanHoveAngleFour", locUseKinFitFlag, locActionUniqueString),
+			dVec1PIDs(locVec1PIDs), dVec2PIDs(locVec2PIDs), dVec3PIDs(locVec3PIDs), dVec4PIDs(locVec4PIDs), dMinThetaAngle(locMinThetaAngle), dMaxThetaAngle(locMaxThetaAngle), dMinPhiAngle(locMinPhiAngle), dMaxPhiAngle(locMaxPhiAngle){}
+
+  DCutAction_VanHoveAngleFour(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locVec1PIDs, Particle_t locVec2PIDs, Particle_t locVec3PIDs, Particle_t locVec4PIDs, double locMinThetaAngle, double locMaxThetaAngle, double locMinPhiAngle, double locMaxPhiAngle, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_VanHoveAngleFour", locUseKinFitFlag, locActionUniqueString),
+			dVec1PIDs(deque<Particle_t>(1,locVec1PIDs)), dVec2PIDs(deque<Particle_t>(1,locVec2PIDs)), dVec3PIDs(deque<Particle_t>(1,locVec3PIDs)), dVec4PIDs(deque<Particle_t>(1,locVec4PIDs)), dMinThetaAngle(locMinThetaAngle), dMaxThetaAngle(locMaxThetaAngle), dMinPhiAngle(locMinPhiAngle), dMaxPhiAngle(locMaxPhiAngle) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		deque<Particle_t> dVec1PIDs, dVec2PIDs, dVec3PIDs, dVec4PIDs;
+
+		double dMinThetaAngle;
+		double dMaxThetaAngle;
+		double dMinPhiAngle;
+		double dMaxPhiAngle;
+		DAnalysisUtilities dAnalysisUtilities;
+};
 
 #endif // _DCutActions_

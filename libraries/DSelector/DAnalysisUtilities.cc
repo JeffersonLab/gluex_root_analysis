@@ -508,6 +508,71 @@ double DAnalysisUtilities::Calc_DecayPlanePsi_Vector_3BodyDecay(double locBeamEn
 	return 180.0*locDeltaPhi/TMath::Pi();
 }
 
+std::tuple<double,double> DAnalysisUtilities::Calc_vanHoveCoord(TLorentzVector locXP4, TLorentzVector locYP4, TLorentzVector locZP4)
+{
+	TLorentzVector locInitialStateP4 = locXP4 + locYP4 + locZP4;
+	TVector3 locBoostVector_ProdCMS = -1.0*(locInitialStateP4.BoostVector()); //negative due to coordinate system convention
+	TLorentzVector locXP4_ProdCMS(locXP4);
+	locXP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	TLorentzVector locYP4_ProdCMS(locYP4);
+	locYP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	TLorentzVector locZP4_ProdCMS(locZP4);
+	locZP4_ProdCMS.Boost(locBoostVector_ProdCMS);
+	
+	
+	double loclong1 = locXP4_ProdCMS.Pz();
+	double loclong2 = locYP4_ProdCMS.Pz();
+	double loclong3 = locZP4_ProdCMS.Pz();
+	
+	double locq = TMath::Sqrt(loclong1*loclong1+loclong2*loclong2+loclong3*loclong3);
+	double locomega = TMath::ATan2(-1.*TMath::Sqrt(3.)*loclong1,2.*loclong2+loclong1)+TMath::Pi(); // add pi to map [-pi,pi] on [0,2pi]
+	
+	return std::make_tuple(locq, locomega);
+}
+
+std::tuple<double,double,double> DAnalysisUtilities::Calc_vanHoveCoordFour(TLorentzVector locVec1P4, TLorentzVector locVec2P4, TLorentzVector locVec3P4, TLorentzVector locVec4P4)
+{
+  //create CM vector from final state particles
+  TLorentzVector locInitialStateP4 = locVec1P4 + locVec2P4 + locVec3P4 + locVec4P4;
+  
+  TVector3 locBoostVector_ProdCMS = (-1)*(locInitialStateP4.BoostVector());
+  
+  TLorentzVector lcoVec1P4_ProdCMS(locVec1P4);
+  lcoVec1P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  TLorentzVector lcoVec2P4_ProdCMS(locVec2P4);
+  lcoVec2P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  TLorentzVector lcoVec3P4_ProdCMS(locVec3P4);
+  lcoVec3P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  TLorentzVector lcoVec4P4_ProdCMS(locVec4P4);
+  lcoVec4P4_ProdCMS.Boost(locBoostVector_ProdCMS);
+  
+  double loclong1 = lcoVec1P4_ProdCMS.Pz();
+  double loclong2 = lcoVec2P4_ProdCMS.Pz();
+  double loclong3 = lcoVec3P4_ProdCMS.Pz();
+  
+  //Calculate (x,y,z) and VH spherical polar angles
+  double locx = (TMath::Sqrt(3./8.))*(loclong3-loclong2);
+  double locy = (TMath::Sqrt(1./8.))*(2.*loclong1 + 3.*loclong2 + 3.*loclong3);
+  double locz = loclong1;
+  
+  //r = sqrt(x^2 + y^2 + z^2)
+  double locr = TMath::Sqrt(locx*locx+locy*locy+locz*locz);
+
+  //theta = arctan(sqrt(x^2 + y^2)/z)
+  //Better defined by the ATan2 expression
+  double loctheta = TMath::ATan2((TMath::Sqrt(locx*locx + locy*locy)),locz);
+
+  //phi = arctan(y/z)
+  //as for the 3-particle implementation, this is better defined by the ATan2 function, pi added to return angles in range [0,2pi]
+  double locphi = TMath::ATan2(locy,locx);
+  if(locphi<0)
+    {
+      locphi = locphi + 2*(TMath::Pi());
+    }
+  
+  return std::make_tuple(locr, loctheta, locphi);
+}
+
 bool DAnalysisUtilities::Get_IsPolarizedBeam(int locRunNumber, bool& locIsPARAFlag) const
 {
 	//RCDB environment must be setup!!
