@@ -179,8 +179,6 @@ cout << endl;
 		}
 
 		TObjString* locBranchObjString = new TObjString(locBranchName.c_str());
-		locParticleNamesWithBranches->AddLast(locNameObject);
-		locParticleBranchNames->AddLast(locBranchObjString);
 		if(locParticleName.substr(0, 6) == string("Proton")){
 		  locParticleNamesWithBranches->AddFirst(locNameObject);
 		  locParticleBranchNames->AddFirst(locBranchObjString);
@@ -439,6 +437,8 @@ cout << endl;
 		locInputTree->GetEntry(locEntry);
 
 		//weight
+		if (locMCWeight == 0) // 0 weight in default MC trees does not make sense
+		  locMCWeight = 1.0;
 		*locBranchPointer_Weight = locMCWeight;
 
 		//Loop over combos
@@ -666,6 +666,8 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 		locInputTree->GetEntry(locEntry);
 
 		//weight
+		if (locMCWeight == 0) // 0 weight in default MC trees does not make sense
+		  locMCWeight = 1.0;
 		*locBranchPointer_Weight = locMCWeight;
 
 		//beam
