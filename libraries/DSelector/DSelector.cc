@@ -404,7 +404,9 @@ void DSelector::Create_FlatTree(void)
 		dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("is_truecombo");
 		dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("is_bdtcombo");
 	}
-	dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("rftime");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("rftime");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("rftime_meas");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("delta_t");
 	if(dTreeInterface->Get_Branch("ChiSq_KinFit") != NULL)
 	{
 		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("kin_chisq");
@@ -614,7 +616,8 @@ void DSelector::Fill_FlatTree(void)
 		dFlatTreeInterface->Fill_Fundamental<Bool_t>("is_truecombo", dComboWrapper->Get_IsTrueCombo());
 		dFlatTreeInterface->Fill_Fundamental<Bool_t>("is_bdtcombo", dComboWrapper->Get_IsBDTSignalCombo());
 	}
-	dFlatTreeInterface->Fill_Fundamental<Bool_t>("rftime", dComboWrapper->Get_RFTime());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("rftime", dComboWrapper->Get_RFTime());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("rftime_meas", dComboWrapper->Get_RFTime_Measured());
 	if(dTreeInterface->Get_Branch("ChiSq_KinFit") != NULL)
 	{
 		dFlatTreeInterface->Fill_Fundamental<Float_t>("kin_chisq", dComboWrapper->Get_ChiSq_KinFit( "" ));
@@ -680,6 +683,8 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 			dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_x4_kin", locBeamParticle->Get_X4());
     	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__P4_KinFit") != NULL)
 			dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_kin", locBeamParticle->Get_P4());
+		// delta t
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("delta_t", locBeamParticle->Get_X4_Measured().T() - (dComboWrapper->Get_RFTime_Measured() + (locBeamParticle->Get_X4_Measured().Z() - dTargetCenter.Z())/29.9792458) );
 
 		if(locIsMCFlag)
 		{

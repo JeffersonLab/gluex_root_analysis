@@ -9,7 +9,7 @@ FLAGS = $(CXXFLAGS) $(ROOTFLAGS) $(INCLUDE)
 ROOTGLIBS = $(shell $(ROOTSYS)/bin/root-config --glibs)
 LIBS = $(ROOTGLIBS) -L$(ROOTSYS)/lib/ -lProof
 
-HFILES = DBeamParticle.h DChargedTrackHypothesis.h DKinematicData.h DMCThrown.h DNeutralParticleHypothesis.h DParticleCombo.h DParticleComboStep.h DAnalysisUtilities.h DAnalysisAction.h DHistogramActions.h DCutActions.h DSelector.h DTreeInterface.h DPROOFLiteManager.h DSelectorLinkDef.h
+HFILES = DBeamParticle.h DChargedTrackHypothesis.h DKinematicData.h DMCThrown.h DNeutralParticleHypothesis.h DParticleCombo.h DParticleComboStep.h DAnalysisUtilities.h DAnalysisAction.h DHistogramActions.h DCutActions.h DSelector.h DTreeInterface.h DComboTreeHelper.h DPROOFLiteManager.h DSelectorLinkDef.h
 CCFILES = $(wildcard *.cc) $(BMS_OSNAME)/obj/DSelectorDict.cc
 
 IS_DARWIN = $(shell echo $BMS_OSNAME | grep -c Darwin)
