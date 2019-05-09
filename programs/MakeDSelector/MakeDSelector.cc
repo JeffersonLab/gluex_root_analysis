@@ -81,6 +81,7 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "#include \"DSelector/DSelector.h\"" << endl;
 	locHeaderStream << "#include \"DSelector/DHistogramActions.h\"" << endl;
 	locHeaderStream << "#include \"DSelector/DCutActions.h\"" << endl;
+	locHeaderStream << "#include \"DSelector/DComboTreeHelper.h\"" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "#include \"TH1I.h\"" << endl;
 	locHeaderStream << "#include \"TH2I.h\"" << endl;
@@ -160,6 +161,9 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		TH1I* dHist_MissingMassSquared;" << endl;
 	locHeaderStream << "		TH1I* dHist_BeamEnergy;" << endl;
 	locHeaderStream << endl;
+	locHeaderStream << "		// TOOL FOR FLAT TREE OUTPUT" << endl;
+	locHeaderStream << "		DComboTreeHelper *dComboTreeHelper;" << endl;
+	locHeaderStream << endl;
 	locHeaderStream << "	ClassDef(" << locSelectorName << ", 0);" << endl;
 	locHeaderStream << "};" << endl;
 	locHeaderStream << endl;
@@ -234,10 +238,12 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	// Init() will be called many times when running on PROOF (once per file to be processed)." << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//USERS: SET OUTPUT FILE NAME //can be overriden by user in PROOF" << endl;
-	locSourceStream << "	dOutputFileName = \"" << locSelectorBaseName << ".root\"; //\"\" for none" << endl;
+	locSourceStream << "    TString option = GetOption();" << endl;
+	locSourceStream << "    if (option==\"\") option = \""<< locSelectorBaseName <<"\";" << endl<<endl;
+	locSourceStream << "	dOutputFileName = option + \".root\"; //\"\" for none" << endl;
 	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
-	locSourceStream << "	dFlatTreeFileName = \"\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
-	locSourceStream << "	dFlatTreeName = \"\"; //if blank, default name will be chosen" << endl;
+	locSourceStream << "	dFlatTreeFileName = option + \"_flat.root\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
+	locSourceStream << "	dFlatTreeName = \"ntp\"; //if blank, default name will be chosen" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//Because this function gets called for each TTree in the TChain, we must be careful:" << endl;
 	locSourceStream << "		//We need to re-initialize the tree interface & branch wrappers, but don't want to recreate histograms" << endl;
@@ -325,6 +331,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dFlatTreeInterface->Create_Branch_ClonesArray<TLorentzVector>(\"flat_my_p4_array\");" << endl;
 	locSourceStream << "	*/" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	//CREATE HELPER AND INITIALIZE WITH DESIRED COMBINATIONS TO BE STORED" << endl;
+	locSourceStream << "	//dComboTreeHelper = new DComboTreeHelper(dTreeInterface, dComboWrapper, dFlatTreeInterface, \"K+ K- p; K+ K-; K- p\", dThrownWrapper ,\"p4:marker:angle:dalitz:acc\");" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	/************************************* ADVANCED EXAMPLE: CHOOSE BRANCHES TO READ ************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//TO SAVE PROCESSING TIME" << endl;
@@ -352,6 +361,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	//CALL THIS FIRST" << endl;
 	locSourceStream << "	DSelector::Process(locEntry); //Gets the data from the tree for the entry" << endl;
+	locSourceStream << "	if (locEntry%1000==0) cout <<\"ENTRY \"<<locEntry<<\",  RUN \" << Get_RunNumber() << \", EVENT \" << Get_EventNumber() << endl;" << endl;
 	locSourceStream << "	//cout << \"RUN \" << Get_RunNumber() << \", EVENT \" << Get_EventNumber() << endl;" << endl;
 	locSourceStream << "	//TLorentzVector locProductionX4 = Get_X4_Production();" << endl;
 	locSourceStream << endl;
@@ -666,6 +676,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//FILL FLAT TREE" << endl;
+	locSourceStream << "		//dComboTreeHelper->Fill(locEntry); //fills branches for sub-combinations" << endl;
 	locSourceStream << "		//Fill_FlatTree(); //for the active combo" << endl;
 	locSourceStream << "	} // end of combo loop" << endl;
 	locSourceStream << endl;

@@ -594,11 +594,11 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
                 dHistMap_ThetaCVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCThetaCBins, dDIRCMinThetaC, dDIRCMaxThetaC);
 
                 locHistName = "Ldiff_kpiVsP_DIRC";
-                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{K}-L_{#pi}");
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{#pi}-:_{K}");
                 dHistMap_Ldiff_kpiVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCLikelihoodBins, -1*dDIRCMaxLikelihood, dDIRCMaxLikelihood);
 		
 		locHistName = "Ldiff_pkVsP_DIRC";
-                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{p}-L_{K}");
+                locHistTitle = locParticleROOTName + string("; Momentum (GeV); DIRC L_{K}-L_{p}");
                 dHistMap_Ldiff_pkVsP_DIRC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dDIRCLikelihoodBins, -1*dDIRCMaxLikelihood, dDIRCMaxLikelihood);
 
 	}
@@ -779,8 +779,10 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 	                        double locLpi_DIRC = locChargedTrackHypothesis->Get_Track_Lpi_DIRC();
         	                double locLk_DIRC = locChargedTrackHypothesis->Get_Track_Lk_DIRC();
                 	        double locLp_DIRC = locChargedTrackHypothesis->Get_Track_Lp_DIRC();
-	                        dHistMap_Ldiff_kpiVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLk_DIRC-locLpi_DIRC);
-        	                dHistMap_Ldiff_pkVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLp_DIRC-locLk_DIRC);
+				if(locNumPhotons_DIRC > 15) {
+		                        dHistMap_Ldiff_kpiVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLpi_DIRC-locLk_DIRC);
+        		                dHistMap_Ldiff_pkVsP_DIRC[locStepIndex][locPID]->Fill(locP, locLk_DIRC-locLp_DIRC);
+				}
 			}
 		}
 	}

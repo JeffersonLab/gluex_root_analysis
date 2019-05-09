@@ -4,24 +4,24 @@ string gPROOFLiteSandbox = "";
 
 /************************************************************ PROCESS ************************************************************/
 
-bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, unsigned int locNumThreads, string locOutputFileName, string locOutputTreeFileName, string locOptions)
+bool DPROOFLiteManager::Process_Tree(string locInputFileName, string locTreeName, string locSelectorName, unsigned int locNumThreads, string locOutputFileName, string locOutputTreeFileName, string locOutputFlatTreeFileName, string locOptions)
 {
 	TChain* locChain = new TChain(locTreeName.c_str());
 	locChain->Add(locInputFileName.c_str());
-	return Process_Chain(locChain, locSelectorName, locNumThreads, locOutputFileName, locOutputTreeFileName, locOptions);
+	return Process_Chain(locChain, locSelectorName, locNumThreads, locOutputFileName, locOutputTreeFileName, locOutputFlatTreeFileName, locOptions);
 }
 
-bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, unsigned int locNumThreads, string locOutputFileName, string locOutputTreeFileName, string locOptions)
+bool DPROOFLiteManager::Process_Chain(TChain* locChain, string locSelectorName, unsigned int locNumThreads, string locOutputFileName, string locOutputTreeFileName, string locOutputFlatTreeFileName, string locOptions)
 {
 	string locPackageName = Get_PackagePath();
-	Setup_PROOFSession(locPackageName, "", locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
+	Setup_PROOFSession(locPackageName, "", locOutputFileName, locOutputTreeFileName, locOutputFlatTreeFileName, locOptions, locNumThreads);
 	return Process_Chain(locChain, locSelectorName);
 }
 
-bool DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, unsigned int locNumThreads, unsigned int locNumEntries, string locOutputFileName, string locOutputTreeFileName, string locOptions)
+bool DPROOFLiteManager::Process_Other(string locSelectorName, string locInputFileName, unsigned int locNumThreads, unsigned int locNumEntries, string locOutputFileName, string locOutputTreeFileName, string locOutputFlatTreeFileName, string locOptions)
 {
 	string locPackageName = Get_PackagePath();
-	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locOutputTreeFileName, locOptions, locNumThreads);
+	TProof* locPROOF = Setup_PROOFSession(locPackageName, locInputFileName, locOutputFileName, locOutputTreeFileName, locOutputFlatTreeFileName, locOptions, locNumThreads);
 	Long64_t locStatus = locPROOF->Process(locSelectorName.c_str(), locNumEntries, "");
 	cout << "PROOF status = " << locStatus << endl;
 	return (locStatus >= Long64_t(0)); //failed if -1
@@ -41,11 +41,12 @@ string DPROOFLiteManager::Get_PackagePath(void)
 	return locAnalysisHome + string("/") + locOSName + string("/packages/DSelector.par");
 }
 
-TProof* DPROOFLiteManager::Setup_PROOFSession(string locPackageName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, string locOptions, unsigned int locNumThreads)
+TProof* DPROOFLiteManager::Setup_PROOFSession(string locPackageName, string locInputFileName, string locOutputFileName, string locOutputTreeFileName, string locOutputFlatTreeFileName, string locOptions, unsigned int locNumThreads)
 {
 	locInputFileName = Setup_Path(locInputFileName);
 	locOutputFileName = Setup_Path(locOutputFileName);
 	locOutputTreeFileName = Setup_Path(locOutputTreeFileName);
+	locOutputFlatTreeFileName = Setup_Path(locOutputFlatTreeFileName);
 
 	//add FLAT_TREE_FILENAME
 	TObjArray* locSessionVariables = new TObjArray(); //use name/title as key/value
@@ -55,6 +56,8 @@ TProof* DPROOFLiteManager::Setup_PROOFSession(string locPackageName, string locI
 		locSessionVariables->AddLast(new TNamed("OUTPUT_FILENAME", locOutputFileName.c_str()));
 	if(locOutputTreeFileName != "")
 		locSessionVariables->AddLast(new TNamed("OUTPUT_TREE_FILENAME", locOutputTreeFileName.c_str()));
+	if(locOutputFlatTreeFileName != "")
+                locSessionVariables->AddLast(new TNamed("OUTPUT_FLAT_TREE_FILENAME", locOutputFlatTreeFileName.c_str()));
 	locSessionVariables->AddLast(new TNamed("OPTIONS", locOptions.c_str()));
 
 	return Setup_PROOFSession(locNumThreads, vector<string>(1, locPackageName), locSessionVariables);

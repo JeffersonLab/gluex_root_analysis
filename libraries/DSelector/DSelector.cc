@@ -150,7 +150,7 @@ void DSelector::Setup_Output(void)
 		if(locOutputTreeFileObject != NULL) 
 			dOutputTreeFileName = locOutputTreeFileObject->GetTitle();
 
-		TNamed* locFlatTreeFileObject = (TNamed*)fInput->FindObject("FLAT_TREE_FILENAME");
+		TNamed* locFlatTreeFileObject = (TNamed*)fInput->FindObject("OUTPUT_FLAT_TREE_FILENAME");
 		if(locFlatTreeFileObject != NULL)
 			dFlatTreeFileName = locFlatTreeFileObject->GetTitle();
 	}
@@ -368,6 +368,9 @@ void DSelector::Create_FlatTree(void)
 	string locTreeName = (dFlatTreeName != "") ? dFlatTreeName : dTreeInterface->Get_TreeName().substr(0, dTreeInterface->Get_TreeName().size() - 5);
 	TTree* locFlatTree = new TTree(locTreeName.c_str(), locTreeName.c_str());
 	dFlatTreeInterface = new DTreeInterface(locFlatTree, false); //false: is output
+
+	if(dOption.Contains("flat_empty"))
+                return;
 
 	//set user info
 	TList* locInputUserInfo = dTreeInterface->Get_UserInfo();
@@ -601,6 +604,11 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 
 void DSelector::Fill_FlatTree(void)
 {
+	if(dOption.Contains("flat_empty")) {
+                dFlatTreeInterface->Fill_OutputTree("");
+                return;
+        }
+
 	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
 	bool locIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
 

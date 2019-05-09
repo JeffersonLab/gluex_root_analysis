@@ -138,7 +138,7 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 			dMinDeltaT(-10.0), dMaxDeltaT(10.0), dMindEdx(0.0), dMaxdEdx(25.0), dMinEoverP(0.0), dMaxEoverP(4.0),
 		        dMinPreshowerFraction(0.0), dMaxPreshowerFraction(1.0),
 			dDIRCMinNumPhotons(0), dDIRCMaxNumPhotons(100),
-                        dDIRCMinThetaC(0), dDIRCMaxThetaC(60), dDIRCMinLikelihood(0), dDIRCMaxLikelihood(1000)
+                        dDIRCMinThetaC(0), dDIRCMaxThetaC(60), dDIRCMinLikelihood(0), dDIRCMaxLikelihood(200)
 			{
 				dBackgroundPIDs.insert(Proton);  dBackgroundPIDs.insert(KPlus);  dBackgroundPIDs.insert(PiPlus);
 				dBackgroundPIDs.insert(KMinus);  dBackgroundPIDs.insert(PiMinus);
