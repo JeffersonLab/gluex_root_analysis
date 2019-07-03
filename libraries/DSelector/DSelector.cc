@@ -325,6 +325,54 @@ map<Particle_t, UInt_t> DSelector::Get_NumFinalStateThrown(void) const
 	return locNumFinalStateThrown;
 }
 
+TString DSelector::Get_ThrownTopologyString() const
+{
+	TString locReactionName;
+	int locNumPi0s = 0;
+
+	// Get final state particles and multiplicity
+	map<Particle_t, UInt_t> locNumFinalStateThrown = Get_NumFinalStateThrown();
+	for(auto const& locParticle : locNumFinalStateThrown) {
+		Particle_t locPID = locParticle.first; //= DemultiplexPID(ibit, false);
+		int locNumParticles = locParticle.second; //= locNumPIDThrown_FinalState/long(pow(10,ParticleMultiplexPower(locDemultiplexPID)))%10;
+		if(locNumParticles > 0) {
+			// List pi0s with decaying particles, since all final state photons are given
+			if(locPID == Pi0) {
+				locNumPi0s = locNumParticles;
+				continue;
+			}
+
+			if(locNumParticles > 1) locReactionName += locNumParticles;
+			locReactionName += ParticleName_ROOT(locPID);
+		}
+	}
+
+	// Get list of decaying particles (if they exist)
+	vector<Particle_t> locThrownDecayingPIDs = Get_ThrownDecayingPIDs();
+	if(locThrownDecayingPIDs.size() > 0 || locNumPi0s > 0) {
+		locReactionName += "[";
+		if(locNumPi0s == 1) locReactionName += "#pi^{0}";
+		else if(locNumPi0s > 1) {
+			locReactionName += locNumPi0s;
+			locReactionName += "#pi^{0}";
+		}
+					  
+		// add comma if previous decaying particle exists
+		bool locAddComma = false; 
+		if(locNumPi0s > 0) locAddComma = true;
+
+		for(uint i = 0; i<locThrownDecayingPIDs.size(); i++) {
+			Particle_t locPID = locThrownDecayingPIDs[i]; //DemultiplexPID(ibit, true);
+			if(locAddComma) locReactionName += ",";
+			locReactionName += ParticleName_ROOT(locPID);
+			locAddComma = true;
+		}
+		locReactionName += "]";
+	}
+
+	return locReactionName;
+}
+
 void DSelector::Fill_OutputTree(string locKeyName)
 {
 	// The FillOutputTree() function is called for events in the tree which pass
