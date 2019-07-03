@@ -102,6 +102,7 @@ class DSelector : public TSelector
 		ULong64_t Get_PIDThrown_Decaying(void) const;
 		vector<Particle_t> Get_ThrownDecayingPIDs(void) const;
 		map<Particle_t, UInt_t> Get_NumFinalStateThrown(void) const;
+		TString Get_ThrownTopologyString(void) const;
 
 		// CUSTOM DATA
 		template <typename DType> DType Get_Fundamental(string locBranchName) const;
