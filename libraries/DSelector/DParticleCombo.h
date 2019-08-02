@@ -74,6 +74,7 @@ class DParticleCombo
 
 		// UNUSED TRACKS:
 		UChar_t Get_NumUnusedTracks(void) const;
+		UChar_t Get_NumUnusedShowers(void) const;
 
 		// EVENT INFO: //Doesn't really belong in DParticleCombo, but much easier to pass into actions this way
 		UInt_t Get_RunNumber(void) const;
@@ -113,6 +114,7 @@ class DParticleCombo
 		DTreeInterface* dTreeInterface;
 		UInt_t* dNumCombos;
 		UChar_t* dNumUnusedTracks;
+		UChar_t* dNumUnusedShowers;
 		UInt_t dComboIndex; //the index in the particle-data arrays to use to grab particle data (e.g. corresponding to this combo)
 
 		deque<DParticleComboStep*> dParticleComboSteps;
@@ -128,6 +130,7 @@ class DParticleCombo
 		TBranch* dBranch_RFTime_Measured;
 		TBranch* dBranch_RFTime_KinFit; //only if spacetime kinematic fit performed
 
+		TBranch* dBranch_NumUnusedShowers;
 		TBranch* dBranch_Energy_UnusedShowers;
 
 		//Target not necessarily in the particle combo, so add the info here (for convenience)
@@ -169,6 +172,7 @@ inline void DParticleCombo::Setup_Branches(void)
 	dBranch_RFTime_KinFit = dTreeInterface->Get_Branch("RFTime_KinFit");
 
 	// UNUSED ENERGY:
+	dBranch_NumUnusedShowers = dTreeInterface->Get_Branch("NumUnusedShowers");
 	dBranch_Energy_UnusedShowers = dTreeInterface->Get_Branch("Energy_UnusedShowers");
 
 	// UNUSED TRACKS:
@@ -295,6 +299,14 @@ inline Float_t DParticleCombo::Get_Energy_UnusedShowers(void) const
 	if(dBranch_Energy_UnusedShowers == NULL)
 		return -1.0;
 	return ((Float_t*)dBranch_Energy_UnusedShowers->GetAddress())[dComboIndex];
+}
+
+// UNUSED SHOWERS:
+inline UChar_t DParticleCombo::Get_NumUnusedShowers(void) const
+{
+	if(dBranch_NumUnusedShowers == NULL)
+		return 0.0;
+	return ((UChar_t*)dBranch_NumUnusedShowers->GetAddress())[dComboIndex];
 }
 
 // UNUSED TRACKS:
