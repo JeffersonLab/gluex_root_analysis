@@ -25,7 +25,7 @@ class DParticleComboStep
 	public:
 
 		// CONSTRUCTOR:
-		DParticleComboStep(DTreeInterface* locTreeInterface, const map<int, pair<Particle_t, DKinematicData*> >& locParticleMap);
+		DParticleComboStep(DTreeInterface* locTreeInterface, const map<int, pair<Particle_t, DKinematicData*> >& locParticleMap, const map<int, string > &locParticleNameMap);
 
 		// GET PIDS:
 		Particle_t Get_InitialPID(void) const{return dInitialPID;}
@@ -93,12 +93,17 @@ class DParticleComboStep
 		deque<int> dDecayStepIndices; //-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
 		int dMissingParticleIndex; //-2 if none, -1 if parent, > 0 if final state
 
+public:
+		// Names of particles in ROOT files
+		string dInitialParticleName;
+
+private:
 		// SPACETIME VERTEX
 		TClonesArray** dX4_Step;
 		TBranch* dBranch_X4MeasuredIndex; //branch index for dX4_Step if retrieved from a measured source //if kinfit, is just combo index
 };
 
-inline DParticleComboStep::DParticleComboStep(DTreeInterface* locTreeInterface, const map<int, pair<Particle_t, DKinematicData*> >& locParticleMap) : 
+inline DParticleComboStep::DParticleComboStep(DTreeInterface* locTreeInterface, const map<int, pair<Particle_t, DKinematicData*> >& locParticleMap, const map<int, string > &locParticleNameMap) : 
 dTreeInterface(locTreeInterface), dComboIndex(0), dInitialParticle(NULL), dTargetParticle(NULL)
 {
 	dInitialPID = Unknown;
@@ -123,6 +128,16 @@ dTreeInterface(locTreeInterface), dComboIndex(0), dInitialParticle(NULL), dTarge
 			dFinalParticles.push_back(locIterator->second.second);
 		}
 	}
+
+	map<int, string>::const_iterator locNameIterator = locParticleNameMap.begin();
+	for(; locNameIterator != locParticleNameMap.end(); ++locNameIterator)
+	{
+		if(locNameIterator->first == -1)
+		{
+			dInitialParticleName = locNameIterator->second;
+		}
+	}
+
 }
 
 inline void DParticleComboStep::Set_ComboIndex(UInt_t locComboIndex)

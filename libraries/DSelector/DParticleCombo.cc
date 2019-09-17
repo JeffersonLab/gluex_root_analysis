@@ -13,6 +13,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 	//build particle map
 	pair<int, int> locMissingIndices(-1, -1); //1st is step index, 2nd is particle index
 	map<int, map<int, pair<Particle_t, DKinematicData*> > > locParticleMap; //1st key is step, 2nd is particle
+	map<int, map<int, string > > locParticleNameMap; //1st key is step, 2nd is particle
 	map<int, map<int, pair<Particle_t, string> > >::iterator locStepIterator = locComboInfoMap.begin();
 	map<string, DKinematicData*> locDecayingParticleMap;
 	for(; locStepIterator != locComboInfoMap.end(); ++locStepIterator)
@@ -40,6 +41,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 			else if(locParticleName.substr(0, 8) == "Decaying")
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
+				//string locBranchName = locParticleName + string("__X4");
 				if(dTreeInterface->Get_Branch(locBranchName) != NULL) //else not reconstructed
 				{
 					map<string, DKinematicData*>::iterator locDecayingIterator = locDecayingParticleMap.find(locParticleName);
@@ -65,6 +67,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 				locKinematicData = new DNeutralParticleHypothesis(dTreeInterface, locParticleName, locPID);
 
 			locParticleMap[locStepIndex][locParticleIndex] = pair<Particle_t, DKinematicData*>(locPID, locKinematicData);
+			locParticleNameMap[locStepIndex][locParticleIndex] = locParticleName;
 		}
 	}
 
@@ -74,7 +77,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 
 	//Create steps
 	for(size_t loc_i = 0; loc_i < locNumSteps; ++loc_i)
-		dParticleComboSteps.push_back(new DParticleComboStep(dTreeInterface, locParticleMap[loc_i]));
+		dParticleComboSteps.push_back(new DParticleComboStep(dTreeInterface, locParticleMap[loc_i], locParticleNameMap[loc_i]));
 
 	//Set decay indices
 	for(size_t loc_i = 0; loc_i < locNumSteps; ++loc_i)
@@ -181,9 +184,14 @@ pair<int, int> DParticleCombo::Get_DecayFromIndices(int locStepIndex) const
 
 void DParticleCombo::Setup_X4Branches(void)
 {
+	cout << "In DParticleCombo::Setup_X4Branches() ..." << endl;
+
 	//Set X4 for decaying particles & steps
 	for(size_t loc_i = 0; loc_i < dParticleComboSteps.size(); ++loc_i)
 	{
+		cout << "STEP " << loc_i << endl; 
+		dParticleComboSteps[loc_i]->Print_Reaction();
+	
 		TClonesArray** locX4Step = NULL;
 		TBranch* locBranch_X4MeasuredIndex = NULL;
 
@@ -191,20 +199,37 @@ void DParticleCombo::Setup_X4Branches(void)
 		DKinematicData* locInitialParticle = dParticleComboSteps[loc_i]->Get_InitialParticle();
 		if(locInitialParticle != NULL)
 		{
-			if(locInitialParticle->dX4_KinFit != NULL)
+			cout << "Initial Particle found!" << endl;
+			if(locInitialParticle->dX4_KinFit != NULL) {
+				cout << "Kin Fit Particle found!" << endl;
 				locX4Step = locInitialParticle->dX4_KinFit;
-			else if(locInitialParticle->dX4_Measured != NULL)
+			} else if(locInitialParticle->dX4_Measured != NULL)
 			{
+				cout << "Measured Particle found!" << endl;
 				locX4Step = locInitialParticle->dX4_Measured;
 				locBranch_X4MeasuredIndex = locInitialParticle->dBranch_MeasuredIndex;
-			}
+			} 
 		}
+		else if(dParticleComboSteps[loc_i]->dInitialParticleName.substr(0, 8) == "Decaying") {
+			// if there is an intermediate particle who mass was constrained, the particle
+			// is not fully loaded, but the vertex information  is still there!
+			// this is mostly important for particles that decay after some distance,
+			// like hyperons
+			cout << "Load Decay X4!" << endl;
+			string locBranchName = dParticleComboSteps[loc_i]->dInitialParticleName + string("__X4");
+			locX4Step = dTreeInterface->Get_PointerToPointerTo_TClonesArray(locBranchName);
+			cout << locBranchName << " " << locX4Step << endl;
+		}
+		
 		if(locX4Step != NULL)
 		{
+			cout << "locX4Step found!" << endl;
 			dParticleComboSteps[loc_i]->dX4_Step = locX4Step;
 			dParticleComboSteps[loc_i]->dBranch_X4MeasuredIndex = locBranch_X4MeasuredIndex;
 			continue; //in tree: done
 		}
+
+		cout << "FALLBACK" << endl;
 
 		//not in tree: get from previous step
 		int locDecayFromStepIndex = dParticleComboSteps[loc_i]->Get_InitDecayFromIndices().first;
