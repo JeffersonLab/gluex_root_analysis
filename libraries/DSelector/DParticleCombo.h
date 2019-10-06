@@ -75,6 +75,8 @@ class DParticleCombo
 		// UNUSED TRACKS:
 		UChar_t Get_NumUnusedTracks(void) const;
 		UChar_t Get_NumUnusedShowers(void) const;
+		Float_t Get_SumPMag_UnusedTracks(void) const;
+		TVector3 Get_SumP3_UnusedTracks(void) const;
 
 		// EVENT INFO: //Doesn't really belong in DParticleCombo, but much easier to pass into actions this way
 		UInt_t Get_RunNumber(void) const;
@@ -115,6 +117,8 @@ class DParticleCombo
 		UInt_t* dNumCombos;
 		UChar_t* dNumUnusedTracks;
 		UChar_t* dNumUnusedShowers;
+		Float_t* dSumPMag_UnusedTracks;
+		TVector3* dSumP3_UnusedTracks;
 		UInt_t dComboIndex; //the index in the particle-data arrays to use to grab particle data (e.g. corresponding to this combo)
 
 		deque<DParticleComboStep*> dParticleComboSteps;
@@ -132,6 +136,8 @@ class DParticleCombo
 
 		TBranch* dBranch_NumUnusedShowers;
 		TBranch* dBranch_Energy_UnusedShowers;
+		TBranch* dBranch_SumPMag_UnusedTracks;
+		TBranch* dBranch_SumP3_UnusedTracks;
 
 		//Target not necessarily in the particle combo, so add the info here (for convenience)
 		Particle_t dTargetPID;
@@ -177,6 +183,8 @@ inline void DParticleCombo::Setup_Branches(void)
 
 	// UNUSED TRACKS:
 	dNumUnusedTracks = (UChar_t*)dTreeInterface->Get_Branch("NumUnusedTracks")->GetAddress();
+	dBranch_SumPMag_UnusedTracks = dTreeInterface->Get_Branch("SumPMag_UnusedTracks");
+	dBranch_SumP3_UnusedTracks = dTreeInterface->Get_Branch("SumP3_UnusedTracks");
 }
 
 inline UInt_t DParticleCombo::Get_NumCombos(void) const
@@ -313,6 +321,22 @@ inline UChar_t DParticleCombo::Get_NumUnusedShowers(void) const
 inline UChar_t DParticleCombo::Get_NumUnusedTracks(void) const
 {
 	return *dNumUnusedTracks;
+}
+
+// UNUSED TRACKS PMag:
+inline Float_t DParticleCombo::Get_SumPMag_UnusedTracks(void) const
+{
+        if(dBranch_SumPMag_UnusedTracks == NULL)
+                return -1.0;
+        return ((Float_t*)dBranch_SumPMag_UnusedTracks->GetAddress())[dComboIndex];
+}
+
+// UNUSED TRACKS P3:
+inline TVector3 DParticleCombo::Get_SumP3_UnusedTracks(void) const
+{
+        if(dBranch_SumP3_UnusedTracks == NULL)
+                return TVector3(-1.0, -1.0, -1.0);
+        return ((TVector3*)dBranch_SumP3_UnusedTracks->GetAddress())[dComboIndex];
 }
 
 // MISSING
