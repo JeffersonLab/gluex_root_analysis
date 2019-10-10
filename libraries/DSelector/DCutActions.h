@@ -495,6 +495,23 @@ class DCutAction_NumUnusedTracks : public DAnalysisAction
                 uint dMaxUnusedTracks;
 };
 
+class DCutAction_NumUnusedShowers : public DAnalysisAction
+{
+        public:
+
+                DCutAction_NumUnusedShowers(const DParticleCombo* locParticleComboWrapper,  uint locMaxUnusedShowers, string locActionUniqueString = "") :
+                DAnalysisAction(locParticleComboWrapper, "Cut_NumUnusedShowers", false, locActionUniqueString), dMaxUnusedShowers(locMaxUnusedShowers) {}
+
+                string Get_ActionName(void) const;
+                void Initialize(void){};
+                void Reset_NewEvent(void){}
+                bool Perform_Action(void);
+
+        private:
+
+                uint dMaxUnusedShowers;
+};
+
 class DCutAction_VanHoveAngle : public DAnalysisAction
 {
 	public:
