@@ -28,6 +28,7 @@ class DAnalysisUtilities
 		bool Get_CoherentPeak(int locRunNumber, double& locCoherentPeak, bool locIsPolarizedFlag) const; //RCDB environment must be setup!!
 		double Get_BeamBunchPeriod(int locRunNumber) const; //CCDB environment must be setup!!
 		double Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy); //CCDB environment must be setup!!
+		double Get_AccidentalScalingFactorError(int locRunNumber, double locBeamEnergy); //CCDB environment must be setup!!
 
 		double Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locMesonP4) const;
 		double Calc_DecayPlanePsi_Vector_2BodyDecay(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locBaryonP4, const TLorentzVector& locMesonP4, const TLorentzVector& locMesonProduct1P4, double& locDecayPlaneTheta) const;
