@@ -27,6 +27,7 @@ class DAnalysisUtilities
 		bool Get_PolarizationAngle(int locRunNumber, int& locPolarizationAngle) const; //RCDB environment must be setup!!
 		bool Get_CoherentPeak(int locRunNumber, double& locCoherentPeak, bool locIsPolarizedFlag) const; //RCDB environment must be setup!!
 		double Get_BeamBunchPeriod(int locRunNumber) const; //CCDB environment must be setup!!
+		double Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy); //CCDB environment must be setup!!
 
 		double Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locMesonP4) const;
 		double Calc_DecayPlanePsi_Vector_2BodyDecay(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locBaryonP4, const TLorentzVector& locMesonP4, const TLorentzVector& locMesonProduct1P4, double& locDecayPlaneTheta) const;
@@ -41,6 +42,8 @@ class DAnalysisUtilities
 	private:
 
 		bool Handle_Decursion(int& locParticleIndex, deque<size_t>& locComboDeque, deque<int>& locResumeAtIndices, deque<deque<size_t> >& locPossibilities) const;
+
+		map< int, vector<double> > dAccidentalScalingFactor_Cache;
 };
 
 #endif // _DAnalysisUtilities_

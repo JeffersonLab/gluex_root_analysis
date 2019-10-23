@@ -721,6 +721,88 @@ double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) const
 	return locBeamBunchPeriod;
 }
 
+double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy) 
+{
+	//CCDB environment must be setup!!
+
+	double locHodoscopeHiFactor = -1.0;
+	double locHodoscopeHiFactorErr = -1.0;
+	double locHodoscopeLoFactor = -1.0;
+	double locHodoscopeLoFactorErr = -1.0;
+	double locMicroscopeFactor = -1.0;
+	double locMicroscopeFactorErr = -1.0;
+	double locTAGMEnergyBoundHi = -1.0;
+	double locTAGMEnergyBoundLo = -1.0;
+
+	// check to see if we already loaded the data for this run
+	// CCDB access is SLOW, so cache when you can
+	if(dAccidentalScalingFactor_Cache.count(locRunNumber) > 0) {
+		// 	set the values from the cache
+		vector<double> &locCachedValues = dAccidentalScalingFactor_Cache[locRunNumber];
+		locHodoscopeHiFactor = locCachedValues[0];
+		locHodoscopeHiFactorErr = locCachedValues[1];
+		locHodoscopeLoFactor = locCachedValues[2];
+		locHodoscopeLoFactorErr = locCachedValues[3];
+		locMicroscopeFactor = locCachedValues[4];
+		locMicroscopeFactorErr = locCachedValues[5];
+		locTAGMEnergyBoundHi = locCachedValues[6];
+		locTAGMEnergyBoundLo = locCachedValues[7];
+	} else {
+
+		// Guess we have to go to the CCDB...
+		//Pipe the current constant into this function
+		ostringstream locCommandStream;
+		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
+		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+		if(locInputFile == NULL)
+			return -1.0;
+
+		//get the first line
+		char buff[1024]; // I HATE char buffers
+		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+		{
+			gSystem->ClosePipe(locInputFile);
+			return -1.0;
+		}
+
+		//get the second line (where the # is)
+		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+		{
+			gSystem->ClosePipe(locInputFile);
+			return -1.0;
+		}
+		istringstream locStringStream(buff);
+
+		//extract it
+		locStringStream >> locHodoscopeHiFactor >> locHodoscopeHiFactorErr >> locHodoscopeLoFactor
+						>> locHodoscopeLoFactorErr >> locMicroscopeFactor >> locMicroscopeFactorErr
+						>> locTAGMEnergyBoundHi >> locTAGMEnergyBoundLo;
+
+		//Close the pipe
+		gSystem->ClosePipe(locInputFile);
+		
+		//save the values to a local cache
+		vector<double> locCachedValues;
+		locCachedValues.push_back(locHodoscopeHiFactor);
+		locCachedValues.push_back(locHodoscopeHiFactorErr);
+		locCachedValues.push_back(locHodoscopeLoFactor);
+		locCachedValues.push_back(locHodoscopeLoFactorErr);
+		locCachedValues.push_back(locMicroscopeFactor);
+		locCachedValues.push_back(locMicroscopeFactorErr);
+		locCachedValues.push_back(locTAGMEnergyBoundHi);
+		locCachedValues.push_back(locTAGMEnergyBoundLo);
+		
+		dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;
+	}
+	
+	if(locBeamEnergy > locTAGMEnergyBoundHi)
+		return locHodoscopeHiFactor;
+	else if(locBeamEnergy > locTAGMEnergyBoundLo)
+		return locMicroscopeFactor;
+	else
+		return locHodoscopeLoFactor;
+}
+
 double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHighest10Power, unsigned int locNumBinsPerPower, int& locNumBins) const
 {
 	if(locHighest10Power <= locLowest10Power)
