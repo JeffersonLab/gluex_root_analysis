@@ -562,6 +562,19 @@ bool DCutAction_KinFitFOM::Perform_Action(void)
 	return (locConfidenceLevel > dMinimumConfidenceLevel);
 }
 
+string DCutAction_KinFitChiSq::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMaximumChiSq;
+	return locStream.str();
+}
+
+bool DCutAction_KinFitChiSq::Perform_Action(void)
+{
+	double locChiSq = dParticleComboWrapper->Get_ChiSq_KinFit( "" );
+	return (locChiSq < dMaximumChiSq);
+}
+
 string DCutAction_BeamEnergy::Get_ActionName(void) const
 {
 	ostringstream locStream;

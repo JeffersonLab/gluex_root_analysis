@@ -168,6 +168,22 @@ class DCutAction_KinFitFOM : public DAnalysisAction
 		double dMinimumConfidenceLevel;
 };
 
+class DCutAction_KinFitChiSq : public DAnalysisAction
+{
+	public:
+		DCutAction_KinFitChiSq(const DParticleCombo* locParticleComboWrapper, double locMaximumChiSq, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_KinFitChiSq", true, locActionUniqueString), dMaximumChiSq(locMaximumChiSq){}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		const string dKinFitName;
+		double dMaximumChiSq;
+};
+
 class DCutAction_MissingMass : public DAnalysisAction
 {
 	public:
