@@ -74,6 +74,8 @@ class DParticleCombo
 
 		// UNUSED TRACKS:
 		UChar_t Get_NumUnusedTracks(void) const;
+		Float_t Get_SumPMag_UnusedTracks(void) const;
+		TVector3 Get_SumP3_UnusedTracks(void) const;
 
 		// EVENT INFO: //Doesn't really belong in DParticleCombo, but much easier to pass into actions this way
 		UInt_t Get_RunNumber(void) const;
@@ -113,6 +115,8 @@ class DParticleCombo
 		DTreeInterface* dTreeInterface;
 		UInt_t* dNumCombos;
 		UChar_t* dNumUnusedTracks;
+		Float_t* dSumPMag_UnusedTracks;
+		TVector3* dSumP3_UnusedTracks;
 		UInt_t dComboIndex; //the index in the particle-data arrays to use to grab particle data (e.g. corresponding to this combo)
 
 		deque<DParticleComboStep*> dParticleComboSteps;
@@ -173,6 +177,8 @@ inline void DParticleCombo::Setup_Branches(void)
 
 	// UNUSED TRACKS:
 	dNumUnusedTracks = (UChar_t*)dTreeInterface->Get_Branch("NumUnusedTracks")->GetAddress();
+	 dSumPMag_UnusedTracks = (Float_t*)dTreeInterface->Get_Branch("SumPMag_UnusedTracks")->GetAddress();
+	dSumP3_UnusedTracks = (TVector3*)dTreeInterface->Get_Branch("SumP3_UnusedTracks")->GetAddress();
 }
 
 inline UInt_t DParticleCombo::Get_NumCombos(void) const
@@ -301,6 +307,16 @@ inline Float_t DParticleCombo::Get_Energy_UnusedShowers(void) const
 inline UChar_t DParticleCombo::Get_NumUnusedTracks(void) const
 {
 	return *dNumUnusedTracks;
+}
+
+inline Float_t DParticleCombo::Get_SumPMag_UnusedTracks(void) const
+{
+        return *dSumPMag_UnusedTracks;
+}
+
+inline TVector3 DParticleCombo::Get_SumP3_UnusedTracks(void) const
+{
+        return *dSumP3_UnusedTracks;
 }
 
 // MISSING
