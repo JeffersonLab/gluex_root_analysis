@@ -562,6 +562,19 @@ bool DCutAction_KinFitFOM::Perform_Action(void)
 	return (locConfidenceLevel > dMinimumConfidenceLevel);
 }
 
+string DCutAction_KinFitChiSq::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMaximumChiSq;
+	return locStream.str();
+}
+
+bool DCutAction_KinFitChiSq::Perform_Action(void)
+{
+	double locChiSq = dParticleComboWrapper->Get_ChiSq_KinFit( "" );
+	return (locChiSq < dMaximumChiSq);
+}
+
 string DCutAction_BeamEnergy::Get_ActionName(void) const
 {
 	ostringstream locStream;
@@ -786,6 +799,18 @@ string DCutAction_Energy_UnusedShowers::Get_ActionName(void) const
 bool DCutAction_Energy_UnusedShowers::Perform_Action(void)
 {
 	return (dParticleComboWrapper->Get_Energy_UnusedShowers() <= dMaxEnergy_UnusedShowersCut);
+}
+
+string DCutAction_NumUnusedShowers::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMaxUnusedShowers;
+	return locStream.str();
+}
+
+bool DCutAction_NumUnusedShowers::Perform_Action(void)
+{
+	return (dParticleComboWrapper->Get_NumUnusedShowers() <= dMaxUnusedShowers);
 }
 
 string DCutAction_NumUnusedTracks::Get_ActionName(void) const

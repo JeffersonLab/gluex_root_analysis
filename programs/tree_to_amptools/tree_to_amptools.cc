@@ -32,6 +32,8 @@ template <typename DType> void Increase_ArraySize(TTree* locTree, string locBran
 
 vector<Particle_t> gDesiredPIDOrder; //for MC Gen tree only!!
 
+Float_t locWeight = 0.;
+
 int main(int argc, char* argv[])
 {
 	if(argc <= 2)
@@ -42,8 +44,16 @@ int main(int argc, char* argv[])
 
 	string locInputFileName = argv[1];
 	string locInputTreeName = argv[2];
-	for(int loc_i = 3; loc_i < argc; ++loc_i)
-		gDesiredPIDOrder.push_back((Particle_t)atoi(argv[loc_i]));
+	for(int loc_i = 3; loc_i < argc; ++loc_i){
+	  string arg(argv[loc_i]);
+
+	  if (arg == "-w"){
+	    locWeight = atof(argv[++loc_i]);
+	    cout << "Weights set to " << locWeight <<"!";
+	    cout << endl;
+	  }
+	  else gDesiredPIDOrder.push_back((Particle_t)atoi(argv[loc_i]));
+	}
 
 	TFile* locInputFile = new TFile(locInputFileName.c_str(), "READ");
 	TTree* locInputTree = (TTree*)locInputFile->Get(locInputTreeName.c_str());
@@ -64,6 +74,7 @@ void Print_Usage(void)
 	cout << "1st argument: The input ROOT file name." << endl;
 	cout << "2nd argument: The name of the TTree in the input ROOT file that you want to convert." << endl;
 	cout << "[3rd - Nth arguments] (to use generated MC data intead of reconstructed): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
+	cout << "[-w <double>] : Set weight for all events in tree" << endl;
 	cout << endl;
 	cout << "The 'primary' particles in the tree are in the same order as they were specified in the DReaction." << endl;
 	cout << endl;
@@ -179,8 +190,14 @@ cout << endl;
 		}
 
 		TObjString* locBranchObjString = new TObjString(locBranchName.c_str());
-		locParticleNamesWithBranches->AddLast(locNameObject);
-		locParticleBranchNames->AddLast(locBranchObjString);
+		if(locParticleName.substr(0, 6) == string("Proton")){
+		  locParticleNamesWithBranches->AddFirst(locNameObject);
+		  locParticleBranchNames->AddFirst(locBranchObjString);
+		}
+		else{
+		  locParticleNamesWithBranches->AddLast(locNameObject);
+		  locParticleBranchNames->AddLast(locBranchObjString);
+		}
 	}
 
 /*
@@ -208,7 +225,10 @@ cout << endl;
 		}
 		if(Check_IfDecayProduct(locDecayProductMap, locParticleName))
 			continue;
-		locTreeParticleNames->AddLast(locNameObject);
+		// Amptools expects to get the recoil proton first
+		if(locParticleName.substr(0, 6) == string("Proton"))
+		  locTreeParticleNames->AddFirst(locNameObject);
+		else locTreeParticleNames->AddLast(locNameObject);
 	}
 
 	cout << endl;
@@ -428,7 +448,12 @@ cout << endl;
 		locInputTree->GetEntry(locEntry);
 
 		//weight
-		*locBranchPointer_Weight = locMCWeight;
+		if (locMCWeight == 0) // 0 weight in default MC trees does not make sense
+		  locMCWeight = 1.0;
+		if (locWeight != 0) // user has specified weight on the command line
+		  *locBranchPointer_Weight = locWeight;
+		else
+		  *locBranchPointer_Weight = locMCWeight;
 
 		//Loop over combos
 		for(UInt_t locComboIndex = 0; locComboIndex < locNumCombos; ++locComboIndex)
@@ -655,7 +680,12 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 		locInputTree->GetEntry(locEntry);
 
 		//weight
-		*locBranchPointer_Weight = locMCWeight;
+		if (locMCWeight == 0) // 0 weight in default MC trees does not make sense
+		  locMCWeight = 1.0;
+		if (locWeight != 0) // user has specified weight on the command line
+		  *locBranchPointer_Weight = locWeight;
+		else
+		  *locBranchPointer_Weight = locMCWeight;
 
 		//beam
 		*locBranchPointer_BeamE = locBeamP4->E();
