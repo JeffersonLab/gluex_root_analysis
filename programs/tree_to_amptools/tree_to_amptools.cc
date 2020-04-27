@@ -474,7 +474,7 @@ cout << endl;
 			if(locIsComboCutArray[locComboIndex] == kTRUE)
 				continue;
 
-			if (hasDataWeights && (locWeight != 0)){
+			if (hasDataWeights && (locWeight == 0)){
 			  Float_t* locDataWeightArray = (Float_t*)locInputTree->GetBranch("DataWeight")->GetAddress();
 			  *locBranchPointer_Weight = locDataWeightArray[locComboIndex];
 			}
