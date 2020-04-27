@@ -282,7 +282,7 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 
 	//set branch addresses for input tree
 	//mc weight
-	Float_t locMCWeight = 1.0;
+	Float_t locMCWeight;// = 1.0;
 	if(locInputTree->FindBranch("MCWeight") != NULL)
 		locInputTree->SetBranchAddress("MCWeight", &locMCWeight);
 
@@ -305,6 +305,14 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 
 	//is-combo-cut
 	locInputTree->SetBranchAddress("IsComboCut", new Bool_t[locCurrentComboArraySize]);
+
+	//data weight
+	bool hasDataWeights = false;
+	if(locInputTree->FindBranch("DataWeight") != NULL){
+	  hasDataWeights = true;
+	  cout << "Using weights from branch 'DataWeight'! Use '-w' to override." << endl;
+	  locInputTree->SetBranchAddress("DataWeight", new Float_t[locCurrentComboArraySize]);
+	}
 
 	//beam
 	TClonesArray* locBeamP4Array = NULL;
@@ -429,6 +437,10 @@ cout << endl;
 			//IS-COMBO-CUT
 			Increase_ArraySize<Bool_t>(locInputTree, "IsComboCut", locCurrentComboArraySize);
 
+			//DATAWEIGHT
+			if (hasDataWeights)
+			  Increase_ArraySize<Bool_t>(locInputTree, "DataWeight", locCurrentComboArraySize);
+
 			//BEAM
 			Increase_ArraySize<Int_t>(locInputTree, locBeamBranchName, locCurrentComboArraySize);
 
@@ -461,6 +473,11 @@ cout << endl;
 			Bool_t* locIsComboCutArray = (Bool_t*)locInputTree->GetBranch("IsComboCut")->GetAddress();
 			if(locIsComboCutArray[locComboIndex] == kTRUE)
 				continue;
+
+			if (hasDataWeights){
+			  Float_t* locDataWeightArray = (Float_t*)locInputTree->GetBranch("DataWeight")->GetAddress();
+			  *locBranchPointer_Weight = locDataWeightArray[locComboIndex];
+			}
 
 			//GET DETECTED FINAL STATE FOUR-MOMENTA
 			for(Int_t loc_i = 0; loc_i < locNumDirect; ++loc_i)
