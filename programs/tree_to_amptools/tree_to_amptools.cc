@@ -282,7 +282,7 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 
 	//set branch addresses for input tree
 	//mc weight
-	Float_t locMCWeight;// = 1.0;
+	Float_t locMCWeight = 1.0;
 	if(locInputTree->FindBranch("MCWeight") != NULL)
 		locInputTree->SetBranchAddress("MCWeight", &locMCWeight);
 
@@ -474,7 +474,7 @@ cout << endl;
 			if(locIsComboCutArray[locComboIndex] == kTRUE)
 				continue;
 
-			if (hasDataWeights){
+			if (hasDataWeights && (locWeight != 0)){
 			  Float_t* locDataWeightArray = (Float_t*)locInputTree->GetBranch("DataWeight")->GetAddress();
 			  *locBranchPointer_Weight = locDataWeightArray[locComboIndex];
 			}
