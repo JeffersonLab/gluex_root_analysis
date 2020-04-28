@@ -306,6 +306,14 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 	//is-combo-cut
 	locInputTree->SetBranchAddress("IsComboCut", new Bool_t[locCurrentComboArraySize]);
 
+	//data weight
+	bool hasDataWeights = false;
+	if(locInputTree->FindBranch("DataWeight") != NULL){
+	  hasDataWeights = true;
+	  cout << "Using weights from branch 'DataWeight'! Use '-w' to override." << endl;
+	  locInputTree->SetBranchAddress("DataWeight", new Float_t[locCurrentComboArraySize]);
+	}
+
 	//beam
 	TClonesArray* locBeamP4Array = NULL;
 	if(locBeamBranchName != "") //a beam particle was in the DReaction
@@ -429,6 +437,10 @@ cout << endl;
 			//IS-COMBO-CUT
 			Increase_ArraySize<Bool_t>(locInputTree, "IsComboCut", locCurrentComboArraySize);
 
+			//DATAWEIGHT
+			if (hasDataWeights)
+			  Increase_ArraySize<Bool_t>(locInputTree, "DataWeight", locCurrentComboArraySize);
+
 			//BEAM
 			Increase_ArraySize<Int_t>(locInputTree, locBeamBranchName, locCurrentComboArraySize);
 
@@ -461,6 +473,11 @@ cout << endl;
 			Bool_t* locIsComboCutArray = (Bool_t*)locInputTree->GetBranch("IsComboCut")->GetAddress();
 			if(locIsComboCutArray[locComboIndex] == kTRUE)
 				continue;
+
+			if (hasDataWeights && (locWeight == 0)){
+			  Float_t* locDataWeightArray = (Float_t*)locInputTree->GetBranch("DataWeight")->GetAddress();
+			  *locBranchPointer_Weight = locDataWeightArray[locComboIndex];
+			}
 
 			//GET DETECTED FINAL STATE FOUR-MOMENTA
 			for(Int_t loc_i = 0; loc_i < locNumDirect; ++loc_i)
