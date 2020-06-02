@@ -41,7 +41,13 @@ void DHistogramAction_AnalyzeCutActions::Initialize(void)
 	
 }
 
-bool DHistogramAction_AnalyzeCutActions::Perform_Action(void)
+bool DHistogramAction_AnalyzeCutActions::Perform_Action()
+{
+	double weight = 1.0;
+	return Perform_ActionWeight(weight);
+}
+
+bool DHistogramAction_AnalyzeCutActions::Perform_ActionWeight(double weight = 1.0)
 {
 	bool locComboCut = false;
 	//double locMass = 0.0;
@@ -72,16 +78,16 @@ bool DHistogramAction_AnalyzeCutActions::Perform_Action(void)
 		}
 	
 		if (locFill)
-			Fill_Hists(cut_iter.second, locIndexCombos);
+			Fill_Hists(cut_iter.second, locIndexCombos, weight);
 	}
 
 	if (!locComboCut)
-		Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos);
+		Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos, weight);
 
 	return true;
 }
 
-bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_t> > locIndexCombos)
+bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_t> > locIndexCombos, double weight)
 {
 	dPreviouslyHistogrammed.clear();
 	double locMass = 0.0;
@@ -94,7 +100,7 @@ bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_
 		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
 		{
 			dPreviouslyHistogrammed.insert(locSourceObjects);
-			locHist->Fill(locMass);
+			locHist->Fill(locMass, weight);
 		}
 	}
 	return true;

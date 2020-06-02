@@ -38,10 +38,11 @@ class DHistogramAction_AnalyzeCutActions : public DAnalysisAction
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
 		void Initialize(void);
-		bool Perform_Action(void);
+		bool Perform_Action();
+		bool Perform_ActionWeight(double weight);
 
 	private:
-		bool Fill_Hists(TH1I* locHist, set<set<size_t>> locIndexCombos);
+		bool Fill_Hists(TH1I* locHist, set<set<size_t>> locIndexCombos, double weight);
 		vector<DAnalysisAction*> dAllAnalysisActions;
 		Particle_t dInitialPID;
 		int dStepIndex;
