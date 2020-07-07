@@ -787,6 +787,8 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		char buff[1024]; // I HATE char buffers
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
 			return -1.0;
 		}
@@ -794,9 +796,22 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		//get the second line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
 			return -1.0;
 		}
+        
+        // catch some CCDB error conditions
+        if(strncmp(buff, "Cannot", 6) == 0) 
+        {
+            // no assignment for this run
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
+			gSystem->ClosePipe(locInputFile);
+            return -1.0;
+        }
+
 		istringstream locStringStream(buff);
 
 		//extract it
@@ -820,7 +835,7 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		
 		dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;
 	}
-	
+
 	if(locBeamEnergy > locTAGMEnergyBoundHi)
 		return locHodoscopeHiFactor;
 	else if(locBeamEnergy > locTAGMEnergyBoundLo)
@@ -869,6 +884,8 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		char buff[1024]; // I HATE char buffers
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
 			return -1.0;
 		}
@@ -876,9 +893,22 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		//get the second line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
 			return -1.0;
 		}
+
+        // catch some CCDB error conditions
+        if(strncmp(buff, "Cannot", 6) == 0) 
+        {
+            // no assignment for this run
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
+			gSystem->ClosePipe(locInputFile);
+            return -1.0;
+        }
+
 		istringstream locStringStream(buff);
 
 		//extract it
