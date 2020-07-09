@@ -683,10 +683,14 @@ bool DAnalysisUtilities::Get_CoherentPeak(int locRunNumber, double& locCoherentP
 	return true;
 }
 
-double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) const
+double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) 
 {
-	//CCDB environment must be setup!!
-
+	// CCDB environment must be setup!!
+	
+	//If we already cached a value for this run, just return that and we're done
+	if(dBeamBunchPeriod_Cache.count(locRunNumber) > 0) return dBeamBunchPeriod_Cache[locRunNumber];
+	
+	// Retrieving from ccdb is SLOW so we should only execute this once upon encountering a new run number
 	//Pipe the current constant into this function
 	ostringstream locCommandStream;
 	locCommandStream << "ccdb dump PHOTON_BEAM/RF/beam_period -r " << locRunNumber;
@@ -718,7 +722,29 @@ double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber) const
 	//Close the pipe
 	gSystem->ClosePipe(locInputFile);
 
+	//Save to cache for future calls
+	dBeamBunchPeriod_Cache[locRunNumber] = locBeamBunchPeriod;
+
 	return locBeamBunchPeriod;
+}
+
+double DAnalysisUtilities::Get_DeltaT_RF(int locRunNumber, const TLorentzVector locBeamX4_Measured, const DParticleCombo* locParticleComboWrapper)
+{
+	return locBeamX4_Measured.T() - (locParticleComboWrapper->Get_RFTime_Measured() + (locBeamX4_Measured.Z()- locParticleComboWrapper->Get_TargetCenter().Z())/29.9792458 );;
+}
+
+int DAnalysisUtilities::Get_RelativeBeamBucket(int locRunNumber, const TLorentzVector locBeamX4_Measured, const DParticleCombo* locParticleComboWrapper)
+{
+	// returns an integer:
+	/// 0 if event is belongs to in-time beam bunch bucket
+	/// -1 if event is belongs to first beam bunch left of in-time bucket
+	/// +1 if event is belongs to first beam bunch right of in-time bucket
+	/// and so on
+	
+	double locBeamBunchPeriod = Get_BeamBunchPeriod(locRunNumber);
+	double locDeltaT_RF = Get_DeltaT_RF(locRunNumber,locBeamX4_Measured,locParticleComboWrapper);
+	
+	return int(floor( (locDeltaT_RF/locBeamBunchPeriod) + 0.5 ));
 }
 
 double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy) 
@@ -885,6 +911,7 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		return locHodoscopeLoFactorErr;
 }
 
+
 double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHighest10Power, unsigned int locNumBinsPerPower, int& locNumBins) const
 {
 	if(locHighest10Power <= locLowest10Power)
@@ -910,3 +937,4 @@ double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHig
 
 	return locBinArray;
 }
+
