@@ -32,6 +32,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		Int_t Get_ThrownIndex(void) const; //the array index of the thrown particle it is matched with (-1 for no match) //only present if simulated data
 		Int_t Get_ID(void) const{return Get_TrackID();}
 
+		// Global PID
+		Float_t Get_PIDFOM(void) const;
+
 		//TRACKING INFO
 		UInt_t Get_NDF_Tracking(void) const;
 		Float_t Get_ChiSq_Tracking(void) const;
@@ -101,6 +104,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		//IDENTIFIERS / MATCHING
 		TBranch* dBranch_TrackID;
 		TBranch* dBranch_ThrownIndex;
+
+		// GLOBAL PID
+		TBranch* dBranch_PIDFOM;
 
 		//TRACKING INFO
 		TBranch* dBranch_NDF_Tracking;
@@ -174,6 +180,10 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "ChargedHypo__ThrownIndex";
 	dBranch_ThrownIndex = dTreeInterface->Get_Branch(locBranchName);
+	
+	// GLOBAL PID
+	locBranchName = "ChargedHypo__PIDFOM";
+	dBranch_PIDFOM = dTreeInterface->Get_Branch(locBranchName);
 
 	//TRACKING INFO
 	locBranchName = "ChargedHypo__NDF_Tracking";
@@ -431,6 +441,12 @@ inline DetectorSystem_t DChargedTrackHypothesis::Get_Detector_System_Timing(void
 		return SYS_START;
 
 	return SYS_NULL;
+}
+
+// Global PID
+inline Float_t DChargedTrackHypothesis::Get_PIDFOM(void) const
+{
+	return ((Float_t*)dBranch_PIDFOM->GetAddress())[dMeasuredArrayIndex];
 }
 
 //HIT ENERGY
