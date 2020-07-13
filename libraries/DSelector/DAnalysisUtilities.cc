@@ -695,22 +695,29 @@ double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber)
 	ostringstream locCommandStream;
 	locCommandStream << "ccdb dump PHOTON_BEAM/RF/beam_period -r " << locRunNumber;
 	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
-	if(locInputFile == NULL)
-		return -1.0;
+	if(locInputFile == NULL) {
+		cerr << "Could not load PHOTON_BEAM/RF/beam_period from CCDB !" << endl;
+		exit(1);        // make sure we don't fail silently
+		return -1.0;    // sanity check, this shouldn't be executed!
+	}
 
 	//get the first line
 	char buff[1024]; // I HATE char buffers
 	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 	{
 		gSystem->ClosePipe(locInputFile);
-		return -1.0;
+		cerr << "Could not parse PHOTON_BEAM/RF/beam_period from CCDB !" << endl;
+		exit(1);        // make sure we don't fail silently
+		return -1.0;    // sanity check, this shouldn't be executed!
 	}
 
 	//get the second line (where the # is)
 	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 	{
 		gSystem->ClosePipe(locInputFile);
-		return -1.0;
+		cerr << "Could not parse PHOTON_BEAM/RF/beam_period from CCDB !" << endl;
+		exit(1);        // make sure we don't fail silently		
+		return -1.0;    // sanity check, this shouldn't be executed!
 	}
 	istringstream locStringStream(buff);
 
@@ -780,23 +787,47 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		ostringstream locCommandStream;
 		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
 		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
-		if(locInputFile == NULL)
-			return -1.0;
+		if(locInputFile == NULL) {
+			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+		}
 
 		//get the first line
 		char buff[1024]; // I HATE char buffers
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not parse ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
 
 		//get the second line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not parse ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
+        
+        // catch some CCDB error conditions
+        if(strncmp(buff, "Cannot", 6) == 0) 
+        {
+            // no assignment for this run
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
+			gSystem->ClosePipe(locInputFile);
+			cerr << "No data available for ANALYSIS/accidental_scaling_factor, run " << locRunNumber << " from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+        }
+
 		istringstream locStringStream(buff);
 
 		//extract it
@@ -820,7 +851,7 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		
 		dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;
 	}
-	
+
 	if(locBeamEnergy > locTAGMEnergyBoundHi)
 		return locHodoscopeHiFactor;
 	else if(locBeamEnergy > locTAGMEnergyBoundLo)
@@ -862,23 +893,47 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		ostringstream locCommandStream;
 		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
 		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
-		if(locInputFile == NULL)
-			return -1.0;
+		if(locInputFile == NULL) {
+			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+		}
 
 		//get the first line
 		char buff[1024]; // I HATE char buffers
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
 
 		//get the second line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
+
+        // catch some CCDB error conditions
+        if(strncmp(buff, "Cannot", 6) == 0) 
+        {
+            // no assignment for this run
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
+			gSystem->ClosePipe(locInputFile);
+			cerr << "No data available for ANALYSIS/accidental_scaling_factor, run " << locRunNumber << " from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+        }
+
 		istringstream locStringStream(buff);
 
 		//extract it
