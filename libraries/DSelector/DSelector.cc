@@ -567,6 +567,9 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 	        dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_p4_true");
 		}
 
+		// Global PID
+		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>(locBranchPrefix + "_pid_fom");
+
 		//timing
 		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>(locBranchPrefix + "_beta_time");
 		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>(locBranchPrefix + "_chisq_time");
@@ -800,6 +803,9 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 				dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_true", TLorentzVector());
 			}
 		}
+	       
+		// Global PID
+		dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_pid_fom", locChargedTrackHypothesis->Get_PIDFOM());
 
 		//timing
 		dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_beta_time", locChargedTrackHypothesis->Get_Beta_Timing());
