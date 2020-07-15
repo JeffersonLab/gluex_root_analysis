@@ -14,6 +14,8 @@ using namespace std;
 class DAnalysisUtilities
 {
 	public:
+		DAnalysisUtilities();
+	
 		TLorentzVector Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitDataFlag) const;
 		TLorentzVector Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, map<unsigned int, set<Int_t> >& locSourceObjects, bool locUseKinFitDataFlag) const;
 		TLorentzVector Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, size_t locStepIndex, int locUpToStepIndex, set<size_t> locUpThroughIndices, bool locUseKinFitDataFlag) const;
@@ -46,6 +48,9 @@ class DAnalysisUtilities
 	private:
 
 		bool Handle_Decursion(int& locParticleIndex, deque<size_t>& locComboDeque, deque<int>& locResumeAtIndices, deque<deque<size_t> >& locPossibilities) const;
+
+		string dCCDBVariation;
+		string dCCDBTimestamp;
 
 		map< int, vector<double> > dAccidentalScalingFactor_Cache;
 		map< int, double >         dBeamBunchPeriod_Cache; //Cache so we only have to look up from CCDB once per run number. CCDB environment must be setup!!

@@ -1,5 +1,20 @@
 #include "DAnalysisUtilities.h"
 
+DAnalysisUtilities::DAnalysisUtilities()
+{
+	// handle some CCDB connfiguration
+	dCCDBVariation = "";
+	dCCDBTimestamp = "";
+	
+	char *envvar = NULL;
+	if( (envvar = getenv("ROOTANA_CCDB_VARIATION")) != NULL) {
+		dCCDBVariation = envvar;
+	}
+	if( (envvar = getenv("ROOTANA_CCDB_TIMESTAMP")) != NULL) {
+		dCCDBTimestamp = envvar;
+	}
+}
+
 TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitDataFlag) const
 {
 	map<unsigned int, set<Int_t> > locSourceObjects;
@@ -689,11 +704,12 @@ double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber)
 	
 	//If we already cached a value for this run, just return that and we're done
 	if(dBeamBunchPeriod_Cache.count(locRunNumber) > 0) return dBeamBunchPeriod_Cache[locRunNumber];
-	
+
 	// Retrieving from ccdb is SLOW so we should only execute this once upon encountering a new run number
 	//Pipe the current constant into this function
 	ostringstream locCommandStream;
-	locCommandStream << "ccdb dump PHOTON_BEAM/RF/beam_period -r " << locRunNumber;
+	locCommandStream << "ccdb dump PHOTON_BEAM/RF/beam_period:" << locRunNumber
+					 << ":" << dCCDBVariation << ":" << dCCDBTimestamp;
 	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
 	if(locInputFile == NULL) {
 		cerr << "Could not load PHOTON_BEAM/RF/beam_period from CCDB !" << endl;
@@ -785,7 +801,8 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		// Guess we have to go to the CCDB...
 		//Pipe the current constant into this function
 		ostringstream locCommandStream;
-		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
+		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor:" << locRunNumber
+					 << ":" << dCCDBVariation << ":" << dCCDBTimestamp;
 		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
 		if(locInputFile == NULL) {
 			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
@@ -891,7 +908,8 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		// Guess we have to go to the CCDB...
 		//Pipe the current constant into this function
 		ostringstream locCommandStream;
-		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
+		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber
+					 << ":" << dCCDBVariation << ":" << dCCDBTimestamp;
 		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
 		if(locInputFile == NULL) {
 			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
