@@ -105,6 +105,8 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		bool dIsPolarizedFlag; //else is AMO" << endl;
 	locHeaderStream << "		bool dIsPARAFlag; //else is PERP or AMO" << endl;
 	locHeaderStream << endl;
+	locHeaderStream << "		bool dIsMC;" << endl;
+	locHeaderStream << endl;
 	locHeaderStream << "		// ANALYZE CUT ACTIONS" << endl;
 	locHeaderStream << "		// // Automatically makes mass histograms where one cut is missing" << endl;
 	locHeaderStream << "		DHistogramAction_AnalyzeCutActions* dAnalyzeCutActions;" << endl;
@@ -335,6 +337,11 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	//dTreeInterface->Clear_GetEntryBranches(); //now get none" << endl;
 	locSourceStream << "	//dTreeInterface->Register_GetEntryBranch(\"Proton__P4\"); //manually set the branches you want" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/************************************** DETERMINE IF ANALYZING SIMULATED DATA *************************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	dIsMC = (dTreeInterface->Get_Branch(\"MCWeight\") != NULL);" << endl;
+	locSourceStream << endl;
 	locSourceStream << "}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "Bool_t " << locSelectorName << "::Process(Long64_t locEntry)" << endl;
@@ -536,7 +543,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "		// Bool_t locSkipNearestOutOfTimeBunch = true; // True: skip events from nearest out-of-time bunch on either side (recommended)." << endl;
 	locSourceStream << "		// Int_t locNumOutOfTimeBunchesToUse = locSkipNearestOutOfTimeBunch ? locNumOutOfTimeBunchesInTree-1:locNumOutOfTimeBunchesInTree; " << endl;
-	locSourceStream << "		// Double_t locAccidentalScalingFactor = dAnalysisUtilities.Get_AccidentalScalingFactor(Get_RunNumber(), locBeamP4.E()); // Ideal value would be 1, but deviations observed: need added factor." << endl;
+	locSourceStream << "		// Double_t locAccidentalScalingFactor = (dIsMC) ? 1.0 : dAnalysisUtilities.Get_AccidentalScalingFactor(Get_RunNumber(), locBeamP4.E()); // MC value is 1, but deviations observed in data: need added factor." << endl;
 	locSourceStream << "		// Double_t locAccidentalScalingFactorError = dAnalysisUtilities.Get_AccidentalScalingFactorError(Get_RunNumber(), locBeamP4.E()); // Ideal value would be 1, but deviations observed, need added factor." << endl;
 	locSourceStream << "		// Double_t locHistAccidWeightFactor = locRelBeamBucket==0 ? 1 : -locAccidentalScalingFactor/(2*locNumOutOfTimeBunchesToUse) ; // Weight by 1 for in-time events, ScalingFactor*(1/NBunches) for out-of-time" << endl;
 	locSourceStream << "		// if(locSkipNearestOutOfTimeBunch && abs(locRelBeamBucket)==1) continue; // Skip nearest out-of-time bunch: tails of in-time distribution also leak in" << endl;
