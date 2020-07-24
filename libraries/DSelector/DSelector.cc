@@ -805,7 +805,8 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 		}
 	       
 		// Global PID
-		dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_pid_fom", locChargedTrackHypothesis->Get_PIDFOM());
+        if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__PIDFOM") != NULL)
+            dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_pid_fom", locChargedTrackHypothesis->Get_PIDFOM());
 
 		//timing
 		dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_beta_time", locChargedTrackHypothesis->Get_Beta_Timing());
