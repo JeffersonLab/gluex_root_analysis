@@ -695,22 +695,29 @@ double DAnalysisUtilities::Get_BeamBunchPeriod(int locRunNumber)
 	ostringstream locCommandStream;
 	locCommandStream << "ccdb dump PHOTON_BEAM/RF/beam_period -r " << locRunNumber;
 	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
-	if(locInputFile == NULL)
-		return -1.0;
+	if(locInputFile == NULL) {
+		cerr << "Could not load PHOTON_BEAM/RF/beam_period from CCDB !" << endl;
+		exit(1);        // make sure we don't fail silently
+		return -1.0;    // sanity check, this shouldn't be executed!
+	}
 
 	//get the first line
 	char buff[1024]; // I HATE char buffers
 	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 	{
 		gSystem->ClosePipe(locInputFile);
-		return -1.0;
+		cerr << "Could not parse PHOTON_BEAM/RF/beam_period from CCDB !" << endl;
+		exit(1);        // make sure we don't fail silently
+		return -1.0;    // sanity check, this shouldn't be executed!
 	}
 
 	//get the second line (where the # is)
 	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 	{
 		gSystem->ClosePipe(locInputFile);
-		return -1.0;
+		cerr << "Could not parse PHOTON_BEAM/RF/beam_period from CCDB !" << endl;
+		exit(1);        // make sure we don't fail silently		
+		return -1.0;    // sanity check, this shouldn't be executed!
 	}
 	istringstream locStringStream(buff);
 
@@ -747,7 +754,7 @@ int DAnalysisUtilities::Get_RelativeBeamBucket(int locRunNumber, const TLorentzV
 	return int(floor( (locDeltaT_RF/locBeamBunchPeriod) + 0.5 ));
 }
 
-double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy) 
+double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy, bool locIsMC)
 {
 	//CCDB environment must be setup!!
 
@@ -778,25 +785,52 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		// Guess we have to go to the CCDB...
 		//Pipe the current constant into this function
 		ostringstream locCommandStream;
-		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
+		if (locIsMC)
+		  locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -v mc -r " << locRunNumber;
+		else
+		  locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
 		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
-		if(locInputFile == NULL)
-			return -1.0;
+		if(locInputFile == NULL) {
+		        cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+		}
 
 		//get the first line
 		char buff[1024]; // I HATE char buffers
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not parse ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
 
 		//get the second line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not parse ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
+        
+        // catch some CCDB error conditions
+        if(strncmp(buff, "Cannot", 6) == 0) 
+        {
+            // no assignment for this run
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
+			gSystem->ClosePipe(locInputFile);
+			cerr << "No data available for ANALYSIS/accidental_scaling_factor, run " << locRunNumber << " from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+        }
+
 		istringstream locStringStream(buff);
 
 		//extract it
@@ -820,7 +854,7 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		
 		dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;
 	}
-	
+
 	if(locBeamEnergy > locTAGMEnergyBoundHi)
 		return locHodoscopeHiFactor;
 	else if(locBeamEnergy > locTAGMEnergyBoundLo)
@@ -862,23 +896,47 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		ostringstream locCommandStream;
 		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
 		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
-		if(locInputFile == NULL)
-			return -1.0;
+		if(locInputFile == NULL) {
+			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+		}
 
 		//get the first line
 		char buff[1024]; // I HATE char buffers
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
 
 		//get the second line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 		{
+            vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
 			gSystem->ClosePipe(locInputFile);
-			return -1.0;
+			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
 		}
+
+        // catch some CCDB error conditions
+        if(strncmp(buff, "Cannot", 6) == 0) 
+        {
+            // no assignment for this run
+            //vector<double> locCachedValues = { -1., -1., -1., -1., -1., -1., -1., -1. };
+            //dAccidentalScalingFactor_Cache[locRunNumber] = locCachedValues;   // give up for this run
+			gSystem->ClosePipe(locInputFile);
+			cerr << "No data available for ANALYSIS/accidental_scaling_factor, run " << locRunNumber << " from CCDB !" << endl;
+			gSystem->Exit(1);        // make sure we don't fail silently
+			return -1.0;    // sanity check, this shouldn't be executed!
+        }
+
 		istringstream locStringStream(buff);
 
 		//extract it
@@ -911,6 +969,204 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		return locHodoscopeLoFactorErr;
 }
 
+double DAnalysisUtilities::Get_BeamEndpoint(int locRunNumber) 
+{
+	// CCDB environment must be setup!!
+	
+	//If we already cached a value for this run, just return that and we're done
+	if(dBeamEndpoint_Cache.count(locRunNumber) > 0) return dBeamEndpoint_Cache[locRunNumber];
+	
+	// Retrieving from ccdb is SLOW so we should only execute this once upon encountering a new run number
+	//Pipe the current constant into this function
+	ostringstream locCommandStream;
+	locCommandStream << "ccdb dump PHOTON_BEAM/endpoint_energy -r " << locRunNumber;
+	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+	if(locInputFile == NULL)
+		return -1.0;
+
+	//get the first line
+	char buff[1024]; // I HATE char buffers
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+	{
+		gSystem->ClosePipe(locInputFile);
+		return -1.0;
+	}
+
+	//get the second line (where the # is)
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+	{
+		gSystem->ClosePipe(locInputFile);
+		return -1.0;
+	}
+	istringstream locStringStream(buff);
+
+	//extract it
+	double locBeamEndpoint = -1.0;
+	if(!(locStringStream >> locBeamEndpoint))
+		locBeamEndpoint = -1.0;
+
+	//Close the pipe
+	gSystem->ClosePipe(locInputFile);
+
+	//Save to cache for future calls
+	dBeamEndpoint_Cache[locRunNumber] = locBeamEndpoint;
+
+	return locBeamEndpoint;
+}
+
+vector< pair<double,double> > DAnalysisUtilities::Get_EnergyTAGH(int locRunNumber) {
+
+	// CCDB environment must be setup!!
+
+	//If we already cached a value for this run, just return that and we're done
+	if(dEnergyTAGH_Cache.count(locRunNumber) > 0) return dEnergyTAGH_Cache[locRunNumber];
+
+	vector< pair<double,double> > locEnergyTAGH;
+	
+	// Retrieving from ccdb is SLOW so we should only execute this once upon encountering a new run number
+	//Pipe the current constant into this function
+	ostringstream locCommandStream;
+	locCommandStream << "ccdb dump PHOTON_BEAM/hodoscope/scaled_energy_range -r " << locRunNumber;
+	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+	if(locInputFile == NULL)
+		return locEnergyTAGH;
+
+	//get the first line
+	char buff[1024]; // I HATE char buffers
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+	{
+		gSystem->ClosePipe(locInputFile);
+		return locEnergyTAGH;
+	}
+
+	for(int i=0; i<274; i++) {
+
+		//get the second line (where the # is)
+		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+			{
+				gSystem->ClosePipe(locInputFile);
+				return locEnergyTAGH;
+			}
+		istringstream locStringStream(buff);
+
+		//extract it
+		int locCounter = -1;
+		double locCounterLow = -1.0;
+		double locCounterHigh = -1.0;
+		locStringStream >> locCounter >> locCounterLow  >> locCounterHigh;
+
+		//double locCounterEnergy = (locCounterLow + locCounterHigh) / 2.;
+		pair<double, double> locEnergyCounter(locCounterLow, locCounterHigh);
+		locEnergyTAGH.push_back(locEnergyCounter);
+	}
+
+	//Close the pipe
+	gSystem->ClosePipe(locInputFile);
+
+	//Save to cache for future calls
+	dEnergyTAGH_Cache[locRunNumber] = locEnergyTAGH;
+
+	return locEnergyTAGH;
+}
+
+int DAnalysisUtilities::Get_CounterTAGH(int locRunNumber, double locBeamEnergy) {
+	
+	vector< pair<double,double> > locEnergyTAGH;
+	if(dEnergyTAGH_Cache.count(locRunNumber) > 0) locEnergyTAGH = dEnergyTAGH_Cache[locRunNumber];
+	else locEnergyTAGH = Get_EnergyTAGH(locRunNumber);
+
+	double locEndpoint = 0;
+	if(dBeamEndpoint_Cache.count(locRunNumber) > 0) locEndpoint = dBeamEndpoint_Cache[locRunNumber];
+	else locEndpoint = Get_BeamEndpoint(locRunNumber);
+
+	// Get the TAGH counter from the low and high energy bounds
+	for(uint i=0; i<locEnergyTAGH.size(); i++) {
+		if(locBeamEnergy > locEndpoint*locEnergyTAGH[i].first && locBeamEnergy < locEndpoint*locEnergyTAGH[i].second)
+			return i+1;
+	}
+
+	return -1;
+}
+
+vector< pair<double,double> > DAnalysisUtilities::Get_EnergyTAGM(int locRunNumber) {
+
+	// CCDB environment must be setup!!
+
+	//If we already cached a value for this run, just return that and we're done
+	if(dEnergyTAGM_Cache.count(locRunNumber) > 0) return dEnergyTAGM_Cache[locRunNumber];
+
+	vector< pair<double,double> > locEnergyTAGM;
+	
+	// Retrieving from ccdb is SLOW so we should only execute this once upon encountering a new run number
+	//Pipe the current constant into this function
+	ostringstream locCommandStream;
+	locCommandStream << "ccdb dump PHOTON_BEAM/microscope/scaled_energy_range -r " << locRunNumber;
+	FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
+	if(locInputFile == NULL)
+		return locEnergyTAGM;
+
+	//get the first line
+	char buff[1024]; // I HATE char buffers
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+	{
+		gSystem->ClosePipe(locInputFile);
+		return locEnergyTAGM;
+	}
+
+	//get the second line (where the # is)
+	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+	{
+		gSystem->ClosePipe(locInputFile);
+		return locEnergyTAGM;
+	}
+
+	for(int i=0; i<102; i++) {
+
+		//get the second line (where the # is)
+		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+			{
+				gSystem->ClosePipe(locInputFile);
+				return locEnergyTAGM;
+			}
+		istringstream locStringStream(buff);
+
+		//extract it
+		int locCounter = -1;
+		double locCounterLow = -1.0;
+		double locCounterHigh = -1.0;
+		locStringStream >> locCounter >> locCounterLow  >> locCounterHigh;
+
+		pair<double, double> locEnergyCounter(locCounterLow, locCounterHigh);
+		locEnergyTAGM.push_back(locEnergyCounter);
+	}
+
+	//Close the pipe
+	gSystem->ClosePipe(locInputFile);
+
+	//Save to cache for future calls
+	dEnergyTAGM_Cache[locRunNumber] = locEnergyTAGM;
+
+	return locEnergyTAGM;
+}
+
+int DAnalysisUtilities::Get_ColumnTAGM(int locRunNumber, double locBeamEnergy) {
+
+	vector< pair<double,double> > locEnergyTAGM;
+	if(dEnergyTAGM_Cache.count(locRunNumber) > 0) locEnergyTAGM = dEnergyTAGM_Cache[locRunNumber];
+	else locEnergyTAGM = Get_EnergyTAGM(locRunNumber);
+
+	double locEndpoint = 0;
+	if(dBeamEndpoint_Cache.count(locRunNumber) > 0) locEndpoint = dBeamEndpoint_Cache[locRunNumber];
+	else locEndpoint = Get_BeamEndpoint(locRunNumber);
+
+	// Get the TAGM counter from the low and high energy bounds
+	for(uint i=0; i<locEnergyTAGM.size(); i++) {
+		if(locBeamEnergy > locEndpoint*locEnergyTAGM[i].first && locBeamEnergy < locEndpoint*locEnergyTAGM[i].second)
+			return i+1;
+	}
+
+	return -1;
+}
 
 double* DAnalysisUtilities::Generate_LogBinning(int locLowest10Power, int locHighest10Power, unsigned int locNumBinsPerPower, int& locNumBins) const
 {
