@@ -278,6 +278,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//CUT MISSING MASS" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_MissingMassSquared(dComboWrapper, false, -0.03, 0.02));" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	//CUT ON SHOWER QUALITY" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_ShowerQuality(dComboWrapper, SYS_FCAL, 0.5));" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	//BEAM ENERGY" << endl;
 	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_BeamEnergy(dComboWrapper, false));" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, false, 8.2, 8.8));  // Coherent peak for runs in the range 30000-59999" << endl;
