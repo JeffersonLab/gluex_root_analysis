@@ -863,7 +863,7 @@ double DAnalysisUtilities::Get_AccidentalScalingFactor(int locRunNumber, double 
 		return locHodoscopeLoFactor;
 }
 
-double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, double locBeamEnergy) 
+double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, double locBeamEnergy, bool locIsMC) 
 {
 	//CCDB environment must be setup!!
 
@@ -894,7 +894,10 @@ double DAnalysisUtilities::Get_AccidentalScalingFactorError(int locRunNumber, do
 		// Guess we have to go to the CCDB...
 		//Pipe the current constant into this function
 		ostringstream locCommandStream;
-		locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
+		if (locIsMC)
+		  locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -v mc -r " << locRunNumber;
+		else
+		  locCommandStream << "ccdb dump ANALYSIS/accidental_scaling_factor -r " << locRunNumber;
 		FILE* locInputFile = gSystem->OpenPipe(locCommandStream.str().c_str(), "r");
 		if(locInputFile == NULL) {
 			cerr << "Could not load ANALYSIS/accidental_scaling_factor from CCDB !" << endl;

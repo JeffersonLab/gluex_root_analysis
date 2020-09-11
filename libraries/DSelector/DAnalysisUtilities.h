@@ -28,7 +28,7 @@ class DAnalysisUtilities
 		bool Get_CoherentPeak(int locRunNumber, double& locCoherentPeak, bool locIsPolarizedFlag) const; //RCDB environment must be setup!!
 		double Get_BeamBunchPeriod(int locRunNumber); //CCDB environment must be setup!!
 		double Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy, bool locIsMC = false); //CCDB environment must be setup!!
-		double Get_AccidentalScalingFactorError(int locRunNumber, double locBeamEnergy); //CCDB environment must be setup!!
+		double Get_AccidentalScalingFactorError(int locRunNumber, double locBeamEnergy, bool locIsMC = false); //CCDB environment must be setup!!
 		double Get_DeltaT_RF(int locRunNumber, const TLorentzVector locBeamX4_Measured, const DParticleCombo* locParticleComboWrapper); //CCDB environment must be setup!!
 		int Get_RelativeBeamBucket(int locRunNumber, const TLorentzVector locBeamX4_Measured, const DParticleCombo* locParticleComboWrapper); //CCDB environment must be setup!!
 		
