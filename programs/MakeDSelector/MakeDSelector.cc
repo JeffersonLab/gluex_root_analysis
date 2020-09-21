@@ -240,6 +240,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
 	locSourceStream << "	dFlatTreeFileName = \"\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
 	locSourceStream << "	dFlatTreeName = \"\"; //if blank, default name will be chosen" << endl;
+	locSourceStream << "	//dSaveDefaultFlatBranches = false; // False: don't save default branches, reduce disk footprint." << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//Because this function gets called for each TTree in the TChain, we must be careful:" << endl;
 	locSourceStream << "		//We need to re-initialize the tree interface & branch wrappers, but don't want to recreate histograms" << endl;

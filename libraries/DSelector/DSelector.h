@@ -56,6 +56,7 @@ class DSelector : public TSelector
 		string dOutputTreeFileName; //DEPRECATED!! use dOutputTreeFileNameMap instead!!
 		string dFlatTreeFileName; //for output flat trees
 		string dFlatTreeName; //for output flat trees
+		bool dSaveDefaultFlatBranches; // True by default
 
 		//TREE INTERFACE
 		DTreeInterface* dTreeInterface; //for event-based tree
@@ -195,7 +196,7 @@ inline DSelector::DSelector(TTree* locTree) :
 		dFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputFlatTreeProofFile(NULL),
 		dTreeNumber(0), dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dGeneratedEnergy(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
-		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
+		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL), dSaveDefaultFlatBranches(true) {}
 
 /****************************************************************** GET OBJECT DATA *******************************************************************/
 
