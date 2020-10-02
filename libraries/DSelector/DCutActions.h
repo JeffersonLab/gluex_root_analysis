@@ -116,6 +116,24 @@ class DCutAction_NoPIDHit : public DAnalysisAction
 		DetectorSystem_t dSystem;
 };
 
+class DCutAction_PIDFOM : public DAnalysisAction
+{
+	public:
+		DCutAction_PIDFOM(const DParticleCombo* locParticleComboWrapper, Particle_t locParticleID, double locMinimumConfidenceLevel, bool locCutNDFZeroFlag = false, string locActionUniqueString = "") :
+		DAnalysisAction(locParticleComboWrapper, "Cut_PIDFOM", false, locActionUniqueString), 
+		dParticleID(locParticleID), dMinimumConfidenceLevel(locMinimumConfidenceLevel), dCutNDFZeroFlag(locCutNDFZeroFlag){}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){}
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		Particle_t dParticleID;
+		double dMinimumConfidenceLevel;
+		bool dCutNDFZeroFlag;
+};
+
 class DCutAction_EachPIDFOM : public DAnalysisAction
 {
 	public:

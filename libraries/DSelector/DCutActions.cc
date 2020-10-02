@@ -304,6 +304,46 @@ bool DCutAction_NoPIDHit::Perform_Action(void)
 	return true;
 }
 
+string DCutAction_PIDFOM::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinimumConfidenceLevel;
+	return locStream.str();
+}
+
+bool DCutAction_PIDFOM::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//final particles
+		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+		{
+		DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locComboWrapperStep->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			if((locKinematicData->Get_PID() != dParticleID) && (dParticleID != Unknown))
+				continue;
+			if(locKinematicData->Get_PID() != 0 && ParticleCharge(locKinematicData->Get_PID()) != 0)
+			{
+				const DChargedTrackHypothesis* locChargedTrackHypothesis = static_cast<const DChargedTrackHypothesis*>(locKinematicData);
+				if((locChargedTrackHypothesis->Get_PIDFOM() < dMinimumConfidenceLevel) && (locChargedTrackHypothesis->Get_NDF_Tracking() > 0))
+					return false;
+				if(dCutNDFZeroFlag && (locChargedTrackHypothesis->Get_NDF_Tracking() == 0))
+					return false;
+			}
+		}
+	}
+	return true;
+}
+
 string DCutAction_EachPIDFOM::Get_ActionName(void) const
 {
 	ostringstream locStream;
