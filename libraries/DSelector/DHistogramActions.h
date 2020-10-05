@@ -237,6 +237,38 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		map<size_t, map<Particle_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_Background; //step index, PID, background PID, particle indices
 };
 
+class DHistogramAction_PIDFOM : public DAnalysisAction
+{
+	public:
+		DHistogramAction_PIDFOM(const DParticleCombo* locParticleComboWrapper, string locActionUniqueString = "") :
+                        DAnalysisAction(locParticleComboWrapper, "Hist_PIDFOM", false, locActionUniqueString),
+			dChargedHypoWrapper(NULL), dNumBins(500) {}
+
+		void Initialize(void);
+		bool Perform_Action(void);
+		void Reset_NewEvent(void)
+		{
+			//reset uniqueness tracking
+			dPreviouslyHistogrammed.clear();
+		}
+
+	private:
+		DChargedTrackHypothesis* dChargedHypoWrapper;
+
+	public:
+		unsigned int dNumBins;
+
+	private:
+
+		void Create_Hists(int locStepIndex, Particle_t locPID, string locStepROOTName);
+		void Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex);
+
+		//keys are step index, PID //beam has PID Unknown
+		map<size_t, map<Particle_t, TH1I*> > dHistMap_PIDFOM;
+
+		map<size_t, map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed; //step index, PID, particle indices
+};
+
 class DHistogramAction_InvariantMass : public DAnalysisAction
 {
 	public:
