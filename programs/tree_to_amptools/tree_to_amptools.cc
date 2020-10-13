@@ -271,8 +271,9 @@ cout << endl;
 			//cout<<"Find "<<locName.data()<<endl;
 			locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
 		}
-		if(!locTreeParticleName) { // multiple particle indices
-			++locCurrentIndices[locPID];
+		if(!locTreeParticleName) { // multiple final state particle indices
+			if(locPID != Pi0 && locPID != Eta && locPID != EtaPrime && locPID != KShort)
+				++locCurrentIndices[locPID]; // increment only final state particle index
 			int locCurrentIndex = locCurrentIndices[locPID];
 			string locName = Form("%s%d", EnumString(locPID),locCurrentIndex);
 			if(locPID == Gamma) locName = Form("Photon%d", locCurrentIndex);
@@ -284,6 +285,13 @@ cout << endl;
 			//cout<<"Find "<<locName.data()<<endl;
 			locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
 		}
+		if(!locTreeParticleName) { // multiple decaying particle indices
+                        ++locCurrentIndices[locPID]; // increment deaying particle index
+                        int locCurrentIndex = locCurrentIndices[locPID];
+                        string locName = Form("Decaying%s%d", EnumString(locPID),locCurrentIndex);
+                        cout<<"Find "<<locName.data()<<endl;
+                        locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
+        	}
 
 		if(locTreeParticleName) locTreeParticleNamesOrdered->AddLast(locTreeParticleName);
 	}
