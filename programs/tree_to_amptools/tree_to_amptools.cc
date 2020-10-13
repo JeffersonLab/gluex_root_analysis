@@ -272,7 +272,7 @@ cout << endl;
 			locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
 		}
 		if(!locTreeParticleName) { // multiple final state particle indices
-			if(locPID != Pi0 && locPID != Eta && locPID != EtaPrime && locPID != KShort)
+			if(Is_FinalStateParticle(locPID))
 				++locCurrentIndices[locPID]; // increment only final state particle index
 			int locCurrentIndex = locCurrentIndices[locPID];
 			string locName = Form("%s%d", EnumString(locPID),locCurrentIndex);
