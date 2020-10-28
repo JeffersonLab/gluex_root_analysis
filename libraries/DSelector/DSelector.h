@@ -189,14 +189,14 @@ class DSelector : public TSelector
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
 inline DSelector::DSelector(TTree* locTree) :
-		dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dTreeInterface(NULL), dFlatTreeInterface(NULL),
+		 dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dSaveDefaultFlatBranches(true), dTreeInterface(NULL), dFlatTreeInterface(NULL),
 		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
 		dFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputFlatTreeProofFile(NULL),
 		dTreeNumber(0), dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dGeneratedEnergy(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
-		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL), dSaveDefaultFlatBranches(true) {}
+		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
 
 /****************************************************************** GET OBJECT DATA *******************************************************************/
 

@@ -571,7 +571,7 @@ string DCutAction_KinFitChiSq::Get_ActionName(void) const
 
 bool DCutAction_KinFitChiSq::Perform_Action(void)
 {
-	double locChiSq = dParticleComboWrapper->Get_ChiSq_KinFit( "" );
+	double locChiSq = dParticleComboWrapper->Get_ChiSq_KinFit( "" ) / dParticleComboWrapper->Get_NDF_KinFit( "" );
 	return (locChiSq < dMaximumChiSq);
 }
 
