@@ -446,7 +446,10 @@ inline DetectorSystem_t DChargedTrackHypothesis::Get_Detector_System_Timing(void
 // Global PID
 inline Float_t DChargedTrackHypothesis::Get_PIDFOM(void) const
 {
-	return ((Float_t*)dBranch_PIDFOM->GetAddress())[dMeasuredArrayIndex];
+	if(dBranch_PIDFOM == NULL)
+                return -1.;
+	else
+                return ((Float_t*)dBranch_PIDFOM->GetAddress())[dMeasuredArrayIndex];
 }
 
 //HIT ENERGY
