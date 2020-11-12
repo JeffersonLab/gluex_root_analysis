@@ -287,7 +287,7 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 		locInputTree->SetBranchAddress("MCWeight", &locMCWeight);
 
 	//array sizes
-	UInt_t locCurrentComboArraySize = 1000; //should be more than enough, but will check below anyway and resize if needed
+	UInt_t locCurrentComboArraySize = 2000; //should be more than enough, but will check below anyway and resize if needed
 	UInt_t locNumCombos = 0;
 	TBranch* locBranch_NumCombos = NULL;
 	locInputTree->SetBranchAddress("NumCombos", &locNumCombos, &locBranch_NumCombos);
@@ -331,7 +331,7 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 	Int_t locNumDirect = locParticleNamesWithBranches->GetEntries();
 	TClonesArray* locChargedHypoClonesArray = NULL;
 	bool locClonesArraySetFlag = false;
-        bool locKinFitMassConstrained = true; // If any KinFit is performed locTreeParticleNames would contain "Decaying" resonance branches even though "Decaying" branches are only there when masses are constrained
+        map<string, bool> locKinFitMassConstrained; // If any KinFit is performed locTreeParticleNames would contain "Decaying" resonance branches even though "Decaying" branches are only there when masses are constrained
 	//pointer to an array of pointers of TClonesArrays //ugghhh
 	TClonesArray** locP4ClonesArray = new TClonesArray*[locNumDirect]; //matches with locParticleBranchNames & locParticleNamesWithBranches
 	TLorentzVector** locDirectP4s = new TLorentzVector*[locNumDirect];
@@ -339,6 +339,7 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 	{
 		locP4ClonesArray[loc_i] = NULL;
 		string locParticleBranchName = locParticleBranchNames->At(loc_i)->GetName();
+                string locParticleNameWithBranch = locParticleNamesWithBranches->At(loc_i)->GetName();
 		if(locParticleBranchName.substr(locParticleBranchName.size() - 5) == "Index")
 		{
 			//above if-statement: locParticleBranchName is guaranteed to at least be size 5
@@ -357,10 +358,13 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
                         TBranch* br = (TBranch *)locInputTree->GetListOfBranches()->FindObject(locParticleBranchName.c_str());
                         if (br) {
 			    locInputTree->SetBranchAddress(locParticleBranchName.c_str(), &(locP4ClonesArray[loc_i]));
-                            locKinFitMassConstrained=true;
+                            cout << locParticleBranchName << " exists, mass constrained" << endl;
+                            locKinFitMassConstrained[locParticleNameWithBranch] = true;
                         }
                         else {
-                            locKinFitMassConstrained=false;
+                            // if this case is reached locP4ClonesArray would not be set at this index, so probably still NULL. Bad things if you expect this to be filled...
+                            cout << locParticleBranchName << " does not exist, mass unconstrained" << endl;
+                            locKinFitMassConstrained[locParticleNameWithBranch] = false;
                         }
                     }
                     else{
@@ -498,9 +502,10 @@ cout << endl;
 			for(Int_t loc_i = 0; loc_i < locNumDirect; ++loc_i)
 			{
 				string locParticleBranchName = locParticleBranchNames->At(loc_i)->GetName();
+                                string locParticleNameWithBranch = locParticleNamesWithBranches->At(loc_i)->GetName();
 				if(locParticleBranchName.substr(locParticleBranchName.size() - 5) != "Index"){
                                     // if masses are constrained there are no problems and we can look for the P4s of everything
-                                    if( locParticleBranchName.substr(0, 8) != string("Decaying") || locKinFitMassConstrained){
+                                    if( locParticleBranchName.substr(0, 8) != string("Decaying") || locKinFitMassConstrained[locParticleNameWithBranch]){
 					locDirectP4s[loc_i] = (TLorentzVector*)locP4ClonesArray[loc_i]->At(locComboIndex);
                                     }
                                 }
@@ -557,7 +562,7 @@ cout << endl;
 				TObject* locNameObject = locTreeParticleNames->At(loc_j);
 				Int_t locListIndex = locParticleNamesWithBranches->IndexOf(locNameObject);
                                 // Even though the "Decaying" branches might not exist if masses are not constrained, the proton is always there and measured
-                                if((locListIndex >= 0 && locKinFitMassConstrained) || ((string)locNameObject->GetName()=="Proton"))
+                                if((locListIndex >= 0 && locKinFitMassConstrained[(string)locNameObject->GetName()]) || ((string)locNameObject->GetName()=="Proton"))
 				{
 					locBranchPointer_FinalStateE[loc_j] = locDirectP4s[locListIndex]->E();
 					locBranchPointer_FinalStatePx[loc_j] = locDirectP4s[locListIndex]->Px();
