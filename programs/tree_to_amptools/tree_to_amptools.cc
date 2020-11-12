@@ -287,7 +287,7 @@ void Convert_ToAmpToolsFormat(string locOutputFileName, TTree* locInputTree)
 		locInputTree->SetBranchAddress("MCWeight", &locMCWeight);
 
 	//array sizes
-	UInt_t locCurrentComboArraySize = 2000; //should be more than enough, but will check below anyway and resize if needed
+	UInt_t locCurrentComboArraySize = 1000; //should be more than enough, but will check below anyway and resize if needed
 	UInt_t locNumCombos = 0;
 	TBranch* locBranch_NumCombos = NULL;
 	locInputTree->SetBranchAddress("NumCombos", &locNumCombos, &locBranch_NumCombos);
