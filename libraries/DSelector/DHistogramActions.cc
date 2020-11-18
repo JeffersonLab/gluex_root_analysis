@@ -58,7 +58,6 @@ bool DHistogramAction_AnalyzeCutActions::Perform_ActionWeight(double weight = 1.
 	
 	for (auto const &cut_iter : dHistsWithoutCuts)
 	{
-		dPreviouslyHistogrammed.clear();
 		bool locFill = true;
 		for (auto const &action_iter : dAllAnalysisActions)
 		{
@@ -78,18 +77,17 @@ bool DHistogramAction_AnalyzeCutActions::Perform_ActionWeight(double weight = 1.
 		}
 	
 		if (locFill)
-			Fill_Hists(cut_iter.second, locIndexCombos, weight);
+		        Fill_Hists(cut_iter.second, locIndexCombos, weight, cut_iter.first);
 	}
 
 	if (!locComboCut)
-		Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos, weight);
+	        Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos, weight, "allcuts");
 
 	return true;
 }
 
-bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_t> > locIndexCombos, double weight)
+bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_t> > locIndexCombos, double weight, string locActionName)
 {
-	dPreviouslyHistogrammed.clear();
 	double locMass = 0.0;
 	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
 	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
@@ -97,9 +95,9 @@ bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_
 		map<unsigned int, set<Int_t> > locSourceObjects;
 		TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, dStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
 		locMass = locFinalStateP4.M();
-		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
+		if(dPreviouslyHistogrammed[locActionName].find(locSourceObjects) == dPreviouslyHistogrammed[locActionName].end())
 		{
-			dPreviouslyHistogrammed.insert(locSourceObjects);
+		        dPreviouslyHistogrammed[locActionName].insert(locSourceObjects);
 			locHist->Fill(locMass, weight);
 		}
 	}

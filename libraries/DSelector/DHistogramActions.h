@@ -42,7 +42,7 @@ class DHistogramAction_AnalyzeCutActions : public DAnalysisAction
 		bool Perform_ActionWeight(double weight);
 
 	private:
-		bool Fill_Hists(TH1I* locHist, set<set<size_t>> locIndexCombos, double weight);
+		bool Fill_Hists(TH1I* locHist, set<set<size_t>> locIndexCombos, double weight, string locActionName);
 		vector<DAnalysisAction*> dAllAnalysisActions;
 		Particle_t dInitialPID;
 		int dStepIndex;
@@ -57,8 +57,8 @@ class DHistogramAction_AnalyzeCutActions : public DAnalysisAction
 		// string comes from Get_ActionName() and TH1I* is the histogram without that cut
 		map<string, TH1I*> dHistsWithoutCuts;
 
-		// uniqueness tracking
-		set<map<unsigned int, set<Int_t> > > dPreviouslyHistogrammed;
+		// uniqueness tracking for each CutAction separately
+		map<string, set<map<unsigned int, set<Int_t> > > > dPreviouslyHistogrammed;
 };
 
 class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
