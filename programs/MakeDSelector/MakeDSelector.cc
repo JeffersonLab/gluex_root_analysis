@@ -269,6 +269,11 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//below: value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDDeltaT(dComboWrapper, false, 0.5, KPlus, SYS_BCAL));" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	//PIDFOM (for charged tracks)" << endl;
+	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_PIDFOM(dComboWrapper));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDFOM(dComboWrapper, KPlus, 0.1));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_EachPIDFOM(dComboWrapper, 0.1));" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	//MASSES" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_InvariantMass(dComboWrapper, false, Lambda, 1000, 1.0, 1.2, \"Lambda\"));" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_MissingMassSquared(dComboWrapper, false, 1000, -0.1, 0.1));" << endl;
