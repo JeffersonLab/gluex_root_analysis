@@ -927,3 +927,36 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 			dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_kin", locParticle->Get_P4());
 	}
 }
+
+void DSelector::SetupAmpTools_FlatTree() {
+
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Weight");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("E_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Px_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Py_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Pz_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Int_t>("NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("E_FinalState","NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Px_FinalState","NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Py_FinalState","NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Pz_FinalState","NumFinalState");
+
+	return;
+}
+
+void DSelector::FillAmpTools_FlatTree(TLorentzVector locBeamP4, vector<TLorentzVector> locFinalStateP4) {
+
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("E_Beam", locBeamP4.E());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("Px_Beam", locBeamP4.Px());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("Py_Beam", locBeamP4.Py());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("Pz_Beam", locBeamP4.Pz());
+	dFlatTreeInterface->Fill_Fundamental<Int_t>("NumFinalState", (Int_t)locFinalStateP4.size());
+
+	for(unsigned int j=0; j<locFinalStateP4.size(); j++) {
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("E_FinalState", locFinalStateP4[j].E(), j);
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("Px_FinalState", locFinalStateP4[j].Px(), j);
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("Py_FinalState", locFinalStateP4[j].Py(), j);
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("Pz_FinalState", locFinalStateP4[j].Pz(), j);
+	}	
+
+}
