@@ -116,6 +116,41 @@ class DCutAction_NoPIDHit : public DAnalysisAction
 		DetectorSystem_t dSystem;
 };
 
+class DCutAction_PIDFOM : public DAnalysisAction
+{
+	public:
+		DCutAction_PIDFOM(const DParticleCombo* locParticleComboWrapper, Particle_t locParticleID, double locMinimumConfidenceLevel, bool locCutNDFZeroFlag = false, string locActionUniqueString = "") :
+		DAnalysisAction(locParticleComboWrapper, "Cut_PIDFOM", false, locActionUniqueString), 
+		dParticleID(locParticleID), dMinimumConfidenceLevel(locMinimumConfidenceLevel), dCutNDFZeroFlag(locCutNDFZeroFlag){}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){}
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		Particle_t dParticleID;
+		double dMinimumConfidenceLevel;
+		bool dCutNDFZeroFlag;
+};
+
+class DCutAction_EachPIDFOM : public DAnalysisAction
+{
+	public:
+		DCutAction_EachPIDFOM(const DParticleCombo* locParticleComboWrapper, double locMinimumConfidenceLevel, bool locCutNDFZeroFlag = false, string locActionUniqueString = "") :
+		DAnalysisAction(locParticleComboWrapper, "Cut_EachPIDFOM", false, locActionUniqueString),
+		dMinimumConfidenceLevel(locMinimumConfidenceLevel), dCutNDFZeroFlag(locCutNDFZeroFlag){}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){}
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		double dMinimumConfidenceLevel;
+		bool dCutNDFZeroFlag;
+};
+
 class DCutAction_dEdx : public DAnalysisAction
 {
 	public:
@@ -166,6 +201,22 @@ class DCutAction_KinFitFOM : public DAnalysisAction
 	private:
 		const string dKinFitName;
 		double dMinimumConfidenceLevel;
+};
+
+class DCutAction_KinFitChiSq : public DAnalysisAction
+{
+	public:
+		DCutAction_KinFitChiSq(const DParticleCombo* locParticleComboWrapper, double locMaximumChiSq, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_KinFitChiSq", true, locActionUniqueString), dMaximumChiSq(locMaximumChiSq){}
+
+		string Get_ActionName(void) const;
+		void Initialize(void){};
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+
+	private:
+		const string dKinFitName;
+		double dMaximumChiSq;
 };
 
 class DCutAction_MissingMass : public DAnalysisAction

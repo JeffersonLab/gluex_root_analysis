@@ -41,7 +41,13 @@ void DHistogramAction_AnalyzeCutActions::Initialize(void)
 	
 }
 
-bool DHistogramAction_AnalyzeCutActions::Perform_Action(void)
+bool DHistogramAction_AnalyzeCutActions::Perform_Action()
+{
+	double weight = 1.0;
+	return Perform_ActionWeight(weight);
+}
+
+bool DHistogramAction_AnalyzeCutActions::Perform_ActionWeight(double weight = 1.0)
 {
 	bool locComboCut = false;
 	//double locMass = 0.0;
@@ -52,7 +58,6 @@ bool DHistogramAction_AnalyzeCutActions::Perform_Action(void)
 	
 	for (auto const &cut_iter : dHistsWithoutCuts)
 	{
-		dPreviouslyHistogrammed.clear();
 		bool locFill = true;
 		for (auto const &action_iter : dAllAnalysisActions)
 		{
@@ -72,18 +77,17 @@ bool DHistogramAction_AnalyzeCutActions::Perform_Action(void)
 		}
 	
 		if (locFill)
-			Fill_Hists(cut_iter.second, locIndexCombos);
+		        Fill_Hists(cut_iter.second, locIndexCombos, weight, cut_iter.first);
 	}
 
 	if (!locComboCut)
-		Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos);
+	        Fill_Hists(dHist_InvariantMass_allcuts, locIndexCombos, weight, "allcuts");
 
 	return true;
 }
 
-bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_t> > locIndexCombos)
+bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_t> > locIndexCombos, double weight, string locActionName)
 {
-	dPreviouslyHistogrammed.clear();
 	double locMass = 0.0;
 	set<set<size_t> >::iterator locComboIterator = locIndexCombos.begin();
 	for(; locComboIterator != locIndexCombos.end(); ++locComboIterator)
@@ -91,10 +95,10 @@ bool DHistogramAction_AnalyzeCutActions::Fill_Hists(TH1I* locHist, set<set<size_
 		map<unsigned int, set<Int_t> > locSourceObjects;
 		TLorentzVector locFinalStateP4 = dAnalysisUtilities.Calc_FinalStateP4(dParticleComboWrapper, dStepIndex, *locComboIterator, locSourceObjects, dUseKinFitFlag);
 		locMass = locFinalStateP4.M();
-		if(dPreviouslyHistogrammed.find(locSourceObjects) == dPreviouslyHistogrammed.end())
+		if(dPreviouslyHistogrammed[locActionName].find(locSourceObjects) == dPreviouslyHistogrammed[locActionName].end())
 		{
-			dPreviouslyHistogrammed.insert(locSourceObjects);
-			locHist->Fill(locMass);
+		        dPreviouslyHistogrammed[locActionName].insert(locSourceObjects);
+			locHist->Fill(locMass, weight);
 		}
 	}
 	return true;
@@ -829,6 +833,120 @@ void DHistogramAction_ParticleID::Fill_BackgroundHists(size_t locStepIndex, Part
 		dBackgroundHistMap_DeltaTVsP_TOF[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
 	else if(dChargedHypoWrapper->Get_Detector_System_Timing() == SYS_FCAL)
 		dBackgroundHistMap_DeltaTVsP_FCAL[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
+}
+
+void DHistogramAction_PIDFOM::Initialize(void)
+{
+	string locDirName, locHistName, locHistTitle, locStepName, locStepROOTName, locParticleName, locParticleROOTName;
+
+	// CREATE & GOTO MAIN FOLDER
+	CreateAndChangeTo_ActionDirectory();
+
+	//Steps
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		ostringstream locStepName;
+		locStepName << "Step" << loc_i << "__" << locStep->Get_StepName();
+		string locStepROOTName = locStep->Get_StepROOTName();
+		bool locStepDirectoryCreatedFlag = false;
+
+		// final state particles
+		for(size_t loc_j = 0; loc_j < locStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			if(locStep->Get_FinalParticle(loc_j) == NULL)
+				continue; //not reconstructed at all
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locStep->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			Particle_t locFinalStatePID = locStep->Get_FinalPID(loc_j);
+			if(dHistMap_PIDFOM[loc_i].find(locFinalStatePID) != dHistMap_PIDFOM[loc_i].end())
+				continue; //pid already done
+
+			if(!locStepDirectoryCreatedFlag)
+			{
+				CreateAndChangeTo_Directory(locStepName.str());
+				locStepDirectoryCreatedFlag = true;
+			}
+
+			locParticleName = ParticleType(locFinalStatePID);
+			CreateAndChangeTo_Directory(locParticleName);
+
+			Create_Hists(loc_i, locFinalStatePID, locStepROOTName);
+			gDirectory->cd("..");
+		} //end of particle loop
+
+		if(locStepDirectoryCreatedFlag)
+			gDirectory->cd("..");
+	} //end of step loop
+
+	//Return to the base directory
+	ChangeTo_BaseDirectory();
+}
+
+void DHistogramAction_PIDFOM::Create_Hists(int locStepIndex, Particle_t locPID, string locStepROOTName)
+{
+	string locParticleROOTName = ParticleName_ROOT(locPID);
+	string locHistName, locHistTitle;
+
+	if(ParticleCharge(locPID) != 0)
+	{
+
+		locHistName = "PIDFOM";
+		locHistTitle = locParticleROOTName + string(";Particle ID FOM");
+		dHistMap_PIDFOM[locStepIndex][locPID] = new TH1I(locHistName.c_str(), locHistTitle.c_str(), dNumBins, 0, 1);
+
+	}
+}
+
+bool DHistogramAction_PIDFOM::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//final particles
+		for(size_t loc_j = 0; loc_j < locParticleComboStepWrapper->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locParticleComboStepWrapper->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locParticleComboStepWrapper->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			//check if duplicate
+			Particle_t locFinalStatePID = locKinematicData->Get_PID();
+			set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][locFinalStatePID];
+			if(locParticleSet.find(locKinematicData->Get_ID()) != locParticleSet.end())
+				continue;
+
+			//fill hists
+			Fill_Hists(locKinematicData, loc_i);
+			locParticleSet.insert(locKinematicData->Get_ID());
+
+		} //end of particle loop
+	} //end of step loop
+
+	return true;
+}
+
+void DHistogramAction_PIDFOM::Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex)
+{
+	Particle_t locPID = locKinematicData->Get_PID();
+	if(ParticleCharge(locPID) != 0)
+	{
+		const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+		if(locChargedTrackHypothesis != NULL) {
+		  dHistMap_PIDFOM[locStepIndex][locPID]->Fill(locChargedTrackHypothesis->Get_PIDFOM());
+		}
+	}
 }
 
 void DHistogramAction_InvariantMass::Initialize(void)

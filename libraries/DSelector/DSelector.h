@@ -56,6 +56,7 @@ class DSelector : public TSelector
 		string dOutputTreeFileName; //DEPRECATED!! use dOutputTreeFileNameMap instead!!
 		string dFlatTreeFileName; //for output flat trees
 		string dFlatTreeName; //for output flat trees
+		bool dSaveDefaultFlatBranches; // True by default
 
 		//TREE INTERFACE
 		DTreeInterface* dTreeInterface; //for event-based tree
@@ -188,7 +189,7 @@ class DSelector : public TSelector
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
 inline DSelector::DSelector(TTree* locTree) :
-		dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dTreeInterface(NULL), dFlatTreeInterface(NULL),
+		 dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dSaveDefaultFlatBranches(true), dTreeInterface(NULL), dFlatTreeInterface(NULL),
 		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
