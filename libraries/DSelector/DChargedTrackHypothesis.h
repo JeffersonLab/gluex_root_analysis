@@ -83,6 +83,9 @@ class DChargedTrackHypothesis : public DKinematicData
 
 		//DIRC INFORMATION
                 Int_t Get_Track_NumPhotons_DIRC(void) const;
+
+                Float_t Get_Track_ExtrapolatedX_DIRC(void) const;
+                Float_t Get_Track_ExtrapolatedY_DIRC(void) const;
                 Float_t Get_Track_ThetaC_DIRC(void) const;
                 Float_t Get_Track_Lele_DIRC(void) const;
                 Float_t Get_Track_Lpi_DIRC(void) const;
@@ -153,6 +156,8 @@ class DChargedTrackHypothesis : public DKinematicData
 
 		// DIRC INFORMATION
                 TBranch* dBranch_Track_NumPhotons_DIRC;
+                TBranch* dBranch_Track_ExtrapolatedX_DIRC;
+                TBranch* dBranch_Track_ExtrapolatedY_DIRC;
                 TBranch* dBranch_Track_ThetaC_DIRC;
                 TBranch* dBranch_Track_Lele_DIRC;
                 TBranch* dBranch_Track_Lpi_DIRC;
@@ -302,6 +307,12 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	//DIRC INFORMATION:
         locBranchName = "ChargedHypo__NumPhotons_DIRC";
         dBranch_Track_NumPhotons_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__ExtrapolatedX_DIRC";
+        dBranch_Track_ExtrapolatedX_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__ExtrapolatedY_DIRC";
+        dBranch_Track_ExtrapolatedY_DIRC = dTreeInterface->Get_Branch(locBranchName);
 
         locBranchName = "ChargedHypo__ThetaC_DIRC";
         dBranch_Track_ThetaC_DIRC = dTreeInterface->Get_Branch(locBranchName);
@@ -563,6 +574,22 @@ inline Int_t DChargedTrackHypothesis::Get_Track_NumPhotons_DIRC(void) const
 {	
 	if(dBranch_Track_NumPhotons_DIRC)
 	        return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
+	else 
+		return 0;
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedX_DIRC(void) const
+{	
+	if(dBranch_Track_ExtrapolatedX_DIRC)
+	        return ((Int_t*)dBranch_Track_ExtrapolatedX_DIRC->GetAddress())[dMeasuredArrayIndex];
+	else 
+		return 0;
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedY_DIRC(void) const
+{	
+	if(dBranch_Track_ExtrapolatedY_DIRC)
+	        return ((Int_t*)dBranch_Track_ExtrapolatedY_DIRC->GetAddress())[dMeasuredArrayIndex];
 	else 
 		return 0;
 }
