@@ -573,7 +573,7 @@ inline Float_t DChargedTrackHypothesis::Get_TrackFCAL_DOCA(void) const
 inline Int_t DChargedTrackHypothesis::Get_Track_NumPhotons_DIRC(void) const
 {	
 	if(dBranch_Track_NumPhotons_DIRC)
-	        return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
+	       return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
 	else 
 		return 0;
 }
@@ -581,7 +581,7 @@ inline Int_t DChargedTrackHypothesis::Get_Track_NumPhotons_DIRC(void) const
 inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedX_DIRC(void) const
 {	
 	if(dBranch_Track_ExtrapolatedX_DIRC)
-	        return ((Float_t*)dBranch_Track_ExtrapolatedX_DIRC->GetAddress())[dMeasuredArrayIndex];
+	       return ((Float_t*)dBranch_Track_ExtrapolatedX_DIRC->GetAddress())[dMeasuredArrayIndex];
 	else 
 		return 0;
 }
