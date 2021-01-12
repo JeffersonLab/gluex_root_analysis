@@ -581,7 +581,7 @@ inline Int_t DChargedTrackHypothesis::Get_Track_NumPhotons_DIRC(void) const
 inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedX_DIRC(void) const
 {	
 	if(dBranch_Track_ExtrapolatedX_DIRC)
-	        return ((Int_t*)dBranch_Track_ExtrapolatedX_DIRC->GetAddress())[dMeasuredArrayIndex];
+	        return ((Float_t*)dBranch_Track_ExtrapolatedX_DIRC->GetAddress())[dMeasuredArrayIndex];
 	else 
 		return 0;
 }
@@ -589,7 +589,7 @@ inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedX_DIRC(void) const
 inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedY_DIRC(void) const
 {	
 	if(dBranch_Track_ExtrapolatedY_DIRC)
-	        return ((Int_t*)dBranch_Track_ExtrapolatedY_DIRC->GetAddress())[dMeasuredArrayIndex];
+	        return ((Float_t*)dBranch_Track_ExtrapolatedY_DIRC->GetAddress())[dMeasuredArrayIndex];
 	else 
 		return 0;
 }
