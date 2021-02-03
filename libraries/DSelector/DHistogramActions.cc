@@ -547,19 +547,19 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 
 		// dE/dx vs P
 		locHistName = "dEdxVsP_CDC";
-		locHistTitle = locParticleROOTName + string(";p (GeV/c); CDC dE/dx (MeV/cm) ");
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); CDC dE/dx (keV/cm) ");
 		dHistMap_dEdxVsP_CDC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
 	
 		locHistName = "dEdxVsP_FDC";
-		locHistTitle = locParticleROOTName + string(";p (GeV/c); FDC dE/dx (MeV/cm) ");
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); FDC dE/dx (keV/cm) ");
 		dHistMap_dEdxVsP_FDC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
 		
 		locHistName = "dEdxVsP_ST";
-		locHistTitle = locParticleROOTName + string(";p (GeV/c); ST dE/dx (MeV/cm) ");
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); ST dE/dx (keV/cm) ");
 		dHistMap_dEdxVsP_ST[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
 		
 		locHistName = "dEdxVsP_TOF";
-		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF dE/dx (MeV/cm) ");
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF dE/dx (keV/cm) ");
 		dHistMap_dEdxVsP_TOF[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
 		
 		// E/p vs p, theta
