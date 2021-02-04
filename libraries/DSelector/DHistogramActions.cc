@@ -550,6 +550,10 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); CDC dE/dx (keV/cm) ");
 		dHistMap_dEdxVsP_CDC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
 	
+		locHistName = "dEdxVsP_CDC_integral";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); CDC dE/dx (keV/cm) ");
+		dHistMap_dEdxVsP_CDC_integral[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
+
 		locHistName = "dEdxVsP_FDC";
 		locHistTitle = locParticleROOTName + string(";p (GeV/c); FDC dE/dx (keV/cm) ");
 		dHistMap_dEdxVsP_FDC[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNum2DdEdxBins, dMindEdx, dMaxdEdx);
@@ -747,6 +751,8 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 			// dE/dx vs p
 			if(locChargedTrackHypothesis->Get_dEdx_CDC() > 0.)
 				dHistMap_dEdxVsP_CDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_CDC()*1e6);
+			if(locChargedTrackHypothesis->Get_dEdx_CDC_integral() > 0.)
+				dHistMap_dEdxVsP_CDC_integral[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_CDC_integral()*1e6);
 			if(locChargedTrackHypothesis->Get_dEdx_FDC() > 0.) 
 				dHistMap_dEdxVsP_FDC[locStepIndex][locPID]->Fill(locP,locChargedTrackHypothesis->Get_dEdx_FDC()*1e6);
 			if(locChargedTrackHypothesis->Get_dEdx_ST() > 0.) 
