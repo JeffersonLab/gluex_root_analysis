@@ -678,6 +678,7 @@ void DSelector::Fill_FlatTree(void)
 	if(locIsMCGenOnlyFlag)
 	{
 		//CODE SOMETHING HERE!!
+		dFlatTreeInterface->Fill_OutputTree("");
 		return;
 	}
 
