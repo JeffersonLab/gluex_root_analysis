@@ -629,8 +629,8 @@ cout << endl;
 			{
 				TObject* locNameObject = locTreeParticleNames->At(loc_j);
 				Int_t locListIndex = locParticleNamesWithBranches->IndexOf(locNameObject);
-                                // Even though the "Decaying" branches might not exist if masses are not constrained, the proton is always there and measured
-                                if((locListIndex >= 0 && locKinFitMassConstrained[(string)locNameObject->GetName()]) || ((string)locNameObject->GetName()=="Proton"))
+                                // If particle has mass constraint or does not decay at all, use the 4-vector directly
+				if(locListIndex >= 0 && (((string)locNameObject->GetName()).find("Decaying") == string::npos || locKinFitMassConstrained[(string)locNameObject->GetName()]))
 				{
 					locBranchPointer_FinalStateE[loc_j] = locDirectP4s[locListIndex]->E();
 					locBranchPointer_FinalStatePx[loc_j] = locDirectP4s[locListIndex]->Px();

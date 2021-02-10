@@ -200,6 +200,7 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 
 		//keys are step index, PID //beam has PID Unknown
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_CDC;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_CDC_integral;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_FDC;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_ST;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_TOF;
@@ -650,7 +651,7 @@ class DHistogramAction_KinFitResults : public DAnalysisAction
 	public:
 		DHistogramAction_KinFitResults(const DParticleCombo* locParticleComboWrapper, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_KinFitResults", true, locActionUniqueString),
-			dNumChiSqPerDFBins(1000), dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50), dMaxChiSqPerDF(500) {}
+			dNumChiSqPerDFBins(1000), dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50), dMaxChiSqPerDF(50) {}
 
 		void Reset_NewEvent(void){}
 		void Initialize(void);

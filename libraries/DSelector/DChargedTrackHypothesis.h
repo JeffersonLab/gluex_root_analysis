@@ -41,6 +41,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		UInt_t Get_NDF_DCdEdx(void) const;
 		Float_t Get_ChiSq_DCdEdx(void) const;
 		Float_t Get_dEdx_CDC(void) const;
+		Float_t Get_dEdx_CDC_integral(void) const;
 		Float_t Get_dEdx_FDC(void) const;
 
 		//TIMING INFO
@@ -83,6 +84,9 @@ class DChargedTrackHypothesis : public DKinematicData
 
 		//DIRC INFORMATION
                 Int_t Get_Track_NumPhotons_DIRC(void) const;
+
+                Float_t Get_Track_ExtrapolatedX_DIRC(void) const;
+                Float_t Get_Track_ExtrapolatedY_DIRC(void) const;
                 Float_t Get_Track_ThetaC_DIRC(void) const;
                 Float_t Get_Track_Lele_DIRC(void) const;
                 Float_t Get_Track_Lpi_DIRC(void) const;
@@ -114,6 +118,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_NDF_DCdEdx;
 		TBranch* dBranch_ChiSq_DCdEdx;
 		TBranch* dBranch_dEdx_CDC;
+		TBranch* dBranch_dEdx_CDC_integral;
 		TBranch* dBranch_dEdx_FDC;
  
 		//TIMING INFO
@@ -153,6 +158,8 @@ class DChargedTrackHypothesis : public DKinematicData
 
 		// DIRC INFORMATION
                 TBranch* dBranch_Track_NumPhotons_DIRC;
+                TBranch* dBranch_Track_ExtrapolatedX_DIRC;
+                TBranch* dBranch_Track_ExtrapolatedY_DIRC;
                 TBranch* dBranch_Track_ThetaC_DIRC;
                 TBranch* dBranch_Track_Lele_DIRC;
                 TBranch* dBranch_Track_Lpi_DIRC;
@@ -200,6 +207,9 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "ChargedHypo__dEdx_CDC";
 	dBranch_dEdx_CDC = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__dEdx_CDC_integral";
+	dBranch_dEdx_CDC_integral = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "ChargedHypo__dEdx_FDC";
 	dBranch_dEdx_FDC = dTreeInterface->Get_Branch(locBranchName);
@@ -303,6 +313,12 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
         locBranchName = "ChargedHypo__NumPhotons_DIRC";
         dBranch_Track_NumPhotons_DIRC = dTreeInterface->Get_Branch(locBranchName);
 
+        locBranchName = "ChargedHypo__ExtrapolatedX_DIRC";
+        dBranch_Track_ExtrapolatedX_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+        locBranchName = "ChargedHypo__ExtrapolatedY_DIRC";
+        dBranch_Track_ExtrapolatedY_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
         locBranchName = "ChargedHypo__ThetaC_DIRC";
         dBranch_Track_ThetaC_DIRC = dTreeInterface->Get_Branch(locBranchName);
 
@@ -364,6 +380,11 @@ inline Float_t DChargedTrackHypothesis::Get_ChiSq_DCdEdx(void) const
 inline Float_t DChargedTrackHypothesis::Get_dEdx_CDC(void) const
 {
 	return ((Float_t*)dBranch_dEdx_CDC->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_dEdx_CDC_integral(void) const
+{
+	return ((Float_t*)dBranch_dEdx_CDC_integral->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DChargedTrackHypothesis::Get_dEdx_FDC(void) const
@@ -562,7 +583,23 @@ inline Float_t DChargedTrackHypothesis::Get_TrackFCAL_DOCA(void) const
 inline Int_t DChargedTrackHypothesis::Get_Track_NumPhotons_DIRC(void) const
 {	
 	if(dBranch_Track_NumPhotons_DIRC)
-	        return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
+	       return ((Int_t*)dBranch_Track_NumPhotons_DIRC->GetAddress())[dMeasuredArrayIndex];
+	else 
+		return 0;
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedX_DIRC(void) const
+{	
+	if(dBranch_Track_ExtrapolatedX_DIRC)
+	       return ((Float_t*)dBranch_Track_ExtrapolatedX_DIRC->GetAddress())[dMeasuredArrayIndex];
+	else 
+		return 0;
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Track_ExtrapolatedY_DIRC(void) const
+{	
+	if(dBranch_Track_ExtrapolatedY_DIRC)
+	        return ((Float_t*)dBranch_Track_ExtrapolatedY_DIRC->GetAddress())[dMeasuredArrayIndex];
 	else 
 		return 0;
 }
