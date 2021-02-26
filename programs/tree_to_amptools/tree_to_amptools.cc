@@ -33,6 +33,7 @@ template <typename DType> void Increase_ArraySize(TTree* locTree, string locBran
 vector<Particle_t> gDesiredPIDOrder; //for MC Gen tree only!!
 
 Float_t locWeight = 0.;
+Bool_t locGen = false;
 
 int main(int argc, char* argv[])
 {
@@ -52,6 +53,10 @@ int main(int argc, char* argv[])
 	    cout << "Weights set to " << locWeight <<"!";
 	    cout << endl;
 	  }
+	  if (arg == "-gen"){
+	    locGen = true;
+	    cout << "Fill tree with generated events" << endl;
+	  }
 	  else gDesiredPIDOrder.push_back((Particle_t)atoi(argv[loc_i]));
 	}
 
@@ -59,7 +64,7 @@ int main(int argc, char* argv[])
 	TTree* locInputTree = (TTree*)locInputFile->Get(locInputTreeName.c_str());
 
 	// if the PIDs are specified, the tree will be filled with the generated events
-	if(gDesiredPIDOrder.size() != 0)
+	if(locGen && gDesiredPIDOrder.size() != 0)
 	  Convert_ToAmpToolsFormat_MCGen("AmpToolsInputTree.root", locInputTree);
 	else
 	  Convert_ToAmpToolsFormat("AmpToolsInputTree.root", locInputTree);
@@ -97,6 +102,17 @@ int Get_KinFitType(TTree* locTree)
 	return locKinFitType;
 }
 
+string Get_KinFitConstraints(TTree* locTree)
+{
+	TList* locUserInfo = locTree->GetUserInfo();
+	TMap* locMiscInfoMap = (TMap*)locUserInfo->FindObject("MiscInfoMap");
+	TObjString* locKinFitConstraintsString = (TObjString*)locMiscInfoMap->GetValue("KinFitConstraints");
+	
+	string locKinFitConstraints = locKinFitConstraintsString->GetName();
+
+	return locKinFitConstraints;
+}
+
 int Get_ParticleID(TTree* locTree, string locParticleName)
 {
 	TList* locUserInfo = locTree->GetUserInfo();
@@ -131,6 +147,7 @@ bool Get_ParticleBranchNames(TTree* locTree, TList*& locTreeParticleNames, TList
 
 	//get kinfit information
 	int locKinFitType = Get_KinFitType(locTree);
+	string locKinFitConstraints = Get_KinFitConstraints(locTree);
 	bool locWasKinFitPerformedFlag = (locKinFitType != 0);
 	bool locWasP4KinFit = ((locKinFitType == 1) || (locKinFitType == 4) || (locKinFitType == 5));
 	string locDetectedP4Type = "Measured";
@@ -162,6 +179,12 @@ cout << endl;
 		{
 			if((!locWasP4KinFit) || (locDecayProductMap->FindObject(locNameObject) == NULL))
 				continue; //p4 not kinfit or resonance
+			
+			Particle_t locDecayingParticle = ParticleEnum(locParticleName.substr(8,100).data());
+			string locMassConstraintString = Form("#it{m}_{%s}", ParticleName_ROOT(locDecayingParticle));
+			if(locKinFitConstraints.find(locMassConstraintString) == std::string::npos)
+				continue; //mass not constrained in kinfit
+
 			locBranchName = locParticleName + string("__P4_KinFit");
 		}
 		else if(locParticleName.substr(0, 7) == string("Missing"))
@@ -231,9 +254,54 @@ cout << endl;
 		else locTreeParticleNames->AddLast(locNameObject);
 	}
 
+	// sort order for output TTree
+	TList *locTreeParticleNamesOrdered = new TList;
+	map<Particle_t, size_t> locCurrentIndices;
+	for(size_t loc_i = 0; loc_i < gDesiredPIDOrder.size(); ++loc_i)
+	{
+		// Get PID and check how many indices exist
+		Particle_t locPID = gDesiredPIDOrder[loc_i];
+		if(locCurrentIndices.find(locPID) == locCurrentIndices.end())
+			locCurrentIndices[locPID] = 0;		
+   
+		TObject *locTreeParticleName = NULL;
+		if(locCurrentIndices[locPID] == 0) {
+			string locName = EnumString(locPID);
+			if(locPID == Gamma) locName = "Photon";
+			//cout<<"Find "<<locName.data()<<endl;
+			locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
+		}
+		if(!locTreeParticleName) { // multiple final state particle indices
+			if(Is_FinalStateParticle(locPID))
+				++locCurrentIndices[locPID]; // increment only final state particle index
+			int locCurrentIndex = locCurrentIndices[locPID];
+			string locName = Form("%s%d", EnumString(locPID),locCurrentIndex);
+			if(locPID == Gamma) locName = Form("Photon%d", locCurrentIndex);
+			//cout<<"Find "<<locName.data()<<endl;
+			locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
+		}
+		if(!locTreeParticleName) { // decaying particle
+			string locName = Form("Decaying%s", EnumString(locPID));
+			//cout<<"Find "<<locName.data()<<endl;
+			locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
+		}
+		if(!locTreeParticleName) { // multiple decaying particle indices
+                        ++locCurrentIndices[locPID]; // increment deaying particle index
+                        int locCurrentIndex = locCurrentIndices[locPID];
+                        string locName = Form("Decaying%s%d", EnumString(locPID),locCurrentIndex);
+                        cout<<"Find "<<locName.data()<<endl;
+                        locTreeParticleName = locTreeParticleNames->FindObject(locName.data());
+        	}
+
+		if(locTreeParticleName) locTreeParticleNamesOrdered->AddLast(locTreeParticleName);
+	}
+	if(gDesiredPIDOrder.size() > 0) {
+		locTreeParticleNames = locTreeParticleNamesOrdered;
+	}
+
 	cout << endl;
 	cout << "Names of the particles whose four-momenta are included in the tree (in order):" << endl;
-	for(int loc_i = 0; loc_i < locTreeParticleNames->GetEntries(); ++loc_i)
+	for(int loc_i = 0; loc_i < locTreeParticleNames->GetEntries(); ++loc_i) 
 		cout << locTreeParticleNames->At(loc_i)->GetName() << endl;
 	cout << endl;
 
@@ -539,7 +607,7 @@ cout << endl;
 					locMissingP4 = *locBeamP4 + locTargetP4;
 					for(Int_t loc_k = 0; loc_k < locParticleNamesWithBranches->GetEntries(); ++loc_k)
 					{
-						string locParticleName = locParticleNamesWithBranches->At(loc_k)->GetName();
+						string locParticleName = locParticleNamesWithBranches->At(loc_k)->GetName();    
 						if(locParticleName.substr(0, 7) == string("Missing"))
 							continue;
 						if(locParticleName.substr(0, 8) == string("Decaying"))
@@ -585,7 +653,7 @@ cout << endl;
 				TList* locDecayProducts = (TList*)locDecayProductMap->GetValue(locParticleName.c_str());
 				TLorentzVector locDecayingP4(0.0, 0.0, 0.0, 0.0);
 				for(Int_t loc_k = 0; loc_k < locDecayProducts->GetEntries(); ++loc_k)
-				{
+				{	
 					Int_t locListIndex = locParticleNamesWithBranches->IndexOf(locDecayProducts->At(loc_k));
 					if(locListIndex >= 0) //can get directly
 						locDecayingP4 += (*locDirectP4s[locListIndex]);
