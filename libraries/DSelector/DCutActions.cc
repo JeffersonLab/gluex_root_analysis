@@ -252,6 +252,84 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 	return true;
 }
 
+string DCutAction_PIDBeta::Get_ActionName(void) const
+{
+	ostringstream locStream;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dPID << "_" << dSystem << "_" << dMinBetaCut  << "_" << dMaxBetaCut;
+	return locStream.str();
+}
+
+void DCutAction_PIDBeta::Initialize(void)
+{
+	if (dFunc_BetaCut_SelectPositive == nullptr){
+		dFunc_BetaCut_SelectPositive = new TF1("dFunc_BetaCut_SelectPositive","pol0",0.0, 12.0);
+		dFunc_BetaCut_SelectPositive->SetParameter(0,dMaxBetaCut);
+	}
+	else cout << "Using user function for positive PID beta cut " << endl;
+
+	if (dFunc_BetaCut_SelectNegative == nullptr){
+		dFunc_BetaCut_SelectNegative = new TF1("dFunc_BetaCut_SelectNegative","pol0",0.0, 12.0);
+		dFunc_BetaCut_SelectNegative->SetParameter(0,dMinBetaCut);
+	}
+	else cout << "Using user function for negative PID beta cut " << endl;
+}
+
+bool DCutAction_PIDBeta::Perform_Action(void)
+{
+	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
+	{
+		DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
+
+		//final particles
+		for(size_t loc_j = 0; loc_j < locComboWrapperStep->Get_NumFinalParticles(); ++loc_j)
+		{
+			DKinematicData* locKinematicData = locComboWrapperStep->Get_FinalParticle(loc_j);
+			if(locKinematicData == NULL)
+				continue; //e.g. a decaying or missing particle whose params aren't set yet
+
+			//-2 if detected, -1 if missing, > 0 if decaying (step where it is the parent)
+			int locDecayStepIndex = locComboWrapperStep->Get_DecayStepIndex(loc_j);
+			if(locDecayStepIndex != -2)
+				continue; //not measured
+
+			if((dPID != Unknown) && (locKinematicData->Get_PID() != dPID))
+				continue;
+
+			// determine detector system
+			DetectorSystem_t locSystem = SYS_NULL;
+			double locBeta_Timing = 0.0;
+			if(ParticleCharge(locKinematicData->Get_PID()) != 0)
+			{
+				const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
+				if(locChargedTrackHypothesis != NULL)
+				  {
+					locSystem = locChargedTrackHypothesis->Get_Detector_System_Timing();
+					locBeta_Timing = dUseKinFitFlag ? locChargedTrackHypothesis->Get_Beta_Timing() : locChargedTrackHypothesis->Get_Beta_Timing_Measured();
+				  }
+			}
+			else
+			{
+				const DNeutralParticleHypothesis* locNeutralParticleHypothesis = dynamic_cast<const DNeutralParticleHypothesis*>(locKinematicData);
+				if(locNeutralParticleHypothesis != NULL)
+				  {
+					locSystem = locNeutralParticleHypothesis->Get_Detector_System_Timing();
+					locBeta_Timing = dUseKinFitFlag ? locNeutralParticleHypothesis->Get_Beta_Timing() : locNeutralParticleHypothesis->Get_Beta_Timing_Measured();
+				  }
+			}
+
+			if((dSystem != SYS_NULL) && (locSystem != dSystem))
+				continue;
+
+			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();
+			if(  locBeta_Timing > dFunc_BetaCut_SelectPositive->Eval(locP4.P()) || locBeta_Timing < dFunc_BetaCut_SelectNegative->Eval(locP4.P()))
+				return false;
+
+		} //end of particle loop
+	} //end of step loop
+
+	return true;
+}
+
 string DCutAction_NoPIDHit::Get_ActionName(void) const
 {
 	ostringstream locStream;

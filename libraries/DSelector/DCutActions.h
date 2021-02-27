@@ -99,6 +99,27 @@ class DCutAction_PIDDeltaT : public DAnalysisAction
 		double dTargetCenterZ;
 };
 
+class DCutAction_PIDBeta : public DAnalysisAction
+{
+	public:
+		DCutAction_PIDBeta(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locMinBetaCut, double locMaxBetaCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+			DAnalysisAction(locParticleComboWrapper, "Cut_PIDBeta", locUseKinFitFlag, locActionUniqueString),
+			dFunc_BetaCut_SelectPositive(nullptr), dFunc_BetaCut_SelectNegative(nullptr), dMinBetaCut(locMinBetaCut), dMaxBetaCut(locMaxBetaCut), dPID(locPID), dSystem(locSystem) {}
+
+		string Get_ActionName(void) const;
+		void Initialize(void);
+		void Reset_NewEvent(void){}
+		bool Perform_Action(void);
+		TF1 *dFunc_BetaCut_SelectPositive;
+                TF1 *dFunc_BetaCut_SelectNegative;
+
+	private:
+		double dMinBetaCut;
+		double dMaxBetaCut;
+		Particle_t dPID;
+		DetectorSystem_t dSystem;
+};
+
 class DCutAction_NoPIDHit : public DAnalysisAction
 {
 	public:
