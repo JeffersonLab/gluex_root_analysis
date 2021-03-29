@@ -3,6 +3,7 @@
 # LIBRARIES
 cd libraries
 cd DSelector
+echo info: \"make all\" in libraries/DSelector
 make all
 cd ../../
 
