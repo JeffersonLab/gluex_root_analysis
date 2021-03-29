@@ -21,7 +21,7 @@ install_it:
 	@mkdir -p $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/bin
 	@cp $(BMS_OSNAME)/bin/MakeDSelector $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/bin/
 
-$(BMS_OSNAME)/bin/MakeDSelector: MakeDSelector.cc $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/lib/libDSelector.so
+$(BMS_OSNAME)/bin/MakeDSelector: MakeDSelector.cc
 	@rm -f $(BMS_OSNAME)/bin/MakeDSelector
 	g++ $(FLAGS) MakeDSelector.cc -o $(BMS_OSNAME)/bin/MakeDSelector $(LIBS) 
 	@chmod 755 $(BMS_OSNAME)/bin/MakeDSelector

@@ -4,3 +4,4 @@ gluex_root_analysis_prereqs_version.xml
 libraries/DSelector/Linux_*
 programs/MakeDSelector/Linux_*
 programs/tree_to_amptools/Linux_*
+Linux_*
