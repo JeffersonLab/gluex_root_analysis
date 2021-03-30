@@ -37,14 +37,14 @@ mkdir_build:
 	mkdir -p $(BMS_OSNAME)/obj
 
 install_it:
-	mkdir -p $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/lib
-	mkdir -p $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/include
-	mkdir -p $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/include/DSelector
-	cp $(BMS_OSNAME)/lib/libDSelector.so $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/lib/
-	cp *.h $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/include/DSelector/
+	mkdir -p ../../$(BMS_OSNAME)/lib
+	mkdir -p ../../$(BMS_OSNAME)/include
+	mkdir -p ../../$(BMS_OSNAME)/include/DSelector
+	cp $(BMS_OSNAME)/lib/libDSelector.so ../../$(BMS_OSNAME)/lib/
+	cp *.h ../../$(BMS_OSNAME)/include/DSelector/
 ifeq ($(IS_CLING), 1)
-	cp $(BMS_OSNAME)/obj/DSelectorDict_rdict.pcm $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/lib/
-	cp $(BMS_OSNAME)/obj/DSelectorDict.cc $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/lib/
+	cp $(BMS_OSNAME)/obj/DSelectorDict_rdict.pcm ../../$(BMS_OSNAME)/lib/
+	cp $(BMS_OSNAME)/obj/DSelectorDict.cc ../../$(BMS_OSNAME)/lib/
 endif
 
 $(BMS_OSNAME)/obj/DSelectorDict.cc: $(HFILES)
@@ -66,10 +66,10 @@ $(BMS_OSNAME)/lib/libDSelector.so: $(CCFILES)
 
 clean:
 	rm -rf $(BMS_OSNAME)
-	rm -rf $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/lib/libDSelector.so
+	rm -rf ../../$(BMS_OSNAME)/lib/libDSelector.so
 ifeq ($(IS_CLING), 1)
-	rm -rf $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/obj/DSelectorDict_rdict.pcm 
-	rm -rf $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/obj/DSelectorDict.cc
+	rm -rf ../../$(BMS_OSNAME)/obj/DSelectorDict_rdict.pcm 
+	rm -rf ../../$(BMS_OSNAME)/obj/DSelectorDict.cc
 endif
 
 env:
