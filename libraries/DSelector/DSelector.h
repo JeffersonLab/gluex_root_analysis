@@ -122,6 +122,8 @@ class DSelector : public TSelector
 
 		//FLAT TREE
 		void Fill_FlatTree(void);
+		void SetupAmpTools_FlatTree(void);
+		void FillAmpTools_FlatTree(TLorentzVector locBeamP4, vector<TLorentzVector> locFinalStateP4); 
 
 	private:
 

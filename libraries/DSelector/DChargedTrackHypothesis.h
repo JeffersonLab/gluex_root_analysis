@@ -41,6 +41,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		UInt_t Get_NDF_DCdEdx(void) const;
 		Float_t Get_ChiSq_DCdEdx(void) const;
 		Float_t Get_dEdx_CDC(void) const;
+		Float_t Get_dEdx_CDC_integral(void) const;
 		Float_t Get_dEdx_FDC(void) const;
 
 		//TIMING INFO
@@ -121,6 +122,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_NDF_DCdEdx;
 		TBranch* dBranch_ChiSq_DCdEdx;
 		TBranch* dBranch_dEdx_CDC;
+		TBranch* dBranch_dEdx_CDC_integral;
 		TBranch* dBranch_dEdx_FDC;
  
 		//TIMING INFO
@@ -215,6 +217,9 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "ChargedHypo__dEdx_CDC";
 	dBranch_dEdx_CDC = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__dEdx_CDC_integral";
+	dBranch_dEdx_CDC_integral = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "ChargedHypo__dEdx_FDC";
 	dBranch_dEdx_FDC = dTreeInterface->Get_Branch(locBranchName);
@@ -385,6 +390,11 @@ inline Float_t DChargedTrackHypothesis::Get_ChiSq_DCdEdx(void) const
 inline Float_t DChargedTrackHypothesis::Get_dEdx_CDC(void) const
 {
 	return ((Float_t*)dBranch_dEdx_CDC->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_dEdx_CDC_integral(void) const
+{
+	return ((Float_t*)dBranch_dEdx_CDC_integral->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DChargedTrackHypothesis::Get_dEdx_FDC(void) const
