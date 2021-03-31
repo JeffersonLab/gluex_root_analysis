@@ -634,7 +634,7 @@ inline Int_t DChargedTrackHypothesis::Get_DIRC_Bar_Number(void) const
 	int locBar = -1;
 	if(dBranch_Track_ExtrapolatedY_DIRC){
 		for(int i=0; i<48; i++) {
-			float y = ((Float_t*)dBranch_Track_ExtrapolatedX_DIRC->GetAddress())[dMeasuredArrayIndex];
+			float y = ((Float_t*)dBranch_Track_ExtrapolatedY_DIRC->GetAddress())[dMeasuredArrayIndex];
 			if(y > (DIRC_BAR_Y[i] - DIRC_QZBL_DY/2.0) && y < (DIRC_BAR_Y[i] + DIRC_QZBL_DY/2.0))
 				locBar = i;
 		}
