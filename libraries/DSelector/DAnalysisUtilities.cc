@@ -1034,18 +1034,18 @@ vector< pair<double,double> > DAnalysisUtilities::Get_EnergyTAGH(int locRunNumbe
 	if(locInputFile == NULL)
 		return locEnergyTAGH;
 
-	//get the first line
-	char buff[1024]; // I HATE char buffers
-	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
-	{
-		gSystem->ClosePipe(locInputFile);
-		return locEnergyTAGH;
-	}
-
+	char buff[1024];
 	for(int i=0; i<274; i++) {
 
-		//get the second line (where the # is)
+		//get the first line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+			{
+				gSystem->ClosePipe(locInputFile);
+				return locEnergyTAGH;
+			}
+		//skip over all lines starting with #
+		while (buff[0] == '#')
+		  if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 			{
 				gSystem->ClosePipe(locInputFile);
 				return locEnergyTAGH;
@@ -1108,25 +1108,18 @@ vector< pair<double,double> > DAnalysisUtilities::Get_EnergyTAGM(int locRunNumbe
 	if(locInputFile == NULL)
 		return locEnergyTAGM;
 
-	//get the first line
-	char buff[1024]; // I HATE char buffers
-	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
-	{
-		gSystem->ClosePipe(locInputFile);
-		return locEnergyTAGM;
-	}
-
-	//get the second line (where the # is)
-	if(fgets(buff, sizeof(buff), locInputFile) == NULL)
-	{
-		gSystem->ClosePipe(locInputFile);
-		return locEnergyTAGM;
-	}
-
+	char buff[1024];
 	for(int i=0; i<102; i++) {
 
-		//get the second line (where the # is)
+		//get the first line (where the # is)
 		if(fgets(buff, sizeof(buff), locInputFile) == NULL)
+			{
+				gSystem->ClosePipe(locInputFile);
+				return locEnergyTAGM;
+			}
+		//skip over all lines starting with #
+		while (buff[0] == '#')
+		  if(fgets(buff, sizeof(buff), locInputFile) == NULL)
 			{
 				gSystem->ClosePipe(locInputFile);
 				return locEnergyTAGM;
