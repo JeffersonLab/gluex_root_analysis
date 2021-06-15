@@ -185,12 +185,12 @@ class DCutAction_dEdx : public DAnalysisAction
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
 
-		void Set_ParametersHeavy( double c0, double c1, double c2){
+		void Set_Max( double c0, double c1, double c2){
 		    if (dFunc_dEdxCut_Max != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
 		    dMax_c0 = c0, dMax_c1 = c1, dMax_c2 = c2;
 		    return;
 		}
-		void Set_ParametersLight( double c0, double c1, double c2){
+		void Set_Min( double c0, double c1, double c2){
                     if (dFunc_dEdxCut_Min != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
                     dMin_c0 = c0, dMin_c1 = c1, dMin_c2 = c2;
                     return;
