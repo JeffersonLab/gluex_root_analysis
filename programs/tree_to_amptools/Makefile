@@ -1,6 +1,6 @@
 #! gnumake
 
-INCLUDE = -I. -I$(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/include -I$(HALLD_RECON_HOME)/$(BMS_OSNAME)/include
+INCLUDE = -I. -I../../$(BMS_OSNAME)/include -I$(HALLD_RECON_HOME)/$(BMS_OSNAME)/include
 ROOTFLAGS = $(shell $(ROOTSYS)/bin/root-config --cflags)
 CXXFLAGS = -O -Wall -fPIC
 FLAGS = $(CXXFLAGS) $(ROOTFLAGS) $(INCLUDE)
@@ -18,8 +18,8 @@ mkdir_build:
 	@mkdir -p $(BMS_OSNAME)/bin
 
 install_it:
-	@mkdir -p $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/bin
-	@cp $(BMS_OSNAME)/bin/tree_to_amptools $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/bin/
+	@mkdir -p ../../$(BMS_OSNAME)/bin
+	@cp $(BMS_OSNAME)/bin/tree_to_amptools ../../$(BMS_OSNAME)/bin/
 
 $(BMS_OSNAME)/bin/tree_to_amptools: tree_to_amptools.cc
 	@rm -f $(BMS_OSNAME)/bin/tree_to_amptools
@@ -28,7 +28,7 @@ $(BMS_OSNAME)/bin/tree_to_amptools: tree_to_amptools.cc
 
 clean:
 	@rm -rf $(BMS_OSNAME)
-	@rm -rf $(ROOT_ANALYSIS_HOME)/$(BMS_OSNAME)/bin/tree_to_amptools
+	@rm -rf ../../$(BMS_OSNAME)/bin/tree_to_amptools
 
 env:
 	@echo BMS_OSNAME $(BMS_OSNAME)

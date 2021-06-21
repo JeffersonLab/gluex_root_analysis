@@ -13,6 +13,21 @@ void DSelector::Init(TTree *locTree)
 	dOption = GetOption(); //optional argument given to TTree::Process()
 	if(fInput != NULL) 
 		dOption = ((TNamed*)fInput->FindObject("OPTIONS"))->GetTitle();
+	
+	// Parse any runtime options here...
+	TString locOptions = dOption;
+	locOptions.ToUpper(); // Want options to be case-insensitive
+	
+	// To reduce disk footprint, can turn off default flat branches at runtime with options flag "DefaultFlatOff"
+	// e.g. execute DSelector with: TreeName->Process("DSelector_name.C+","DefaultFlatOff") (case insensitive)
+	// or, you can change the value of dSaveDefaultFlatBranches in your DSelector
+	if(locOptions.Contains("DEFAULTFLATOFF")) dSaveDefaultFlatBranches=false;
+	if(dSaveDefaultFlatBranches==false) {
+		cout << "DefaultFlatOff specified" << endl; 
+		cout << "DEFAULT FLAT TREE BRANCHES WILL NOT BE SAVED!" << endl;
+		cout << "(this will reduce disk footprint of flat trees)" << endl;
+
+	}
 
 	// SETUP OUTPUT
 	// This must be done BEFORE initializing the DTreeInterface, etc. Why? I have no idea. Probably something to do with gDirectory changing.
@@ -426,6 +441,12 @@ void DSelector::Create_FlatTree(void)
 	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
 	bool locIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
 
+	// Skip default branches below
+	// (custom branches defined in your DSelector will still be saved)
+	if(!dSaveDefaultFlatBranches) {
+		return; //Stop here
+	}
+
 	//CREATE BRANCHES: MAIN EVENT INFO //Copy memory addresses from main tree, so won't even need to set these branch's data
 	dFlatTreeInterface->Create_Branch_Fundamental<UInt_t>("run", dTreeInterface->Get_BranchMemory_Fundamental<UInt_t>("RunNumber"));
 	dFlatTreeInterface->Create_Branch_Fundamental<ULong64_t>("event", dTreeInterface->Get_BranchMemory_Fundamental<ULong64_t>("EventNumber"));
@@ -650,13 +671,23 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 
 void DSelector::Fill_FlatTree(void)
 {
+	
 	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
 	bool locIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
 
 	if(locIsMCGenOnlyFlag)
 	{
 		//CODE SOMETHING HERE!!
+		dFlatTreeInterface->Fill_OutputTree("");
 		return;
+	}
+
+	// Fill tree, but not the default branches below
+	// (custom branches defined in your DSelector will still be saved)
+	if(!dSaveDefaultFlatBranches) {
+		//FILL TREE
+		dFlatTreeInterface->Fill_OutputTree("");
+		return; //Stop here
 	}
 
 	//FILL BRANCHES: MAIN COMBO INFO
@@ -805,7 +836,8 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 		}
 	       
 		// Global PID
-		dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_pid_fom", locChargedTrackHypothesis->Get_PIDFOM());
+        if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__PIDFOM") != NULL)
+            dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_pid_fom", locChargedTrackHypothesis->Get_PIDFOM());
 
 		//timing
 		dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_beta_time", locChargedTrackHypothesis->Get_Beta_Timing());
@@ -895,4 +927,37 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 		if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__P4_KinFit") != NULL)
 			dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_kin", locParticle->Get_P4());
 	}
+}
+
+void DSelector::SetupAmpTools_FlatTree() {
+
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Weight");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("E_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Px_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Py_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Pz_Beam");
+	dFlatTreeInterface->Create_Branch_Fundamental<Int_t>("NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("E_FinalState","NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Px_FinalState","NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Py_FinalState","NumFinalState");
+	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Pz_FinalState","NumFinalState");
+
+	return;
+}
+
+void DSelector::FillAmpTools_FlatTree(TLorentzVector locBeamP4, vector<TLorentzVector> locFinalStateP4) {
+
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("E_Beam", locBeamP4.E());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("Px_Beam", locBeamP4.Px());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("Py_Beam", locBeamP4.Py());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("Pz_Beam", locBeamP4.Pz());
+	dFlatTreeInterface->Fill_Fundamental<Int_t>("NumFinalState", (Int_t)locFinalStateP4.size());
+
+	for(unsigned int j=0; j<locFinalStateP4.size(); j++) {
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("E_FinalState", locFinalStateP4[j].E(), j);
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("Px_FinalState", locFinalStateP4[j].Px(), j);
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("Py_FinalState", locFinalStateP4[j].Py(), j);
+		dFlatTreeInterface->Fill_Fundamental<Float_t>("Pz_FinalState", locFinalStateP4[j].Pz(), j);
+	}	
+
 }

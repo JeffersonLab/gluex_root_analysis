@@ -27,10 +27,16 @@ class DAnalysisUtilities
 		bool Get_PolarizationAngle(int locRunNumber, int& locPolarizationAngle) const; //RCDB environment must be setup!!
 		bool Get_CoherentPeak(int locRunNumber, double& locCoherentPeak, bool locIsPolarizedFlag) const; //RCDB environment must be setup!!
 		double Get_BeamBunchPeriod(int locRunNumber); //CCDB environment must be setup!!
-		double Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy); //CCDB environment must be setup!!
-		double Get_AccidentalScalingFactorError(int locRunNumber, double locBeamEnergy); //CCDB environment must be setup!!
+		double Get_AccidentalScalingFactor(int locRunNumber, double locBeamEnergy, bool locIsMC = false); //CCDB environment must be setup!!
+		double Get_AccidentalScalingFactorError(int locRunNumber, double locBeamEnergy, bool locIsMC = false); //CCDB environment must be setup!!
 		double Get_DeltaT_RF(int locRunNumber, const TLorentzVector locBeamX4_Measured, const DParticleCombo* locParticleComboWrapper); //CCDB environment must be setup!!
 		int Get_RelativeBeamBucket(int locRunNumber, const TLorentzVector locBeamX4_Measured, const DParticleCombo* locParticleComboWrapper); //CCDB environment must be setup!!
+		
+		double Get_BeamEndpoint(int locRunNumber);
+		vector< pair<double,double>> Get_EnergyTAGM(int locRunNumber);
+		vector< pair<double,double>> Get_EnergyTAGH(int locRunNumber);
+		int Get_ColumnTAGM(int locRunNumber, double locBeamEnergy);
+		int Get_CounterTAGH(int locRunNumber, double locBeamEnergy);
 
 		double Calc_ProdPlanePhi_Pseudoscalar(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locMesonP4) const;
 		double Calc_DecayPlanePsi_Vector_2BodyDecay(double locBeamEnergy, Particle_t locTargetPID, const TLorentzVector& locBaryonP4, const TLorentzVector& locMesonP4, const TLorentzVector& locMesonProduct1P4, double& locDecayPlaneTheta) const;
@@ -47,8 +53,13 @@ class DAnalysisUtilities
 
 		bool Handle_Decursion(int& locParticleIndex, deque<size_t>& locComboDeque, deque<int>& locResumeAtIndices, deque<deque<size_t> >& locPossibilities) const;
 
+		//Cache so we only have to look up from CCDB once per run number. CCDB environment must be setup!!
 		map< int, vector<double> > dAccidentalScalingFactor_Cache;
-		map< int, double >         dBeamBunchPeriod_Cache; //Cache so we only have to look up from CCDB once per run number. CCDB environment must be setup!!
+		map< int, double >         dBeamBunchPeriod_Cache; 
+		map< int, double >         dBeamEndpoint_Cache; 
+		map< int, vector< pair<double,double>> > dEnergyTAGM_Cache;
+		map< int, vector< pair<double,double>> > dEnergyTAGH_Cache;
+		
 };
 
 #endif // _DAnalysisUtilities_

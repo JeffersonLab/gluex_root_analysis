@@ -105,6 +105,8 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		bool dIsPolarizedFlag; //else is AMO" << endl;
 	locHeaderStream << "		bool dIsPARAFlag; //else is PERP or AMO" << endl;
 	locHeaderStream << endl;
+	locHeaderStream << "		bool dIsMC;" << endl;
+	locHeaderStream << endl;
 	locHeaderStream << "		// ANALYZE CUT ACTIONS" << endl;
 	locHeaderStream << "		// // Automatically makes mass histograms where one cut is missing" << endl;
 	locHeaderStream << "		DHistogramAction_AnalyzeCutActions* dAnalyzeCutActions;" << endl;
@@ -238,6 +240,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
 	locSourceStream << "	dFlatTreeFileName = \"\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
 	locSourceStream << "	dFlatTreeName = \"\"; //if blank, default name will be chosen" << endl;
+	locSourceStream << "	//dSaveDefaultFlatBranches = true; // False: don't save default branches, reduce disk footprint." << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//Because this function gets called for each TTree in the TChain, we must be careful:" << endl;
 	locSourceStream << "		//We need to re-initialize the tree interface & branch wrappers, but don't want to recreate histograms" << endl;
@@ -266,6 +269,11 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//below: value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDDeltaT(dComboWrapper, false, 0.5, KPlus, SYS_BCAL));" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	//PIDFOM (for charged tracks)" << endl;
+	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_PIDFOM(dComboWrapper));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDFOM(dComboWrapper, KPlus, 0.1));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_EachPIDFOM(dComboWrapper, 0.1));" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	//MASSES" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_InvariantMass(dComboWrapper, false, Lambda, 1000, 1.0, 1.2, \"Lambda\"));" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_MissingMassSquared(dComboWrapper, false, 1000, -0.1, 0.1));" << endl;
@@ -276,9 +284,12 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//CUT MISSING MASS" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_MissingMassSquared(dComboWrapper, false, -0.03, 0.02));" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	//CUT ON SHOWER QUALITY" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_ShowerQuality(dComboWrapper, SYS_FCAL, 0.5));" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	//BEAM ENERGY" << endl;
 	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_BeamEnergy(dComboWrapper, false));" << endl;
-	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, false, 8.4, 9.05));" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, false, 8.2, 8.8));  // Coherent peak for runs in the range 30000-59999" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//KINEMATICS" << endl;
 	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleComboKinematics(dComboWrapper, false));" << endl;
@@ -335,6 +346,11 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	//dTreeInterface->Clear_GetEntryBranches(); //now get none" << endl;
 	locSourceStream << "	//dTreeInterface->Register_GetEntryBranch(\"Proton__P4\"); //manually set the branches you want" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/************************************** DETERMINE IF ANALYZING SIMULATED DATA *************************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	dIsMC = (dTreeInterface->Get_Branch(\"MCWeight\") != NULL);" << endl;
+	locSourceStream << endl;
 	locSourceStream << "}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "Bool_t " << locSelectorName << "::Process(Long64_t locEntry)" << endl;
@@ -536,10 +552,13 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "		// Bool_t locSkipNearestOutOfTimeBunch = true; // True: skip events from nearest out-of-time bunch on either side (recommended)." << endl;
 	locSourceStream << "		// Int_t locNumOutOfTimeBunchesToUse = locSkipNearestOutOfTimeBunch ? locNumOutOfTimeBunchesInTree-1:locNumOutOfTimeBunchesInTree; " << endl;
-	locSourceStream << "		// Double_t locAccidentalScalingFactor = dAnalysisUtilities.Get_AccidentalScalingFactor(Get_RunNumber(), locBeamP4.E()); // Ideal value would be 1, but deviations observed: need added factor." << endl;
+	locSourceStream << "		// Double_t locAccidentalScalingFactor = dAnalysisUtilities.Get_AccidentalScalingFactor(Get_RunNumber(), locBeamP4.E(), dIsMC); // Ideal value would be 1, but deviations require added factor, which is different for data and MC." << endl;
 	locSourceStream << "		// Double_t locAccidentalScalingFactorError = dAnalysisUtilities.Get_AccidentalScalingFactorError(Get_RunNumber(), locBeamP4.E()); // Ideal value would be 1, but deviations observed, need added factor." << endl;
 	locSourceStream << "		// Double_t locHistAccidWeightFactor = locRelBeamBucket==0 ? 1 : -locAccidentalScalingFactor/(2*locNumOutOfTimeBunchesToUse) ; // Weight by 1 for in-time events, ScalingFactor*(1/NBunches) for out-of-time" << endl;
-	locSourceStream << "		// if(locSkipNearestOutOfTimeBunch && abs(locRelBeamBucket)==1) continue; // Skip nearest out-of-time bunch: tails of in-time distribution also leak in" << endl;
+	locSourceStream << "		// if(locSkipNearestOutOfTimeBunch && abs(locRelBeamBucket)==1) { // Skip nearest out-of-time bunch: tails of in-time distribution also leak in" << endl;
+	locSourceStream << "		// 	dComboWrapper->Set_IsComboCut(true); " << endl;
+	locSourceStream << "		// 	continue; " << endl;
+	locSourceStream << "		// } " << endl;
 
 	locSourceStream << endl;
 	locSourceStream << "		/********************************************* COMBINE FOUR-MOMENTUM ********************************************/" << endl;
