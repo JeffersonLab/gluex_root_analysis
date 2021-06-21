@@ -178,10 +178,10 @@ class DCutAction_dEdx : public DAnalysisAction
 		DCutAction_dEdx(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID, DetectorSystem_t locSystem = SYS_CDC, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_dEdx", locUseKinFitFlag, locActionUniqueString),
 			dFunc_dEdxCut_Max(NULL), dFunc_dEdxCut_Min(NULL), dPID(locPID), dSystem(locSystem), 
-			dMax_c0(0), dMax_c1(0), dMax_c2(999), dMin_c0(0), dMin_c1(0), dMin_c2(-99){}
+			dMax_c0(0), dMax_c1(0), dMax_c2(999), dMin_c0(0), dMin_c1(0), dMin_c2(-1){}
 
 		string Get_ActionName(void) const;
-		void Initialize(void);
+		void Initialize(Particle_t locPID);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
 
@@ -195,6 +195,8 @@ class DCutAction_dEdx : public DAnalysisAction
                     dMin_c0 = c0, dMin_c1 = c1, dMin_c2 = c2;
                     return;
                 }
+
+
 
 		TF1 *dFunc_dEdxCut_Max;
                 TF1 *dFunc_dEdxCut_Min;

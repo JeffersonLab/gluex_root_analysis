@@ -469,13 +469,22 @@ string DCutAction_dEdx::Get_ActionName(void) const
 	return locStream.str();
 }
 
-void DCutAction_dEdx::Initialize(void)
+void DCutAction_dEdx::Initialize(Particle_t locPID)
 {
 	if(dFunc_dEdxCut_Max == NULL)
 	{
 		string locFuncName = "df_dEdxCut_Max"; //e.g. proton
 		dFunc_dEdxCut_Max = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
 		dFunc_dEdxCut_Max->SetParameters(dMax_c0, dMax_c1, dMax_c2);
+
+                // Set the defaults assuming that the detector is the CDC.  They can be overridden using Set_Max.
+                if((ParticleMass(locPID) - 0.0001) < ParticleMass(KPlus)) {
+		  dFunc_dEdxCut_Max->SetParameters(15, 3.5, 3.3);
+                } else if (locPID == KPlus || locPID == KMinus) {
+		  dFunc_dEdxCut_Max->SetParameters(9, 4.7, 3.3); 
+                } else {
+		  dFunc_dEdxCut_Max->SetParameters(0, 0, 999); 
+                }
 	}
 
 	if(dFunc_dEdxCut_Min == NULL)
@@ -483,6 +492,15 @@ void DCutAction_dEdx::Initialize(void)
 		string locFuncName = "df_dEdxCut_Min"; //e.g. pions, kaons
 		dFunc_dEdxCut_Min = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
 		dFunc_dEdxCut_Min->SetParameters(dMin_c0, dMin_c1, dMin_c2);
+
+                // Set the defaults assuming that the detector is the CDC.  They can be overridden using Set_Min.
+                if((ParticleMass(locPID) - 0.0001) < ParticleMass(KPlus)) {
+		  dFunc_dEdxCut_Min->SetParameters(0, 0, -1);
+                } else if (locPID == KPlus || locPID == KMinus) {
+		  dFunc_dEdxCut_Min->SetParameters(5, 2.6, 0.5); 
+                } else {
+		  dFunc_dEdxCut_Min->SetParameters(4, 3.2, 1.0); 
+                }
 	}
 }
 
