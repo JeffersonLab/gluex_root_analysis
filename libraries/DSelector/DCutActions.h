@@ -178,21 +178,24 @@ class DCutAction_dEdx : public DAnalysisAction
 		DCutAction_dEdx(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID, DetectorSystem_t locSystem = SYS_CDC, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_dEdx", locUseKinFitFlag, locActionUniqueString),
 			dFunc_dEdxCut_Max(NULL), dFunc_dEdxCut_Min(NULL), dPID(locPID), dSystem(locSystem), 
-			dMax_c0(0), dMax_c1(0), dMax_c2(999), dMin_c0(0), dMin_c1(0), dMin_c2(-1){}
+	         	dMax_c0(0), dMax_c1(0), dMax_c2(999), dMin_c0(0), dMin_c1(0), dMin_c2(-1),
+                        dUser_set_max(false), dUser_set_min(false){}
 
 		string Get_ActionName(void) const;
-		void Initialize(Particle_t locPID);
+		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
 
 		void Set_Max( double c0, double c1, double c2){
 		    if (dFunc_dEdxCut_Max != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
-		    dMax_c0 = c0, dMax_c1 = c1, dMax_c2 = c2;
+                    dMax_c0 = c0, dMax_c1 = c1, dMax_c2 = c2;
+                    dUser_set_max = true;
 		    return;
 		}
 		void Set_Min( double c0, double c1, double c2){
                     if (dFunc_dEdxCut_Min != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
                     dMin_c0 = c0, dMin_c1 = c1, dMin_c2 = c2;
+                    dUser_set_min = true;
                     return;
                 }
 
@@ -207,6 +210,8 @@ class DCutAction_dEdx : public DAnalysisAction
 		DetectorSystem_t dSystem;
 		double dMax_c0, dMax_c1, dMax_c2;
 		double dMin_c0, dMin_c1, dMin_c2;
+                bool dUser_set_max;
+                bool dUser_set_min;
 };
 
 class DCutAction_KinFitFOM : public DAnalysisAction
