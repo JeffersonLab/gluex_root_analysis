@@ -78,12 +78,12 @@ void Print_Usage(void)
 	cout << "Converts from ANALYSIS library ROOT TTree to AmpTools input ROOT TTree." << endl;
 	cout << "1st argument: The input ROOT file name." << endl;
 	cout << "2nd argument: The name of the TTree in the input ROOT file that you want to convert." << endl;
-	cout << "[3rd - Nth arguments] (to use generated MC data intead of reconstructed): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
+	cout << "[-gen <int> ... <int>] (to use generated MC data intead of reconstructed): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
 	cout << "[-w <double>] : Set weight for all events in tree" << endl;
 	cout << endl;
 	cout << "The 'primary' particles in the tree are in the same order as they were specified in the DReaction." << endl;
 	cout << endl;
-	cout << "'Primary:' Decay products of long-lived (non-resonances) decaying particles (e.g. pi0, k0, lambda) are" << endl;
+	cout << "'Primary:' Decay products of long-lived (non-resonant) decaying particles (e.g. pi0, k0, lambda) are" << endl;
 	cout << "not listed in the tree; the decaying particles are listed instead." << endl;
 	cout << endl;
 }
@@ -712,6 +712,7 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 	TBranch* locNumThrownBranch = NULL;
 	locInputTree->SetBranchAddress("NumThrown", &locNumThrown, &locNumThrownBranch);
 	locNumThrownBranch->GetEntry(0);
+	UInt_t locNumThrownDefault = locNumThrown;
 
 	// Parent ID
 		//the thrown particle array index of the particle this particle decayed from (-1 if none (e.g. photoproduced))
@@ -787,6 +788,11 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 	Long64_t locNumEntries = locInputTree->GetEntries();
 	for(Long64_t locEntry = 0; locEntry < locNumEntries; ++locEntry)
 	{
+
+	        locNumThrownBranch->GetEntry(locEntry);
+		if (locNumThrown != locNumThrownDefault)
+		  continue;
+
 		locInputTree->GetEntry(locEntry);
 
 		//weight
