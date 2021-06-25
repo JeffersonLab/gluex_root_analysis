@@ -177,35 +177,41 @@ class DCutAction_dEdx : public DAnalysisAction
 	public:
 		DCutAction_dEdx(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, Particle_t locPID, DetectorSystem_t locSystem = SYS_CDC, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_dEdx", locUseKinFitFlag, locActionUniqueString),
-			dFunc_dEdxCut_SelectHeavy(NULL), dFunc_dEdxCut_SelectLight(NULL), dPID(locPID), dSystem(locSystem), dMaxRejectionFlag(false),
-			dSelectHeavy_c0(2.0), dSelectHeavy_c1(2.0), dSelectHeavy_c2(1.0), dSelectLight_c0(2.0), dSelectLight_c1(0.8), dSelectLight_c2(3.0){}
+			dFunc_dEdxCut_Max(NULL), dFunc_dEdxCut_Min(NULL), dPID(locPID), dSystem(locSystem), 
+	         	dMax_c0(0), dMax_c1(0), dMax_c2(999), dMin_c0(0), dMin_c1(0), dMin_c2(-1),
+                        dUser_set_max(false), dUser_set_min(false){}
 
 		string Get_ActionName(void) const;
 		void Initialize(void);
 		void Reset_NewEvent(void){}
 		bool Perform_Action(void);
 
-		void Set_ParametersHeavy( double c0, double c1, double c2){
-		    if (dFunc_dEdxCut_SelectHeavy != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
-		    dSelectHeavy_c0 = c0, dSelectHeavy_c1 = c1, dSelectHeavy_c2 = c2;
+		void Set_Max( double c0, double c1, double c2){
+		    if (dFunc_dEdxCut_Max != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
+                    dMax_c0 = c0, dMax_c1 = c1, dMax_c2 = c2;
+                    dUser_set_max = true;
 		    return;
 		}
-		void Set_ParametersLight( double c0, double c1, double c2){
-                    if (dFunc_dEdxCut_SelectLight != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
-                    dSelectLight_c0 = c0, dSelectLight_c1 = c1, dSelectLight_c2 = c2;
+		void Set_Min( double c0, double c1, double c2){
+                    if (dFunc_dEdxCut_Min != NULL) cout << " DCutAction_dEdx::Initialize() has already been called! These settings will not take effect." << endl;
+                    dMin_c0 = c0, dMin_c1 = c1, dMin_c2 = c2;
+                    dUser_set_min = true;
                     return;
                 }
 
-		TF1 *dFunc_dEdxCut_SelectHeavy;
-                TF1 *dFunc_dEdxCut_SelectLight;
+
+
+		TF1 *dFunc_dEdxCut_Max;
+                TF1 *dFunc_dEdxCut_Min;
 
 	private:
 
 		Particle_t dPID;
 		DetectorSystem_t dSystem;
-		bool dMaxRejectionFlag;
-		double dSelectHeavy_c0, dSelectHeavy_c1, dSelectHeavy_c2;
-		double dSelectLight_c0, dSelectLight_c1, dSelectLight_c2;
+		double dMax_c0, dMax_c1, dMax_c2;
+		double dMin_c0, dMin_c1, dMin_c2;
+                bool dUser_set_max;
+                bool dUser_set_min;
 };
 
 class DCutAction_KinFitFOM : public DAnalysisAction
