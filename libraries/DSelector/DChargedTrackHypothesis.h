@@ -78,10 +78,12 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_SumV_FCAL(void) const;
 		Float_t Get_Energy_FCAL_SingleHit(void) const;
 
-		//SHOWER MATCHING
+		//SHOWER/FCAL HIT MATCHING
 		Float_t Get_TrackBCAL_DeltaPhi(void) const; //999.0 if not matched //units are radians
 		Float_t Get_TrackBCAL_DeltaZ(void) const; //999.0 if not matched
 		Float_t Get_TrackFCAL_DOCA(void) const; //999.0 if not matched
+		Float_t Get_TrackFCAL_DOCA_SingleHit(void) const; //999.0 if not matched
+
 
 		//DIRC INFORMATION
                 Int_t Get_Track_NumPhotons_DIRC(void) const;
@@ -157,6 +159,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_TrackBCAL_DeltaPhi;
 		TBranch* dBranch_TrackBCAL_DeltaZ;
 		TBranch* dBranch_TrackFCAL_DOCA;
+		TBranch* dBranch_TrackFCAL_DOCA_SingleHit;
 
 		// DIRC INFORMATION
                 TBranch* dBranch_Track_NumPhotons_DIRC;
@@ -314,6 +317,10 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "ChargedHypo__TrackFCAL_DOCA";
 	dBranch_TrackFCAL_DOCA = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__TrackFCAL_DOCA_SingleHit";
+	dBranch_TrackFCAL_DOCA_SingleHit = dTreeInterface->Get_Branch(locBranchName);
+
 
 	//DIRC INFORMATION:
         locBranchName = "ChargedHypo__NumPhotons_DIRC";
@@ -589,6 +596,10 @@ inline Float_t DChargedTrackHypothesis::Get_TrackBCAL_DeltaZ(void) const
 inline Float_t DChargedTrackHypothesis::Get_TrackFCAL_DOCA(void) const
 {
 	return ((Float_t*)dBranch_TrackFCAL_DOCA->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_TrackFCAL_DOCA_SingleHit(void) const
+{
+	return ((Float_t*)dBranch_TrackFCAL_DOCA_SingleHit->GetAddress())[dMeasuredArrayIndex];
 }
 
 //DIRC INFORMATION
