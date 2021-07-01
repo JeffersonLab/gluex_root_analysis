@@ -471,19 +471,50 @@ string DCutAction_dEdx::Get_ActionName(void) const
 
 void DCutAction_dEdx::Initialize(void)
 {
-	if(dFunc_dEdxCut_SelectHeavy == NULL)
+
+        if(dFunc_dEdxCut_Min == NULL)   // Set the minimum acceptable dE/dx, the defaults are for the CDC
 	{
-		string locFuncName = "df_dEdxCut_SelectHeavy"; //e.g. proton
-		dFunc_dEdxCut_SelectHeavy = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
-		dFunc_dEdxCut_SelectHeavy->SetParameters(dSelectHeavy_c0, dSelectHeavy_c1, dSelectHeavy_c2);
+		string locFuncName = "df_dEdxCut_Min";
+		dFunc_dEdxCut_Min = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
+
+                // Set default values for K and p, if the user did not use Set_Min.  
+                if (!dUser_set_min) {
+                  if((dPID == KPlus) || (dPID==KMinus)) {
+                    dMin_c0 = 5;
+                    dMin_c1 = 2.6;
+                    dMin_c2 = 0.5;
+		  } else if(ParticleMass(dPID) > ParticleMass(KPlus)) {   
+                    dMin_c0 = 4;
+                    dMin_c1 = 3.2;
+                    dMin_c2 = 1.0;
+                  } 
+		}
+
+	        dFunc_dEdxCut_Min->SetParameters(dMin_c0, dMin_c1, dMin_c2);
 	}
 
-	if(dFunc_dEdxCut_SelectLight == NULL)
+
+	if(dFunc_dEdxCut_Max == NULL)   // Set the maximum acceptable dE/dx, the defaults are for the CDC
 	{
-		string locFuncName = "df_dEdxCut_SelectLight"; //e.g. pions, kaons
-		dFunc_dEdxCut_SelectLight = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
-		dFunc_dEdxCut_SelectLight->SetParameters(dSelectLight_c0, dSelectLight_c1, dSelectLight_c2);
+		string locFuncName = "df_dEdxCut_Max"; 
+		dFunc_dEdxCut_Max = new TF1(locFuncName.c_str(), "exp(-1.0*[0]*x + [1]) + [2]", 0.0, 12.0);
+
+                // Set default values for pi and K, if the user did not use Set_Max.  
+                if (!dUser_set_max) {
+                  if(ParticleMass(dPID) < ParticleMass(KPlus)) {   
+                    dMax_c0 = 15;
+                    dMax_c1 = 3.5;
+                    dMax_c2 = 3.3;
+                  } else if((dPID == KPlus) || (dPID==KMinus)) {
+                    dMax_c0 = 9;
+                    dMax_c1 = 4.7;
+                    dMax_c2 = 3.3;
+		  }
+		}
+
+	        dFunc_dEdxCut_Max->SetParameters(dMax_c0, dMax_c1, dMax_c2);
 	}
+
 }
 
 bool DCutAction_dEdx::Perform_Action(void)
@@ -529,28 +560,12 @@ bool DCutAction_dEdx::Perform_Action(void)
 
 			//cut
 			double locP = dUseKinFitFlag ? locChargedTrackHypothesis->Get_P4().Vect().Mag() : locChargedTrackHypothesis->Get_P4_Measured().Vect().Mag();
-			if((ParticleMass(locPID) + 0.0001) >= ParticleMass(Proton))
-			{
-				//heavy
-				if(dMaxRejectionFlag) //focus on rejecting background pions
-				{
-					if(locdEdx < dFunc_dEdxCut_SelectLight->Eval(locP))
-						return false;
-				}
-				else if(locdEdx < dFunc_dEdxCut_SelectHeavy->Eval(locP))
+				if(locdEdx < dFunc_dEdxCut_Min->Eval(locP))
+					return false;
+
+				if(locdEdx > dFunc_dEdxCut_Max->Eval(locP))
 					return false; //focus on keeping signal protons
-			}
-			else
-			{
-				//light
-				if(dMaxRejectionFlag) //focus on rejecting background pions
-				{
-					if(locdEdx > dFunc_dEdxCut_SelectHeavy->Eval(locP))
-						return false;
-				}
-				else if(locdEdx > dFunc_dEdxCut_SelectLight->Eval(locP))
-					return false; //focus on keeping signal pions
-			}
+
 		} //end of particle loop
 	} //end of step loop
 
