@@ -147,8 +147,10 @@ bool Get_ParticleBranchNames(TTree* locTree, TList*& locTreeParticleNames, TList
 
 	//get kinfit information
 	int locKinFitType = Get_KinFitType(locTree);
-	string locKinFitConstraints = Get_KinFitConstraints(locTree);
 	bool locWasKinFitPerformedFlag = (locKinFitType != 0);
+	string locKinFitConstraints = "";
+	if (locWasKinFitPerformedFlag)
+	  locKinFitConstraints = Get_KinFitConstraints(locTree);
 	bool locWasP4KinFit = ((locKinFitType == 1) || (locKinFitType == 4) || (locKinFitType == 5));
 	string locDetectedP4Type = "Measured";
 	if(locWasKinFitPerformedFlag)
@@ -196,6 +198,7 @@ cout << endl;
 		}
 		else if(locParticleName.substr(0, 9) == string("ComboBeam"))
 		{
+
 			if(locWasKinFitPerformedFlag && locWasP4KinFit)
 				locBeamBranchName = locParticleName + string("__P4_KinFit");
 			else //must get from "Beam__P4_Measured"
