@@ -526,10 +526,11 @@ cout << endl;
 
 			//DATAWEIGHT
 			if (hasDataWeights)
-			  Increase_ArraySize<Bool_t>(locInputTree, "DataWeight", locCurrentComboArraySize);
+			  Increase_ArraySize<Float_t>(locInputTree, "DataWeight", locCurrentComboArraySize);
 
-			//BEAM
-			Increase_ArraySize<Int_t>(locInputTree, locBeamBranchName, locCurrentComboArraySize);
+			//BEAM (only necessary if measured beam)
+			if(!locWasP4KinFitFlag)
+			  Increase_ArraySize<Int_t>(locInputTree, locBeamBranchName, locCurrentComboArraySize);
 
 			//CHARGED-HYPO
 			for(Int_t loc_i = 0; loc_i < locNumDirect; ++loc_i)
