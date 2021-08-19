@@ -430,7 +430,7 @@ void DSelector::Create_FlatTree(void)
 	//create flat tree & interface
 	string locTreeName = (dFlatTreeName != "") ? dFlatTreeName : dTreeInterface->Get_TreeName().substr(0, dTreeInterface->Get_TreeName().size() - 5);
 	TTree* locFlatTree = new TTree(locTreeName.c_str(), locTreeName.c_str());
-	dFlatTreeInterface = new DTreeInterface(locFlatTree, false); //false: is output
+	dFlatTreeInterface = new DTreeInterface(locFlatTree, false, dSaveTLorentzVectorsAsFundamentaFlatTree); //false: is output
 
 	//set user info
 	TList* locInputUserInfo = dTreeInterface->Get_UserInfo();
