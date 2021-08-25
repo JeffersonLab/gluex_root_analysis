@@ -488,13 +488,14 @@ template <typename DType> inline void DTreeInterface::Create_Branch_NoSplitTObje
     }
 
     if(dSaveTLorentzVectorsAsFundamental) { // Alternative: save input TLorentzVector to four doubles
-        if(locBranchName.find("_p4_")!= std::string::npos) {
+		TString locBranchNameTString = locBranchName; //Making case insensitive is easier with TString
+		if(locBranchNameTString.Contains("_p4_",TString::kIgnoreCase)) {
             Create_Branch_Fundamental<Double_t>(locBranchName+"_px");
             Create_Branch_Fundamental<Double_t>(locBranchName+"_py");
             Create_Branch_Fundamental<Double_t>(locBranchName+"_pz");
             Create_Branch_Fundamental<Double_t>(locBranchName+"__E");
         }
-        else if(locBranchName.find("_x4_")!= std::string::npos) {
+        else if(locBranchNameTString.Contains("_x4_",TString::kIgnoreCase)) {
             Create_Branch_Fundamental<Double_t>(locBranchName+"_x");
             Create_Branch_Fundamental<Double_t>(locBranchName+"_y");
             Create_Branch_Fundamental<Double_t>(locBranchName+"_z");
