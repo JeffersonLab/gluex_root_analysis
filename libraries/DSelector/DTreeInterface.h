@@ -143,7 +143,6 @@ class DTreeInterface
 
 		void Clone_Branch_Fundamental(string locBranchName, string locTreeKeyName);
 		void Clone_Branch_ClonesArray(string locBranchName, string locTreeKeyName);
-  		void Clone_Branch_ClonesArray2(string locBranchName, string locTreeKeyName);
 		void Clone_Branch_FundamentalArray(string locBranchName, string locTreeKeyName);
 		void Clone_Branch_TObject(string locBranchName, string locTreeKeyName);
 
@@ -337,7 +336,7 @@ inline void DTreeInterface::Set_ClonesArrayBranchAddress(string locBranchName)
 	if(dFirstInputTreeFlag)
 		dMemoryMap_ClonesArray[locBranchName] = new TClonesArray();
 
-	TClonesArray** locPointerToPointer = (TClonesArray**)&(dMemoryMap_ClonesArray[locBranchName]);
+	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
 	dInputTree->SetBranchAddress(locBranchName.c_str(), locPointerToPointer);
 
 	if(dFirstInputTreeFlag) //initialize TClonesArray, getting the type of the array (TClass), so that cloning will work
@@ -562,20 +561,10 @@ inline void DTreeInterface::Clone_Branch_FundamentalArray(string locBranchName, 
 	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locMemoryPointer, locArrayName.c_str());
 }
 
-inline void DTreeInterface::Clone_Branch_ClonesArray2(string locBranchName, string locTreeKeyName)
-{
-  TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
-	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locPointerToPointer, 32000, 0); //0: don't split
-
-}
-
-
-
 inline void DTreeInterface::Clone_Branch_ClonesArray(string locBranchName, string locTreeKeyName)
 {
 	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
 	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locPointerToPointer, 32000, 0); //0: don't split
-
 }
 
 /**************************************************************** FILL BRANCHES *************************************************************/

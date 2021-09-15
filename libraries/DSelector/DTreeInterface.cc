@@ -77,11 +77,9 @@ void DTreeInterface::Clone_Tree(string locTreeKeyName)
 				Clone_Branch_FundamentalArray(locBranchName, locTreeKeyName);
 		}
 		else if(dMemoryMap_ClonesArray.find(locBranchName) != dMemoryMap_ClonesArray.end()) {
-		  cout << "cloning clonesarray " << locBranchName.c_str() << " ";
-	                  Clone_Branch_ClonesArray2(locBranchName, locTreeKeyName); //is a clonesarray
+	                  Clone_Branch_ClonesArray(locBranchName, locTreeKeyName); //is a clonesarray
                           cout << dMemoryMap_ClonesArray[locBranchName] << endl;
 		} else { //is a tobject
-		  	  cout << "cloning tobj" << locBranchName.c_str() << "\n";
 		          Clone_Branch_TObject(locBranchName, locTreeKeyName);
 		}
 	}
@@ -200,12 +198,11 @@ void DTreeInterface::Get_Entry(Long64_t locEntry)
 		Get_Branch(locArraySizeBranchName)->GetEntry(locEntry);
 		UInt_t locNewArraySize = Get_Fundamental<UInt_t>(locArraySizeBranchName);
 
-
+		//cout << "branch name, current array size, new array size = " << locArraySizeBranchName << ", " << locCurrentArraySize << ", " << locNewArraySize << endl;
+		
 		//compare them
 		if(locNewArraySize <= locCurrentArraySize)
 			continue; //new array size <= current array size: no need to expand
-
-		//cout << "branch name, current array size, new array size = " << locArraySizeBranchName << ", " << locCurrentArraySize << ", " << locNewArraySize << endl;
 		
 		//increase the array sizes for all branches corresponding to this array size
 		const set<string>& locSetBranchNames = dArraySizeToBranchMap_GetEntryNeeded.find(locArraySizeBranchName)->second;
