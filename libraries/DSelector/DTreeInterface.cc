@@ -75,10 +75,9 @@ void DTreeInterface::Clone_Tree(string locTreeKeyName)
 				Clone_Branch_Fundamental(locBranchName, locTreeKeyName); //not an array
 			else //is an array
 				Clone_Branch_FundamentalArray(locBranchName, locTreeKeyName);
-		}
-		else if(dMemoryMap_ClonesArray.find(locBranchName) != dMemoryMap_ClonesArray.end()) {
-	                  Clone_Branch_ClonesArray(locBranchName, locTreeKeyName); //is a clonesarray
-                          cout << dMemoryMap_ClonesArray[locBranchName] << endl;
+			
+		}else if(dMemoryMap_ClonesArray.find(locBranchName) != dMemoryMap_ClonesArray.end()) {
+                          Clone_Branch_ClonesArray(locBranchName, locTreeKeyName); //is a clonesarray
 		} else { //is a tobject
 		          Clone_Branch_TObject(locBranchName, locTreeKeyName);
 		}
