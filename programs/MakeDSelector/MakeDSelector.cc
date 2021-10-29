@@ -27,6 +27,13 @@ int main(int argc, char* argv[])
 	string locTreeName = argv[2];
 	string locSelectorBaseName = argv[3];
 
+	ifstream f(locInputFileName.c_str());
+	if (!f.good()){
+	  cout<<"ERROR: file "<<locInputFileName.c_str()<<" does not exist! BAIL!"<<endl;
+	  return 0;
+	}
+	f.close();
+
 	TFile* locInputFile = new TFile(locInputFileName.c_str(), "READ");
 	TTree* locTree = (TTree*)locInputFile->Get(locTreeName.c_str());
 
@@ -77,10 +84,12 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "#define " << locSelectorName << "_h" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "#include <iostream>" << endl;
+	locHeaderStream << "#include <fstream>" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "#include \"DSelector/DSelector.h\"" << endl;
 	locHeaderStream << "#include \"DSelector/DHistogramActions.h\"" << endl;
 	locHeaderStream << "#include \"DSelector/DCutActions.h\"" << endl;
+	locHeaderStream << "#include \"DSelector/DBeamPhotonCounter.h\"" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "#include \"TH1I.h\"" << endl;
 	locHeaderStream << "#include \"TH2I.h\"" << endl;
@@ -94,6 +103,7 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << endl;
 	locHeaderStream << "		void Init(TTree *tree);" << endl;
 	locHeaderStream << "		Bool_t Process(Long64_t entry);" << endl;
+	locHeaderStream << "		Bool_t ProcessCombo(Int_t ComboID, Int_t LoopID);" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "	private:" << endl;
 	locHeaderStream << endl;
@@ -110,6 +120,19 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		// ANALYZE CUT ACTIONS" << endl;
 	locHeaderStream << "		// // Automatically makes mass histograms where one cut is missing" << endl;
 	locHeaderStream << "		DHistogramAction_AnalyzeCutActions* dAnalyzeCutActions;" << endl;
+	locHeaderStream << endl;
+	locHeaderStream << "		// UNIQUENESS TRACKING " << endl;
+	locHeaderStream << "		set<Int_t> dUsedSoFar_BeamEnergy; //Int_t: Unique ID for beam particles." << endl;
+	locHeaderStream << "		set<map<Particle_t, set<Int_t> > > dUsedSoFar_MissingMass;" << endl;
+	locHeaderStream << endl;
+	locHeaderStream << "		DBeamPhotonCounter dGoodComboCount; " <<endl;
+
+	locHeaderStream << "		Int_t dEventNChargedTracks; " <<endl;
+	locHeaderStream << "		Int_t dEventNNeutralShowers; " <<endl;
+	locHeaderStream << "		Int_t dEventNBeamPhotons; " <<endl;
+
+	locHeaderStream << "		// add here similar maps and counters for your specific analysis for particles like " <<endl;
+	locHeaderStream << "		// Protons, Kaons and Pions if you whish to do so " <<endl;
 	locHeaderStream << endl;
 	locHeaderStream << "		//CREATE REACTION-SPECIFIC PARTICLE ARRAYS" << endl;
 	locHeaderStream << endl;
@@ -269,11 +292,11 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//below: value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDDeltaT(dComboWrapper, false, 0.5, KPlus, SYS_BCAL));" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//PIDFOM (for charged tracks)" << endl;
-	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_PIDFOM(dComboWrapper));" << endl;
-	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDFOM(dComboWrapper, KPlus, 0.1));" << endl;
-	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_EachPIDFOM(dComboWrapper, 0.1));" << endl;
-	locSourceStream << endl;
+        locSourceStream << "    //PIDFOM (for charged tracks)" << endl;
+        locSourceStream << "    dAnalysisActions.push_back(new DHistogramAction_PIDFOM(dComboWrapper));" << endl;
+        locSourceStream << "    //dAnalysisActions.push_back(new DCutAction_PIDFOM(dComboWrapper, KPlus, 0.1));" << endl;
+        locSourceStream << "    //dAnalysisActions.push_back(new DCutAction_EachPIDFOM(dComboWrapper, 0.1));" << endl;
+        locSourceStream << endl;
 	locSourceStream << "	//MASSES" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_InvariantMass(dComboWrapper, false, Lambda, 1000, 1.0, 1.2, \"Lambda\"));" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_MissingMassSquared(dComboWrapper, false, 1000, -0.1, 0.1));" << endl;
@@ -353,6 +376,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "}" << endl;
 	locSourceStream << endl;
+	// +++++++++++++++++++++++++++++++++
+	// Definition of ::Process() method
+	// +++++++++++++++++++++++++++++++++
 	locSourceStream << "Bool_t " << locSelectorName << "::Process(Long64_t locEntry)" << endl;
 	locSourceStream << "{" << endl;
 	locSourceStream << "	// The Process() function is called for each entry in the tree. The entry argument" << endl;
@@ -397,14 +423,22 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//Then for each combo, just compare to what you used before, and make sure it\'s unique" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE 1: Particle-specific info:" << endl;
-	locSourceStream << "	set<Int_t> locUsedSoFar_BeamEnergy; //Int_t: Unique ID for beam particles. set: easy to use, fast to search" << endl;
+	locSourceStream << "	dUsedSoFar_BeamEnergy.clear(); //Int_t: Unique ID for beam particles. set: easy to use, fast to search" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE 2: Combo-specific info:" << endl;
 	locSourceStream << "		//In general: Could have multiple particles with the same PID: Use a set of Int_t\'s" << endl;
 	locSourceStream << "		//In general: Multiple PIDs, so multiple sets: Contain within a map" << endl;
 	locSourceStream << "		//Multiple combos: Contain maps within a set (easier, faster to search)" << endl;
-	locSourceStream << "	set<map<Particle_t, set<Int_t> > > locUsedSoFar_MissingMass;" << endl;
+	locSourceStream << "	dUsedSoFar_MissingMass.clear();" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	// Initilaize event topology counters " << endl;
+	locSourceStream << endl;
+	locSourceStream << "	dGoodComboCount.Init();"<<endl;
+	locSourceStream << "	dEventNChargedTracks = Get_NumChargedHypos();"<<endl;
+	locSourceStream << "	dEventNNeutralShowers = Get_NumNeutralHypos();"<<endl;
+	locSourceStream << "	dEventNBeamPhotons = Get_NumBeam();"<<endl;
+	locSourceStream << endl;
+
 	locSourceStream << "	//INSERT USER ANALYSIS UNIQUENESS TRACKING HERE" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/**************************************** EXAMPLE: FILL CUSTOM OUTPUT BRANCHES **************************************/" << endl;
@@ -420,29 +454,131 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		dTreeInterface->Fill_Fundamental<Int_t>(\"my_int_array\", 3*loc_i, loc_i); //2nd argument = value, 3rd = array index" << endl;
 	locSourceStream << "	*/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	/************************************************* LOOP OVER COMBOS *************************************************/" << endl;
+	locSourceStream << "	/******** LOOP OVER COMBOS TWICE **********************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//Loop over combos" << endl;
-	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumCombos(); ++loc_i)" << endl;
+	locSourceStream << "	// First Loop over all combos in the event" << endl;
+	locSourceStream << "	vector <Int_t> locGoodComboList;" << endl;
+	locSourceStream << "	for (UInt_t loc_i = 0; loc_i < Get_NumCombos(); ++loc_i)" << endl;
 	locSourceStream << "	{" << endl;
+	locSourceStream << "		Bool_t locThisComboOK = "<< locSelectorName << "::ProcessCombo(loc_i, 0);" << endl;	
+	locSourceStream << "		if ( locThisComboOK ) {" << endl;
+	locSourceStream << "			locGoodComboList.push_back(loc_i);" << endl;
+	locSourceStream << "		}" << endl;
+	locSourceStream << "	}" << endl;
+	locSourceStream << "	// Second Loop over all combos in the event that survived all cuts in the first loop" << endl;
+	locSourceStream << "	for (UInt_t loc_i = 0; loc_i < locGoodComboList.size(); ++loc_i)" << endl;
+	locSourceStream << "	{" << endl;
+	locSourceStream << "		Bool_t locThisComboOK = "<< locSelectorName << "::ProcessCombo(locGoodComboList[loc_i], 1);" << endl;	
+	locSourceStream << "	}" << endl;
+	locSourceStream << "	//FILL HISTOGRAMS: Num combos / events surviving actions" << endl;
+	locSourceStream << "	Fill_NumCombosSurvivedHists();" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/*************************** LOOP OVER THROWN DATA (OPTIONAL) ***************************************/" << endl;
+	locSourceStream << "/*" << endl;
+	locSourceStream << "	//Thrown beam: just use directly" << endl;
+	locSourceStream << "	if(dThrownBeam != NULL)" << endl;
+	locSourceStream << "		double locEnergy = dThrownBeam->Get_P4().E();" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//Loop over throwns" << endl;
+	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumThrown(); ++loc_i)" << endl;
+	locSourceStream << "	{" << endl;
+	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
+	locSourceStream << "		dThrownWrapper->Set_ArrayIndex(loc_i);" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
+	locSourceStream << "	}" << endl;
+	locSourceStream << "*/" << endl;
+	locSourceStream << "	/**************************** LOOP OVER OTHER ARRAYS (OPTIONAL) ***************************************/" << endl;
+	locSourceStream << "/*" << endl;
+	locSourceStream << "	//Loop over beam particles (note, only those appearing in combos are present)" << endl;
+	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumBeam(); ++loc_i)" << endl;
+	locSourceStream << "	{" << endl;
+	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
+	locSourceStream << "		dBeamWrapper->Set_ArrayIndex(loc_i);" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
+	locSourceStream << "	}" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//Loop over charged track hypotheses" << endl;
+	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumChargedHypos(); ++loc_i)" << endl;
+	locSourceStream << "	{" << endl;
+	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
+	locSourceStream << "		dChargedHypoWrapper->Set_ArrayIndex(loc_i);" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
+	locSourceStream << "	}" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	//Loop over neutral particle hypotheses" << endl;
+	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumNeutralHypos(); ++loc_i)" << endl;
+	locSourceStream << "	{" << endl;
+	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
+	locSourceStream << "		dNeutralHypoWrapper->Set_ArrayIndex(loc_i);" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
+	locSourceStream << "	}" << endl;
+	locSourceStream << "*/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/************ EXAMPLE: FILL CLONE OF TTREE HERE WITH CUTS APPLIED ************************************/" << endl;
+	locSourceStream << "/*" << endl;
+	locSourceStream << "	Bool_t locIsEventCut = true;" << endl;
+	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumCombos(); ++loc_i) {" << endl;
 	locSourceStream << "		//Set branch array indices for combo and all combo particles" << endl;
 	locSourceStream << "		dComboWrapper->Set_ComboIndex(loc_i);" << endl;
-	locSourceStream << endl;
 	locSourceStream << "		// Is used to indicate when combos have been cut" << endl;
-	locSourceStream << "		if(dComboWrapper->Get_IsComboCut()) // Is false when tree originally created" << endl;
-	locSourceStream << "			continue; // Combo has been cut previously" << endl;
+	locSourceStream << "		if(dComboWrapper->Get_IsComboCut())" << endl;
+	locSourceStream << "			continue;" << endl;
+	locSourceStream << "		locIsEventCut = false; // At least one combo succeeded" << endl;
+	locSourceStream << "		break;" << endl;
+	locSourceStream << "	}" << endl;
+	locSourceStream << "	if(!locIsEventCut && dOutputTreeFileName != \"\")" << endl;
+	locSourceStream << "		Fill_OutputTree();" << endl;
+	locSourceStream << "*/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/********************************************** GET PARTICLE INDICES *********************************************/" << endl;
+	locSourceStream << "	return kTRUE;" << endl;
+	locSourceStream << "}" << endl;
+
+	// ++++++++++++++++++++++++++++++++++++++
+	// Definition of ::ProcessCombo() method
+	// ++++++++++++++++++++++++++++++++++++++
+
+	locSourceStream << "Bool_t " << locSelectorName << "::ProcessCombo(Int_t ComboID, Int_t LoopID)" << endl;
+	locSourceStream << "{" << endl;
+	locSourceStream << "	//Set branch array indices for combo and all combo particles" << endl;
+	locSourceStream << "	Int_t loc_i = ComboID;" << endl;
+	locSourceStream << "	dComboWrapper->Set_ComboIndex(loc_i);" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		//Used for tracking uniqueness when filling histograms, and for determining unused particles" << endl;
+	locSourceStream << "	Double_t locGlobalWeightFactor = 1.; // this will be used further to modify Combo Weight" <<endl;
+	locSourceStream << "	if (LoopID > 0) { " << endl;  
+	locSourceStream << "		//"<<endl;
+	locSourceStream << "		// Modify Weight based on results from first loop" <<endl;
+	locSourceStream << "		//"<<endl;
+	locSourceStream << "		locGlobalWeightFactor = dGoodComboCount.GetWeightN(loc_i);" <<endl;
+	locSourceStream << "	}" <<endl;
+	locSourceStream << "	// Total combo weight factor is: w = w1*w2 with"<<endl;
+	locSourceStream << "	//       w1 = -1/nbunches for accidentals and w1 = 1 for prompt beam photons"<<endl;
+	locSourceStream << "	//       w2 = locGlobalWeightFactor taking care of events with more than one FS"<<endl;
+	locSourceStream << "	//       this second term is of course only known after looping over all combos in the first loop" << endl;
 	locSourceStream << endl;
+	locSourceStream << endl;
+	locSourceStream << "	// Is used to indicate when combos have been cut" << endl;
+	locSourceStream << "	if(dComboWrapper->Get_IsComboCut()) // Is false when tree originally created" << endl;
+	locSourceStream << "		return kFALSE; // Combo has been cut previously" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/********************************************** GET PARTICLE INDICES *********************************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	Double_t locKinFitChi2 = dComboWrapper->Get_ChiSq_KinFit();" << endl;
+	locSourceStream << "	Double_t locKinFitNDF = dComboWrapper->Get_NDF_KinFit();" << endl;
+	locSourceStream << "	Double_t locChi2NDF = locKinFitChi2/locKinFitNDF;" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	// UNCOMMENT THE FOLLOWING LINE IF YOU WANT THE WEIGHT ACCORDING TO CHI2s" <<endl;
+	locSourceStream << "	//locGlobalWeightFactor = dGoodComboCount.GetWeightChi2(loc_i, locChi2NDF);" <<endl;
 
 	//print particle indices
 	map<int, map<int, pair<Particle_t, string> > >::iterator locStepIterator = locComboInfoMap.begin();
 	for(; locStepIterator != locComboInfoMap.end(); ++locStepIterator)
 	{
 		int locStepIndex = locStepIterator->first;
-		locSourceStream << "		//Step " << locStepIndex << endl;
+		locSourceStream << "	//Step " << locStepIndex << endl;
 
 		map<int, pair<Particle_t, string> >& locStepInfoMap = locStepIterator->second;
 		map<int, pair<Particle_t, string> >::iterator locParticleIterator = locStepInfoMap.begin();
@@ -451,33 +587,40 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == Unknown){
 				continue;
-			else if(locParticleName == "ComboBeam")
-				locSourceStream << "		Int_t locBeamID = dComboBeamWrapper->Get_BeamID();" << endl;
-			else if(locParticleName.substr(0, 6) == "Target")
+			}
+			else if(locParticleName == "ComboBeam"){
+			  locSourceStream << "	Int_t locBeamID = dComboBeamWrapper->Get_BeamID();" << endl;
+			}
+			else if(locParticleName.substr(0, 6) == "Target") {
 				continue;
-			else if(locParticleName.substr(0, 8) == "Decaying")
+			}
+			else if(locParticleName.substr(0, 8) == "Decaying") {
 				continue;
-			else if(locParticleName.substr(0, 7) == "Missing")
+			}
+			else if(locParticleName.substr(0, 7) == "Missing") {
 				continue;
-			else if(ParticleCharge(locPID) != 0)
-				locSourceStream << "		Int_t loc" << locParticleName << "TrackID = d" << locParticleName << "Wrapper->Get_TrackID();" << endl;
-			else
-				locSourceStream << "		Int_t loc" << locParticleName << "NeutralID = d" << locParticleName << "Wrapper->Get_NeutralID();" << endl;
+			}
+			else if(ParticleCharge(locPID) != 0){
+			  locSourceStream << "	Int_t loc" << locParticleName << "TrackID = d" << locParticleName << "Wrapper->Get_TrackID();" << endl;
+			}
+			else {
+			  locSourceStream << "	Int_t loc" << locParticleName << "NeutralID = d" << locParticleName << "Wrapper->Get_NeutralID();" << endl;
+			}
 		}
 		locSourceStream << endl;
 	}
-	locSourceStream << "		/*********************************************** GET FOUR-MOMENTUM **********************************************/" << endl;
+	locSourceStream << "	/*********************************************** GET FOUR-MOMENTUM **********************************************/" << endl;
 	locSourceStream << endl;
 
 	//get p4's
-	locSourceStream << "		// Get P4\'s: //is kinfit if kinfit performed, else is measured" << endl;
-	locSourceStream << "		//dTargetP4 is target p4" << endl;
+	locSourceStream << "	// Get P4\'s: //is kinfit if kinfit performed, else is measured" << endl;
+	locSourceStream << "	//dTargetP4 is target p4" << endl;
 	for(locStepIterator = locComboInfoMap.begin(); locStepIterator != locComboInfoMap.end(); ++locStepIterator)
 	{
 		int locStepIndex = locStepIterator->first;
-		locSourceStream << "		//Step " << locStepIndex << endl;
+		locSourceStream << "	//Step " << locStepIndex << endl;
 
 		map<int, pair<Particle_t, string> >& locStepInfoMap = locStepIterator->second;
 		map<int, pair<Particle_t, string> >::iterator locParticleIterator = locStepInfoMap.begin();
@@ -490,33 +633,33 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			if(locPID == Unknown)
 				continue;
 			else if(locParticleName == "ComboBeam")
-				locSourceStream << "		TLorentzVector locBeamP4 = dComboBeamWrapper->Get_P4();" << endl;
+				locSourceStream << "	TLorentzVector locBeamP4 = dComboBeamWrapper->Get_P4();" << endl;
 			else if(locParticleName.substr(0, 6) == "Target")
 				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
 				if((locTreeInterface->Get_Branch(locBranchName) != NULL) && (locParticleIndex < 0)) //else not reconstructed
-					locSourceStream << "		TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
+					locSourceStream << "	TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
 			}
 			else if(locParticleName.substr(0, 7) == "Missing")
 			{
 				string locBranchName = locParticleName + string("__P4_KinFit");
 				if(locTreeInterface->Get_Branch(locBranchName) != NULL) //else not reconstructed
-					locSourceStream << "		TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
+					locSourceStream << "	TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
 			}
 			else //detected
-				locSourceStream << "		TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
+				locSourceStream << "	TLorentzVector loc" << locParticleName << "P4 = d" << locParticleName << "Wrapper->Get_P4();" << endl;
 		}
 	}
 	locSourceStream << endl;
 
 	//get measured p4's
-	locSourceStream << "		// Get Measured P4\'s:" << endl;
+	locSourceStream << "	// Get Measured P4\'s:" << endl;
 	for(locStepIterator = locComboInfoMap.begin(); locStepIterator != locComboInfoMap.end(); ++locStepIterator)
 	{
 		int locStepIndex = locStepIterator->first;
-		locSourceStream << "		//Step " << locStepIndex << endl;
+		locSourceStream << "	//Step " << locStepIndex << endl;
 
 		map<int, pair<Particle_t, string> >& locStepInfoMap = locStepIterator->second;
 		map<int, pair<Particle_t, string> >::iterator locParticleIterator = locStepInfoMap.begin();
@@ -528,7 +671,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			if(locPID == Unknown)
 				continue;
 			else if(locParticleName == "ComboBeam")
-				locSourceStream << "		TLorentzVector locBeamP4_Measured = dComboBeamWrapper->Get_P4_Measured();" << endl;
+				locSourceStream << "	TLorentzVector locBeamP4_Measured = dComboBeamWrapper->Get_P4_Measured();" << endl;
 			else if(locParticleName.substr(0, 6) == "Target")
 				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")
@@ -536,38 +679,42 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			else if(locParticleName.substr(0, 7) == "Missing")
 				continue;
 			else //detected
-				locSourceStream << "		TLorentzVector loc" << locParticleName << "P4_Measured = d" << locParticleName << "Wrapper->Get_P4_Measured();" << endl;
+				locSourceStream << "	TLorentzVector loc" << locParticleName << "P4_Measured = d" << locParticleName << "Wrapper->Get_P4_Measured();" << endl;
 		}
 	}
 
 	locSourceStream << endl;
-	locSourceStream << "		/********************************************* GET COMBO RF TIMING INFO *****************************************/" << endl;
+	locSourceStream << "	/********************************************* GET COMBO RF TIMING INFO *****************************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		TLorentzVector locBeamX4_Measured = dComboBeamWrapper->Get_X4_Measured();" << endl;
-	locSourceStream << "		//Double_t locBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(Get_RunNumber());" << endl;
-	locSourceStream << "		// Double_t locDeltaT_RF = dAnalysisUtilities.Get_DeltaT_RF(Get_RunNumber(), locBeamX4_Measured, dComboWrapper);" << endl;
-	locSourceStream << "		// Int_t locRelBeamBucket = dAnalysisUtilities.Get_RelativeBeamBucket(Get_RunNumber(), locBeamX4_Measured, dComboWrapper); // 0 for in-time events, non-zero integer for out-of-time photons" << endl;
-	locSourceStream << "		// Int_t locNumOutOfTimeBunchesInTree = 4; //YOU need to specify this number" << endl;
-	locSourceStream << "			//Number of out-of-time beam bunches in tree (on a single side, so that total number out-of-time bunches accepted is 2 times this number for left + right bunches) " << endl;
+	locSourceStream << "	TLorentzVector locBeamX4_Measured = dComboBeamWrapper->Get_X4_Measured();" << endl;
+	locSourceStream << "	Double_t locBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(Get_RunNumber());" << endl;
+	locSourceStream << "	Double_t locDeltaT_RF = dAnalysisUtilities.Get_DeltaT_RF(Get_RunNumber(), locBeamX4_Measured, dComboWrapper);" << endl;
+	locSourceStream << "	Int_t locRelBeamBucket = dAnalysisUtilities.Get_RelativeBeamBucket(Get_RunNumber(), locBeamX4_Measured, dComboWrapper); // 0 for in-time events, non-zero integer for out-of-time photons" << endl;
+	locSourceStream << "	Int_t locNumOutOfTimeBunchesInTree = 4; //YOU need to specify this number" << endl;
+	locSourceStream << "		//Number of out-of-time beam bunches in tree (on a single side, so that total number out-of-time bunches accepted is 2 times this number for left + right bunches) " << endl;
 	locSourceStream << endl;
-	locSourceStream << "		// Bool_t locSkipNearestOutOfTimeBunch = true; // True: skip events from nearest out-of-time bunch on either side (recommended)." << endl;
-	locSourceStream << "		// Int_t locNumOutOfTimeBunchesToUse = locSkipNearestOutOfTimeBunch ? locNumOutOfTimeBunchesInTree-1:locNumOutOfTimeBunchesInTree; " << endl;
-	locSourceStream << "		// Double_t locAccidentalScalingFactor = dAnalysisUtilities.Get_AccidentalScalingFactor(Get_RunNumber(), locBeamP4.E(), dIsMC); // Ideal value would be 1, but deviations require added factor, which is different for data and MC." << endl;
-	locSourceStream << "		// Double_t locAccidentalScalingFactorError = dAnalysisUtilities.Get_AccidentalScalingFactorError(Get_RunNumber(), locBeamP4.E()); // Ideal value would be 1, but deviations observed, need added factor." << endl;
-	locSourceStream << "		// Double_t locHistAccidWeightFactor = locRelBeamBucket==0 ? 1 : -locAccidentalScalingFactor/(2*locNumOutOfTimeBunchesToUse) ; // Weight by 1 for in-time events, ScalingFactor*(1/NBunches) for out-of-time" << endl;
-	locSourceStream << "		// if(locSkipNearestOutOfTimeBunch && abs(locRelBeamBucket)==1) { // Skip nearest out-of-time bunch: tails of in-time distribution also leak in" << endl;
-	locSourceStream << "		// 	dComboWrapper->Set_IsComboCut(true); " << endl;
-	locSourceStream << "		// 	continue; " << endl;
-	locSourceStream << "		// } " << endl;
-
+	locSourceStream << "	Bool_t locSkipNearestOutOfTimeBunch = false; // True: skip events from nearest out-of-time bunch on either side (recommended)." << endl;
+	locSourceStream << "	Int_t locNumOutOfTimeBunchesToUse = locSkipNearestOutOfTimeBunch ? locNumOutOfTimeBunchesInTree-1:locNumOutOfTimeBunchesInTree; " << endl;
+	locSourceStream << "	Double_t locAccidentalScalingFactor = dAnalysisUtilities.Get_AccidentalScalingFactor(Get_RunNumber(), locBeamP4.E(), dIsMC); // Ideal value would be 1, but deviations require added factor, which is different for data and MC." << endl;
+	locSourceStream << "	// Double_t locAccidentalScalingFactorError = dAnalysisUtilities.Get_AccidentalScalingFactorError(Get_RunNumber(), locBeamP4.E()); // Ideal value would be 1, but deviations observed, need added factor." << endl;
+	locSourceStream << "	Double_t locHistAccidWeightFactor = locRelBeamBucket==0 ? 1 : -locAccidentalScalingFactor/(2*locNumOutOfTimeBunchesToUse) ; // Weight by 1 for in-time events, ScalingFactor*(1/NBunches) for out-of-time" << endl;
+	locSourceStream << "	if(locSkipNearestOutOfTimeBunch && abs(locRelBeamBucket)==1) { // Skip nearest out-of-time bunch: tails of in-time distribution also leak in" << endl;
+	locSourceStream << "	 	dComboWrapper->Set_IsComboCut(true); " << endl;
+	locSourceStream << "	 	return kFALSE; " << endl;
+	locSourceStream << "	} " << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/********************************************* COMBINE FOUR-MOMENTUM ********************************************/" << endl;
+	locSourceStream << "	// "<<endl;
+	locSourceStream << "	// "<<endl;
+	locSourceStream << "	Double_t locTotalComboWeight = locHistAccidWeightFactor * locGlobalWeightFactor ;"<<endl;
 	locSourceStream << endl;
-	locSourceStream << "		// DO YOUR STUFF HERE" << endl;
+	locSourceStream << "	/********************************************* COMBINE FOUR-MOMENTUM ********************************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		// Combine 4-vectors" << endl;
-	locSourceStream << "		TLorentzVector locMissingP4_Measured = locBeamP4_Measured + dTargetP4;" << endl;
-	locSourceStream << "		locMissingP4_Measured -= ";
+	locSourceStream << "	// DO YOUR STUFF HERE" << endl;
+	locSourceStream << "	// Filling of histograms should be done either within if statement of LoopID == 0 or LoopID > 0 only ! (never both)" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	// Combine 4-vectors" << endl;
+	locSourceStream << "	TLorentzVector locMissingP4_Measured = locBeamP4_Measured + dTargetP4;" << endl;
+	locSourceStream << "	locMissingP4_Measured -= ";
 
 	//calc missing p4
 	bool locFirstFlag = true;
@@ -600,36 +747,41 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	}
 	locSourceStream << ";" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/******************************************** EXECUTE ANALYSIS ACTIONS *******************************************/" << endl;
+	locSourceStream << "	/******************************************** EXECUTE ANALYSIS ACTIONS *******************************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		// Loop through the analysis actions, executing them in order for the active particle combo" << endl;
-	locSourceStream <<"		dAnalyzeCutActions->Perform_Action(); // Must be executed before Execute_Actions()" << endl;
+	locSourceStream << "	if(LoopID == 0) // only do this in the first loop over comobs" << endl;
+	locSourceStream << "	{" <<endl;
+ 	locSourceStream << "		// Loop through the analysis actions, executing them in order for the active particle combo" << endl;
+	locSourceStream << "		dAnalyzeCutActions->Perform_Action(); // Must be executed before Execute_Actions()" << endl;
 	locSourceStream << "		if(!Execute_Actions()) //if the active combo fails a cut, IsComboCutFlag automatically set" << endl;
-	locSourceStream << "			continue;" << endl;
+	locSourceStream << "			return kFALSE;" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//if you manually execute any actions, and it fails a cut, be sure to call:" << endl;
-	locSourceStream << "			//dComboWrapper->Set_IsComboCut(true);" << endl;
+	locSourceStream << "		//dComboWrapper->Set_IsComboCut(true);" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/**************************************** EXAMPLE: FILL CUSTOM OUTPUT BRANCHES **************************************/" << endl;
+	locSourceStream << "		/**************************************** EXAMPLE: FILL CUSTOM OUTPUT BRANCHES *********************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/*" << endl;
 	locSourceStream << "		TLorentzVector locMyComboP4(8.0, 7.0, 6.0, 5.0);" << endl;
 	locSourceStream << "		//for arrays below: 2nd argument is value, 3rd is array index" << endl;
 	locSourceStream << "		//NOTE: By filling here, AFTER the cuts above, some indices won't be updated (and will be whatever they were from the last event)" << endl;
-	locSourceStream << "			//So, when you draw the branch, be sure to cut on \"IsComboCut\" to avoid these." << endl;
-	locSourceStream << "		dTreeInterface->Fill_Fundamental<Float_t>(\"my_combo_array\", -2*loc_i, loc_i);" << endl;
-	locSourceStream << "		dTreeInterface->Fill_TObject<TLorentzVector>(\"my_p4_array\", locMyComboP4, loc_i);" << endl;
+	locSourceStream << "		//So, when you draw the branch, be sure to cut on \"IsComboCut\" to avoid these." << endl;
+
+	locSourceStream << "		if (LoopID == 0) { // only fill histograms once (e.g. LoopID is zero)"<<endl; 
+	locSourceStream << "			dTreeInterface->Fill_Fundamental<Float_t>(\"my_combo_array\", -2*loc_i, loc_i);" << endl;
+	locSourceStream << "			dTreeInterface->Fill_TObject<TLorentzVector>(\"my_p4_array\", locMyComboP4, loc_i);" << endl;
+	locSourceStream << "		}" << endl;
 	locSourceStream << "		*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/**************************************** EXAMPLE: HISTOGRAM BEAM ENERGY *****************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//Histogram beam energy (if haven\'t already)" << endl;
-	locSourceStream << "		if(locUsedSoFar_BeamEnergy.find(locBeamID) == locUsedSoFar_BeamEnergy.end())" << endl;
+	locSourceStream << "		if ((dUsedSoFar_BeamEnergy.find(locBeamID) == dUsedSoFar_BeamEnergy.end()) && (LoopID==0) )" << endl;
 	locSourceStream << "		{" << endl;
 	locSourceStream << "			dHist_BeamEnergy->Fill(locBeamP4.E()); // Fills in-time and out-of-time beam photon combos" << endl;
 	locSourceStream << "			//dHist_BeamEnergy->Fill(locBeamP4.E(),locHistAccidWeightFactor); // Alternate version with accidental subtraction" << endl;
 	locSourceStream << endl;
-	locSourceStream << "			locUsedSoFar_BeamEnergy.insert(locBeamID);" << endl;
+	locSourceStream << "			dUsedSoFar_BeamEnergy.insert(locBeamID);" << endl;
 	locSourceStream << "		}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/************************************ EXAMPLE: HISTOGRAM MISSING MASS SQUARED ************************************/" << endl;
@@ -638,7 +790,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		double locMissingMassSquared = locMissingP4_Measured.M2();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//Uniqueness tracking: Build the map of particles used for the missing mass" << endl;
-	locSourceStream << "			//For beam: Don\'t want to group with final-state photons. Instead use \"Unknown\" PID (not ideal, but it\'s easy)." << endl;
+	locSourceStream << "		//For beam: Don\'t want to group with final-state photons. Instead use \"Unknown\" PID (not ideal, but it\'s easy)." << endl;
 	locSourceStream << "		map<Particle_t, set<Int_t> > locUsedThisCombo_MissingMass;" << endl;
 
 	//insert uniqueness tracking
@@ -671,25 +823,49 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 
 	locSourceStream << "		//compare to what\'s been used so far" << endl;
-	locSourceStream << "		if(locUsedSoFar_MissingMass.find(locUsedThisCombo_MissingMass) == locUsedSoFar_MissingMass.end())" << endl;
+	locSourceStream << "		if ( (dUsedSoFar_MissingMass.find(locUsedThisCombo_MissingMass) == dUsedSoFar_MissingMass.end()) && (ComboID==0) ) " << endl;
 	locSourceStream << "		{" << endl;
 	locSourceStream << "			//unique missing mass combo: histogram it, and register this combo of particles" << endl;
 	locSourceStream << "			dHist_MissingMassSquared->Fill(locMissingMassSquared); // Fills in-time and out-of-time beam photon combos" << endl;
 	locSourceStream << "			//dHist_MissingMassSquared->Fill(locMissingMassSquared,locHistAccidWeightFactor); // Alternate version with accidental subtraction" << endl;
 	locSourceStream << endl;
-	locSourceStream << "			locUsedSoFar_MissingMass.insert(locUsedThisCombo_MissingMass);" << endl;
+	locSourceStream << "			dUsedSoFar_MissingMass.insert(locUsedThisCombo_MissingMass);" << endl;
 	locSourceStream << "		}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//E.g. Cut" << endl;
 	locSourceStream << "		//if((locMissingMassSquared < -0.04) || (locMissingMassSquared > 0.04))" << endl;
 	locSourceStream << "		//{" << endl;
 	locSourceStream << "		//	dComboWrapper->Set_IsComboCut(true);" << endl;
-	locSourceStream << "		//	continue;" << endl;
+	locSourceStream << "		//	return kFALSE;" << endl;
 	locSourceStream << "		//}" << endl;
+	locSourceStream << "	}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/****************************************** FILL FLAT TREE (IF DESIRED) ******************************************/" << endl;
+	locSourceStream << "	// *** IMPORTANT *** "<< endl;
+	locSourceStream << "	// IPORTANT!: SET THE BOOLEAN VARIABLE \"locAllCutsOK\" to true if the combo passed all YOUR cuts!!!" << endl;
+	locSourceStream << "	// " << endl;
+	locSourceStream << "	Bool_t locAllCutsOK = false;" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		/*" << endl;
+	locSourceStream << "	if ( (locAllCutsOK) && (LoopID == 0) ) { " <<endl;
+	locSourceStream << "		// updated dGoodComboCount object "<<endl;
+	locSourceStream << "		dGoodComboCount.AddBunch(loc_i, locChi2NDF); "<<endl;
+	locSourceStream << "		// " <<endl;
+	locSourceStream << "	} " << endl;
+	locSourceStream << endl;
+	locSourceStream << "	if ((!LoopID) && (locAllCutsOK) )" << endl;
+	locSourceStream << "	{ " << endl;
+	locSourceStream << "		/**** Fill with regular Weight = locTotalComboWeight (first loop) with Unique combos *********/"<<endl;
+	locSourceStream << endl;
+	locSourceStream << "	} " << endl;
+	locSourceStream << "	if (LoopID>0) " << endl;
+	locSourceStream << "	{ " << endl;
+	locSourceStream << "		/************* Fill with Weight = locTotalComboWeight (second loop)  with Unique combos *********/"<<endl;
+	locSourceStream << endl;
+	locSourceStream << "	} " << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/********************* FILL FLAT TREE (IF DESIRED) ******************************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	/*" << endl;
+	locSourceStream << "	if (LoopID == 0) {" << endl;
 	locSourceStream << "		//FILL ANY CUSTOM BRANCHES FIRST!!" << endl;
 	locSourceStream << "		Int_t locMyInt_Flat = 7;" << endl;
 	locSourceStream << "		dFlatTreeInterface->Fill_Fundamental<Int_t>(\"flat_my_int\", locMyInt_Flat);" << endl;
@@ -703,78 +879,17 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "			TLorentzVector locMyComboP4_Flat(8.0, 7.0, 6.0, 5.0);" << endl;
 	locSourceStream << "			dFlatTreeInterface->Fill_TObject<TLorentzVector>(\"flat_my_p4_array\", locMyComboP4_Flat, loc_j);" << endl;
 	locSourceStream << "		}" << endl;
-	locSourceStream << "		*/" << endl;
-	locSourceStream << endl;
-	locSourceStream << "		//FILL FLAT TREE" << endl;
-	locSourceStream << "		//Fill_FlatTree(); //for the active combo" << endl;
-	locSourceStream << "	} // end of combo loop" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	//FILL HISTOGRAMS: Num combos / events surviving actions" << endl;
-	locSourceStream << "	Fill_NumCombosSurvivedHists();" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	/******************************************* LOOP OVER THROWN DATA (OPTIONAL) ***************************************/" << endl;
-	locSourceStream << "/*" << endl;
-	locSourceStream << "	//Thrown beam: just use directly" << endl;
-	locSourceStream << "	if(dThrownBeam != NULL)" << endl;
-	locSourceStream << "		double locEnergy = dThrownBeam->Get_P4().E();" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	//Loop over throwns" << endl;
-	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumThrown(); ++loc_i)" << endl;
-	locSourceStream << "	{" << endl;
-	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
-	locSourceStream << "		dThrownWrapper->Set_ArrayIndex(loc_i);" << endl;
-	locSourceStream << endl;
-	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
 	locSourceStream << "	}" << endl;
-	locSourceStream << "*/" << endl;
-	locSourceStream << "	/****************************************** LOOP OVER OTHER ARRAYS (OPTIONAL) ***************************************/" << endl;
-	locSourceStream << "/*" << endl;
-	locSourceStream << "	//Loop over beam particles (note, only those appearing in combos are present)" << endl;
-	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumBeam(); ++loc_i)" << endl;
-	locSourceStream << "	{" << endl;
-	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
-	locSourceStream << "		dBeamWrapper->Set_ArrayIndex(loc_i);" << endl;
+	locSourceStream << "	*/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
-	locSourceStream << "	}" << endl;
+	locSourceStream << "	//FILL FLAT TREE" << endl;
+	locSourceStream << "	//if (LoopID == 0) {" << endl;
+	locSourceStream << "	//Fill_FlatTree(); //for the active combo" << endl;
+	locSourceStream << "	//}" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//Loop over charged track hypotheses" << endl;
-	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumChargedHypos(); ++loc_i)" << endl;
-	locSourceStream << "	{" << endl;
-	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
-	locSourceStream << "		dChargedHypoWrapper->Set_ArrayIndex(loc_i);" << endl;
+	locSourceStream << "	return locAllCutsOK; " <<endl;
+	locSourceStream << "} // end of ProcessCombo()" << endl;
 	locSourceStream << endl;
-	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
-	locSourceStream << "	}" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	//Loop over neutral particle hypotheses" << endl;
-	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumNeutralHypos(); ++loc_i)" << endl;
-	locSourceStream << "	{" << endl;
-	locSourceStream << "		//Set branch array indices corresponding to this particle" << endl;
-	locSourceStream << "		dNeutralHypoWrapper->Set_ArrayIndex(loc_i);" << endl;
-	locSourceStream << endl;
-	locSourceStream << "		//Do stuff with the wrapper here ..." << endl;
-	locSourceStream << "	}" << endl;
-	locSourceStream << "*/" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	/************************************ EXAMPLE: FILL CLONE OF TTREE HERE WITH CUTS APPLIED ************************************/" << endl;
-	locSourceStream << "/*" << endl;
-	locSourceStream << "	Bool_t locIsEventCut = true;" << endl;
-	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumCombos(); ++loc_i) {" << endl;
-	locSourceStream << "		//Set branch array indices for combo and all combo particles" << endl;
-	locSourceStream << "		dComboWrapper->Set_ComboIndex(loc_i);" << endl;
-	locSourceStream << "		// Is used to indicate when combos have been cut" << endl;
-	locSourceStream << "		if(dComboWrapper->Get_IsComboCut())" << endl;
-	locSourceStream << "			continue;" << endl;
-	locSourceStream << "		locIsEventCut = false; // At least one combo succeeded" << endl;
-	locSourceStream << "		break;" << endl;
-	locSourceStream << "	}" << endl;
-	locSourceStream << "	if(!locIsEventCut && dOutputTreeFileName != \"\")" << endl;
-	locSourceStream << "		Fill_OutputTree();" << endl;
-	locSourceStream << "*/" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	return kTRUE;" << endl;
-	locSourceStream << "}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "void " << locSelectorName << "::Finalize(void)" << endl;
 	locSourceStream << "{" << endl;
