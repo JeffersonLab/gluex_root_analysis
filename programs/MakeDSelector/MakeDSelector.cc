@@ -547,13 +547,6 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	Int_t loc_i = ComboID;" << endl;
 	locSourceStream << "	dComboWrapper->Set_ComboIndex(loc_i);" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	Double_t locGlobalWeightFactor = 1.; // this will be used further to modify Combo Weight" <<endl;
-	locSourceStream << "	if (LoopID > 0) { " << endl;  
-	locSourceStream << "		//"<<endl;
-	locSourceStream << "		// Modify Weight based on results from first loop" <<endl;
-	locSourceStream << "		//"<<endl;
-	locSourceStream << "		locGlobalWeightFactor = dGoodComboCount.GetWeightN(loc_i);" <<endl;
-	locSourceStream << "	}" <<endl;
 	locSourceStream << "	// Total combo weight factor is: w = w1*w2 with"<<endl;
 	locSourceStream << "	//       w1 = -1/nbunches for accidentals and w1 = 1 for prompt beam photons"<<endl;
 	locSourceStream << "	//       w2 = locGlobalWeightFactor taking care of events with more than one FS"<<endl;
@@ -570,8 +563,16 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	Double_t locKinFitNDF = dComboWrapper->Get_NDF_KinFit();" << endl;
 	locSourceStream << "	Double_t locChi2NDF = locKinFitChi2/locKinFitNDF;" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	// UNCOMMENT THE FOLLOWING LINE IF YOU WANT THE WEIGHT ACCORDING TO CHI2s" <<endl;
-	locSourceStream << "	//locGlobalWeightFactor = dGoodComboCount.GetWeightChi2(loc_i, locChi2NDF);" <<endl;
+	locSourceStream << "	Double_t locGlobalWeightFactor = 1.; // this will be used further to modify Combo Weight" <<endl;
+	locSourceStream << "	Double_t locGlobalWeightFactor1 = 1.; // further to modify Combo Weight based on Chi2" <<endl;
+	locSourceStream << "	if (LoopID > 0) { " << endl;  
+	locSourceStream << "		//"<<endl;
+	locSourceStream << "		// Modify Weight based on results from first loop" <<endl;
+	locSourceStream << "		//"<<endl;
+	locSourceStream << "		locGlobalWeightFactor = dGoodComboCount.GetWeightN(loc_i);" <<endl;
+	locSourceStream << "		locGlobalWeightFactor1 = dGoodComboCount.GetWeightChi2(loc_i, locChi2NDF);" <<endl;
+	locSourceStream << "	}" <<endl;
+	locSourceStream << endl;
 
 	//print particle indices
 	map<int, map<int, pair<Particle_t, string> > >::iterator locStepIterator = locComboInfoMap.begin();
