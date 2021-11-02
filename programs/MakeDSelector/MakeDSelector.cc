@@ -557,21 +557,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	if(dComboWrapper->Get_IsComboCut()) // Is false when tree originally created" << endl;
 	locSourceStream << "		return kFALSE; // Combo has been cut previously" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	/********************************************** GET PARTICLE INDICES *********************************************/" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	Double_t locKinFitChi2 = dComboWrapper->Get_ChiSq_KinFit();" << endl;
-	locSourceStream << "	Double_t locKinFitNDF = dComboWrapper->Get_NDF_KinFit();" << endl;
-	locSourceStream << "	Double_t locChi2NDF = locKinFitChi2/locKinFitNDF;" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	Double_t locGlobalWeightFactor = 1.; // this will be used further to modify Combo Weight" <<endl;
-	locSourceStream << "	Double_t locGlobalWeightFactor1 = 1.; // further to modify Combo Weight based on Chi2" <<endl;
-	locSourceStream << "	if (LoopID > 0) { " << endl;  
-	locSourceStream << "		//"<<endl;
-	locSourceStream << "		// Modify Weight based on results from first loop" <<endl;
-	locSourceStream << "		//"<<endl;
-	locSourceStream << "		locGlobalWeightFactor = dGoodComboCount.GetWeightN(loc_i);" <<endl;
-	locSourceStream << "		locGlobalWeightFactor1 = dGoodComboCount.GetWeightChi2(loc_i, locChi2NDF);" <<endl;
-	locSourceStream << "	}" <<endl;
+	locSourceStream << "	/****** GET PARTICLE INDICES *******/" << endl;
 	locSourceStream << endl;
 
 	//print particle indices
@@ -612,7 +598,26 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 		}
 		locSourceStream << endl;
 	}
-	locSourceStream << "	/*********************************************** GET FOUR-MOMENTUM **********************************************/" << endl;
+
+	locSourceStream << "	/***** Calculate Combo Weight Correction Factor *****/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	Double_t locKinFitChi2 = dComboWrapper->Get_ChiSq_KinFit();" << endl;
+	locSourceStream << "	Double_t locKinFitNDF = dComboWrapper->Get_NDF_KinFit();" << endl;
+	locSourceStream << "	Double_t locChi2NDF = locKinFitChi2/locKinFitNDF;" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	Double_t locGlobalWeightFactor = 1.; // this will be used further to modify Combo Weight" <<endl;
+	locSourceStream << "	Double_t locGlobalWeightFactor1 = 1.; // further to modify Combo Weight based on Chi2" <<endl;
+	locSourceStream << "	if (LoopID > 0) { " << endl;  
+	locSourceStream << "		//"<<endl;
+	locSourceStream << "		// Modify Weight based on results from first loop" <<endl;
+	locSourceStream << "		//"<<endl;
+	locSourceStream << "		locGlobalWeightFactor = dGoodComboCount.GetWeightN(locBeamID);" <<endl;
+	locSourceStream << "		locGlobalWeightFactor1 = dGoodComboCount.GetWeightChi2(locBeamID, locChi2NDF);" <<endl;
+	locSourceStream << "	}" <<endl;
+	locSourceStream << endl;
+
+
+	locSourceStream << "	/***** GET FOUR-MOMENTUM *****/" << endl;
 	locSourceStream << endl;
 
 	//get p4's
@@ -848,7 +853,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	if ( (locAllCutsOK) && (LoopID == 0) ) { " <<endl;
 	locSourceStream << "		// updated dGoodComboCount object "<<endl;
-	locSourceStream << "		dGoodComboCount.AddBunch(loc_i, locChi2NDF); "<<endl;
+	locSourceStream << "		dGoodComboCount.AddBunch(locBeamID, locChi2NDF); "<<endl;
 	locSourceStream << "		// " <<endl;
 	locSourceStream << "	} " << endl;
 	locSourceStream << endl;
