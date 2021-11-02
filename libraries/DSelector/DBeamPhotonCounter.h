@@ -6,6 +6,15 @@
 
 using namespace std;
 
+/*! \class DBeamPhotonCounter
+ * This class provides the means to count combos in the DSelector for any given beam photon ID that
+ * will pass all analyzer cuts. And then can be used in the second loop over those combos to modify
+ * the combo weight according to the number of initially found FS with this beam photon ID.
+ * This class also provides the choice of using the weighted chi2 rather than just the number of
+ * combos as a weight modifyer. 
+ */
+
+
 class DBeamPhotonCounter {
 
  public:
@@ -17,10 +26,10 @@ class DBeamPhotonCounter {
   int GetBunchNentries(int beamID);  /// get total number of combos for this beamID
   double GetBunchChi2Sum(int beamID);   /// get sum of all chi2 for this beamID
   void Init(); /// initialize (clear) all unordered_maps
-  double GetWeightN(int ID);
-  double GetWeightChi2(int ID, double chi2);
-  void PrintAll();
-  int Size(){ return Nentries;}
+  double GetWeightN(int ID); /// get the weight modifyer base on the number of Good combos
+  double GetWeightChi2(int ID, double chi2); /// get the weight modifyer based on the normalized Chi2 of good combos.
+  void PrintAll(); /// Print out all chi2 of all beamphoton-FS combos that passed all cuts separate for each beam Photon
+  int Size(){ return Nentries;} /// return the overall size of the unsored map
   
  private:
   /// for each beam photon ID (int) hold a list of Chi2 from KinFit for 
