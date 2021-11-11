@@ -11,6 +11,8 @@ cd ../../
 echo os = $BMS_OSNAME
 cd programs/MakeDSelector
 make all
+cd ../ConfigDSelector
+make all
 cd ../tree_to_amptools/
 make all
 cd ../MakePROOFPackage
