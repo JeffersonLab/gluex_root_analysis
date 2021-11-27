@@ -93,10 +93,9 @@ void Print_Usage(void)
 	cout << "Converts from ANALYSIS library ROOT TTree to AmpTools input ROOT TTree." << endl;
 	cout << "1st argument: The input ROOT file name." << endl;
 	cout << "2nd argument: The name of the TTree in the input ROOT file that you want to convert." << endl;
-	cout << "[-gen <int> ... <int>] (to use generated MC data intead of reconstructed): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
+	cout << "[-gen <int> ... <int>] (to use generated MC data instead of reconstructed): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
 	cout << "[-w <double>] : Set weight for all events in tree" << endl;
-	cout << endl;
-  cout << "[-b <string>] : full path to beam configuration file" << endl;
+  cout << "[-b <string>] : full path to beam configuration file (optional; only required when beam polarization is to be stored in AmpTools tree!)" << endl;
   cout << endl;
 	cout << "The 'primary' particles in the tree are in the same order as they were specified in the DReaction." << endl;
 	cout << endl;
