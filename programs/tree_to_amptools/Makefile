@@ -1,12 +1,12 @@
 #! gnumake
 
-INCLUDE = -I. -I../../$(BMS_OSNAME)/include -I$(HALLD_RECON_HOME)/$(BMS_OSNAME)/include
+INCLUDE = -I. -I../../$(BMS_OSNAME)/include -I$(HALLD_RECON_HOME)/$(BMS_OSNAME)/include -I$(HALLD_SIM_HOME)/$(BMS_OSNAME)/include -I$(CCDB_HOME)/include
 ROOTFLAGS = $(shell $(ROOTSYS)/bin/root-config --cflags)
 CXXFLAGS = -O -Wall -fPIC
 FLAGS = $(CXXFLAGS) $(ROOTFLAGS) $(INCLUDE)
 
 ROOTGLIBS = $(shell $(ROOTSYS)/bin/root-config --glibs)
-LIBS = $(ROOTGLIBS)
+LIBS = $(ROOTGLIBS) -L$(HALLD_SIM_HOME)/$(BMS_OSNAME)/lib -lUTILITIES -L$(CCDB_HOME)/lib -lccdb
 
 all: install
 

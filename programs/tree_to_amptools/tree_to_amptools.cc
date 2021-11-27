@@ -14,8 +14,10 @@
 #include "TObjArray.h"
 #include "TClonesArray.h"
 #include "TLorentzVector.h"
+#include "TH1D.h"
 
 #include "particleType.h"
+#include "UTILITIES/BeamProperties.h"
 
 using namespace std;
 
@@ -34,6 +36,10 @@ vector<Particle_t> gDesiredPIDOrder; //for MC Gen tree only!!
 
 Float_t locWeight = 0.;
 Bool_t locGen = false;
+bool useBeamConf = false;
+string locBeamConfFile = "";
+double locPolAng = -1;
+TH1D* polFrac_vs_E;
 
 int main(int argc, char* argv[])
 {
@@ -56,6 +62,15 @@ int main(int argc, char* argv[])
 	  if (arg == "-gen"){
 	    locGen = true;
 	    cout << "Fill tree with generated events" << endl;
+	  }
+	  if (arg == "-b"){
+	    locBeamConfFile = argv[++loc_i];
+      BeamProperties beamProp((TString)locBeamConfFile);
+      polFrac_vs_E = (TH1D*)beamProp.GetPolFrac();
+      locPolAng = beamProp.GetPolAngle();
+      useBeamConf = true;
+	    cout << "BeamConfiguration to be read from file: " << locBeamConfFile << ", polarization angle: " << locPolAng;
+	    cout << endl;
 	  }
 	  else gDesiredPIDOrder.push_back((Particle_t)atoi(argv[loc_i]));
 	}
@@ -81,6 +96,8 @@ void Print_Usage(void)
 	cout << "[-gen <int> ... <int>] (to use generated MC data intead of reconstructed): The 'primary' Particle_t (int) PIDs listed in the desired order." << endl;
 	cout << "[-w <double>] : Set weight for all events in tree" << endl;
 	cout << endl;
+  cout << "[-b <string>] : full path to beam configuration file" << endl;
+  cout << endl;
 	cout << "The 'primary' particles in the tree are in the same order as they were specified in the DReaction." << endl;
 	cout << endl;
 	cout << "'Primary:' Decay products of long-lived (non-resonant) decaying particles (e.g. pi0, k0, lambda) are" << endl;
@@ -617,12 +634,29 @@ cout << endl;
 					locMissingP4.SetE(sqrt(locMissingParticleMass*locMissingParticleMass + locMissingP4.Vect().Mag2()));
 				}
 			}
-
-			//FILL BEAM MOMENTUM
-			*locBranchPointer_BeamE = locBeamP4->E();
-			*locBranchPointer_BeamPx = locBeamP4->Px();
-			*locBranchPointer_BeamPy = locBeamP4->Py();
-			*locBranchPointer_BeamPz = locBeamP4->Pz();
+      if(!useBeamConf) {
+  			//FILL BEAM MOMENTUM
+  			*locBranchPointer_BeamE = locBeamP4->E();
+  			*locBranchPointer_BeamPx = locBeamP4->Px();
+  			*locBranchPointer_BeamPy = locBeamP4->Py();
+  			*locBranchPointer_BeamPz = locBeamP4->Pz();
+      } else {
+        double polFraction = 0.;
+        if(locPolAng != -1) {
+          int tempBin = polFrac_vs_E->GetXaxis()->FindBin(locBeamP4->E());
+          if( !(tempBin == 0 || tempBin > polFrac_vs_E->GetXaxis()->GetNbins()) )
+            polFraction = polFrac_vs_E->GetBinContent(tempBin);
+        }
+  
+//        cout << "beamE=" << locBeamP4->E() << ", polFraction=" << polFraction << endl;
+//        cout << "beam(E,Px,Py,Pz) = " << locBeamP4->E() << ", " << locBeamP4->Px() << ", " << locBeamP4->Py() << ", " << locBeamP4->Pz() << endl;
+  
+  			//FILL BEAM MOMENTUM
+  			*locBranchPointer_BeamE = locBeamP4->E();
+  			*locBranchPointer_BeamPx = polFraction*cos(locPolAng);
+  			*locBranchPointer_BeamPy = polFraction*sin(locPolAng);
+  			*locBranchPointer_BeamPz = 0;
+      }
 
 			//FILL PRIMARY PARTICLE P4
 			for(Int_t loc_j = 0; loc_j < locTreeParticleNames->GetEntries(); ++loc_j)
@@ -788,8 +822,7 @@ void Convert_ToAmpToolsFormat_MCGen(string locOutputFileName, TTree* locInputTre
 	Long64_t locNumEntries = locInputTree->GetEntries();
 	for(Long64_t locEntry = 0; locEntry < locNumEntries; ++locEntry)
 	{
-
-	        locNumThrownBranch->GetEntry(locEntry);
+	  locNumThrownBranch->GetEntry(locEntry);
 		if (locNumThrown != locNumThrownDefault)
 		  continue;
 
