@@ -652,8 +652,8 @@ cout << endl;
   
   			//FILL BEAM MOMENTUM
   			*locBranchPointer_BeamE = locBeamP4->E();
-  			*locBranchPointer_BeamPx = polFraction*cos(locPolAng);
-  			*locBranchPointer_BeamPy = polFraction*sin(locPolAng);
+  			*locBranchPointer_BeamPx = polFraction*cos(locPolAng*TMath::DegToRad());
+  			*locBranchPointer_BeamPy = polFraction*sin(locPolAng*TMath::DegToRad());
   			*locBranchPointer_BeamPz = 0;
       }
 
