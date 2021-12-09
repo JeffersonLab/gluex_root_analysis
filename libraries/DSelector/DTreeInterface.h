@@ -16,6 +16,7 @@
 #include <TList.h>
 #include <TChain.h>
 #include <TMap.h>
+#include <TObjString.h>
 
 #include <particleType.h>
 
