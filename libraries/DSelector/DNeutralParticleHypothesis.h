@@ -50,6 +50,8 @@ class DNeutralParticleHypothesis : public DKinematicData
 		//SHOWER INFO
 		TLorentzVector Get_X4_Shower(void) const;
 		Float_t Get_Shower_Quality(void) const;
+		Int_t Get_Shower_TOFVeto(void) const;
+		Int_t Get_Shower_SCVeto(void) const;
 
 		Float_t Get_Energy_BCAL(void) const;
 		Float_t Get_Energy_BCALPreshower(void) const;
@@ -101,6 +103,8 @@ class DNeutralParticleHypothesis : public DKinematicData
 		//SHOWER INFO
 		TClonesArray** dX4_Shower;
 		TBranch* dBranch_Shower_Quality;
+		TBranch* dBranch_Shower_TOFVeto;
+		TBranch* dBranch_Shower_SCVeto;
 
 		TBranch* dBranch_Energy_BCAL;
 		TBranch* dBranch_Energy_BCALPreshower;
@@ -173,6 +177,12 @@ inline void DNeutralParticleHypothesis::Setup_Branches(void)
 
 	locBranchName = "NeutralHypo__ShowerQuality";
 	dBranch_Shower_Quality = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "NeutralHypo__ShowerTOFVeto";
+	dBranch_Shower_TOFVeto = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "NeutralHypo__ShowerSCVeto";
+	dBranch_Shower_SCVeto = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "NeutralHypo__Energy_BCAL";
 	dBranch_Energy_BCAL = dTreeInterface->Get_Branch(locBranchName);
@@ -320,6 +330,16 @@ inline DetectorSystem_t DNeutralParticleHypothesis::Get_Detector_System_Timing(v
 inline Float_t DNeutralParticleHypothesis::Get_Shower_Quality(void) const
 {
 	return ((Float_t*)dBranch_Shower_Quality->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Int_t DNeutralParticleHypothesis::Get_Shower_TOFVeto(void) const
+{
+	return ((Int_t*)dBranch_Shower_TOFVeto->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Int_t DNeutralParticleHypothesis::Get_Shower_SCVeto(void) const
+{
+	return ((Int_t*)dBranch_Shower_SCVeto->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DNeutralParticleHypothesis::Get_Energy_BCAL(void) const
