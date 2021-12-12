@@ -241,6 +241,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dFlatTreeFileName = \"\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
 	locSourceStream << "	dFlatTreeName = \"\"; //if blank, default name will be chosen" << endl;
 	locSourceStream << "	//dSaveDefaultFlatBranches = true; // False: don't save default branches, reduce disk footprint." << endl;
+	locSourceStream << "	//dSaveTLorentzVectorsAsFundamentaFlatTree = false; // Default (or false): save particles as TLorentzVector objects. True: save as four doubles instead." << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//Because this function gets called for each TTree in the TChain, we must be careful:" << endl;
 	locSourceStream << "		//We need to re-initialize the tree interface & branch wrappers, but don't want to recreate histograms" << endl;
@@ -324,6 +325,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	/************************** EXAMPLE USER INITIALIZATION: CUSTOM OUTPUT BRANCHES - FLAT TREE *************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "	// RECOMMENDED: CREATE ACCIDENTAL WEIGHT BRANCH" << endl;
+	locSourceStream << "	// dFlatTreeInterface->Create_Branch_Fundamental<Double_t>(\"accidweight\");" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE FLAT TREE CUSTOM BRANCHES (OUTPUT ROOT FILE NAME MUST FIRST BE GIVEN!!!! (ABOVE: TOP)):" << endl;
 	locSourceStream << "	//The type for the branch must be included in the brackets" << endl;
@@ -547,7 +551,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//Double_t locBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(Get_RunNumber());" << endl;
 	locSourceStream << "		// Double_t locDeltaT_RF = dAnalysisUtilities.Get_DeltaT_RF(Get_RunNumber(), locBeamX4_Measured, dComboWrapper);" << endl;
 	locSourceStream << "		// Int_t locRelBeamBucket = dAnalysisUtilities.Get_RelativeBeamBucket(Get_RunNumber(), locBeamX4_Measured, dComboWrapper); // 0 for in-time events, non-zero integer for out-of-time photons" << endl;
-	locSourceStream << "		// Int_t locNumOutOfTimeBunchesInTree = 4; //YOU need to specify this number" << endl;
+	locSourceStream << "		// Int_t locNumOutOfTimeBunchesInTree = XXX; //YOU need to specify this number" << endl;
 	locSourceStream << "			//Number of out-of-time beam bunches in tree (on a single side, so that total number out-of-time bunches accepted is 2 times this number for left + right bunches) " << endl;
 	locSourceStream << endl;
 	locSourceStream << "		// Bool_t locSkipNearestOutOfTimeBunch = true; // True: skip events from nearest out-of-time bunch on either side (recommended)." << endl;
@@ -688,6 +692,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/****************************************** FILL FLAT TREE (IF DESIRED) ******************************************/" << endl;
+	locSourceStream << endl;
+	locSourceStream << "		// RECOMMENDED: FILL ACCIDENTAL WEIGHT" << endl;
+	locSourceStream << "		// dFlatTreeInterface->Fill_Fundamental<Double_t>(\"accidweight\",locHistAccidWeightFactor);" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/*" << endl;
 	locSourceStream << "		//FILL ANY CUSTOM BRANCHES FIRST!!" << endl;

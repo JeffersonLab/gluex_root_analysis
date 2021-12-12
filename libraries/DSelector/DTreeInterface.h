@@ -38,7 +38,7 @@ class DTreeInterface
 		/**************************************************************** INITIALIZE ****************************************************************/
 
 		//Constructor
-		DTreeInterface(TTree* locTree, bool locIsInputTreeFlag);
+		DTreeInterface(TTree* locTree, bool locIsInputTreeFlag, bool locSaveTLorentzVectorsAsFundamental=false);
 
 		//Set New Tree (e.g. reading a TChain)
 		void Set_NewTree(TTree* locTree);
@@ -158,6 +158,7 @@ class DTreeInterface
 		/************************************************************* MEMBER VARIABLES *************************************************************/
 
 		bool dIsInputTreeFlag;
+		bool dSaveTLorentzVectorsAsFundamental;
 		bool dFirstInputTreeFlag;
 		TTree* dInputTree;
 		map<string, TTree*> dOutputTreeMap;
@@ -205,8 +206,8 @@ class DTreeInterface
 /********************************************************************* INITIALIZE *********************************************************************/
 
 //Constructor
-inline DTreeInterface::DTreeInterface(TTree* locTree, bool locIsInputTreeFlag) :
-	dIsInputTreeFlag(locIsInputTreeFlag), dFirstInputTreeFlag(true),
+inline DTreeInterface::DTreeInterface(TTree* locTree, bool locIsInputTreeFlag, bool locSaveTLorentzVectorsAsFundamental) :
+	dIsInputTreeFlag(locIsInputTreeFlag), dSaveTLorentzVectorsAsFundamental(locSaveTLorentzVectorsAsFundamental), dFirstInputTreeFlag(true),
 	dInputTree(locIsInputTreeFlag ? locTree : NULL)
 {
 	dUpdateGetEntryBranchesFlag = true;
@@ -216,6 +217,8 @@ inline DTreeInterface::DTreeInterface(TTree* locTree, bool locIsInputTreeFlag) :
 	//If input tree is a brand new tree, this function call does nothing.
 	if(dIsInputTreeFlag)
 		Set_BranchAddresses(true);
+
+    if(dSaveTLorentzVectorsAsFundamental) cout << "Saving TLorentzVectors as set of four doubles in flat tree (if flat tree specified)" << endl;
 }
 
 //Set New Tree (e.g. reading a TChain)
@@ -458,29 +461,58 @@ template <typename DType> inline void DTreeInterface::Create_Branch_Fundamental(
 
 template <typename DType> inline void DTreeInterface::Create_Branch_NoSplitTObject(string locBranchName, DType* locMemoryPointer)
 {
-	if(dOutputTreeMap.empty())
-	{
-		cout << "WARNING: CANNOT CREATE BRANCH " << locBranchName << ": OUTPUT TTREE DOES NOT EXIST." << endl;
-		return;
-	}
-	if(dMemoryMap_TObject.find(locBranchName) != dMemoryMap_TObject.end())
-	{
-		cout << "WARNING: CANNOT CREATE BRANCH " << locBranchName << ": IT ALREADY EXISTS." << endl;
-		return;
-	}
+    if(!dSaveTLorentzVectorsAsFundamental) { // Default: save object to ROOT tree
+        if(dOutputTreeMap.empty())
+        {
+            cout << "WARNING: CANNOT CREATE BRANCH " << locBranchName << ": OUTPUT TTREE DOES NOT EXIST." << endl;
+            return;
+        }
+        if(dMemoryMap_TObject.find(locBranchName) != dMemoryMap_TObject.end())
+        {
+            cout << "WARNING: CANNOT CREATE BRANCH " << locBranchName << ": IT ALREADY EXISTS." << endl;
+            return;
+        }
 
-	dMemoryMap_TObject[locBranchName] = static_cast<TObject*>((locMemoryPointer == NULL) ? new DType() : locMemoryPointer);
-	TObject* locTObjectMemoryPointer = dMemoryMap_TObject[locBranchName];
+        dMemoryMap_TObject[locBranchName] = static_cast<TObject*>((locMemoryPointer == NULL) ? new DType() : locMemoryPointer);
+        TObject* locTObjectMemoryPointer = dMemoryMap_TObject[locBranchName];
 
-	string locClassName = dMemoryMap_TObject[locBranchName]->ClassName();
+        string locClassName = dMemoryMap_TObject[locBranchName]->ClassName();
 
-	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
-	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
-	{
-		TBranch* locBranch = locIterator->second->Branch(locBranchName.c_str(), locClassName.c_str(), locTObjectMemoryPointer, 32000, 0); //0: don't split
-		if(locIterator == dOutputTreeMap.begin())
-			dBranchMap_OutputTree[locBranchName] = locBranch;
-	}
+        map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
+        for(; locIterator != dOutputTreeMap.end(); ++locIterator)
+        {
+            TBranch* locBranch = locIterator->second->Branch(locBranchName.c_str(), locClassName.c_str(), locTObjectMemoryPointer, 32000, 0); //0: don't split
+            if(locIterator == dOutputTreeMap.begin())
+                dBranchMap_OutputTree[locBranchName] = locBranch;
+        }
+    }
+
+    if(dSaveTLorentzVectorsAsFundamental) { // Alternative: save input TLorentzVector to four doubles
+		TString locBranchNameTString = locBranchName; //Making case insensitive is easier with TString
+		if(locBranchNameTString.Contains("_p4_",TString::kIgnoreCase)) {
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_px");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_py");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_pz");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"__E");
+        }
+        else if(locBranchNameTString.Contains("_x4_",TString::kIgnoreCase)) {
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_x");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_y");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_z");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_t");
+        }
+        else {
+            cout << "WARNING: " << locBranchName << " does not contain _p4_ or _x4_ in branch name. Saving with 4-component names (x1,x2,x3,x0) " << endl;
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_x1");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_x2");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_x3");
+            Create_Branch_Fundamental<Double_t>(locBranchName+"_x0");
+        }
+
+    }
+
+
+
 }
 
 template <typename DType> inline void DTreeInterface::Create_Branch_FundamentalArray(string locBranchName, string locArraySizeString, unsigned int locInitialSize, DType* locMemoryPointer)
@@ -615,7 +647,38 @@ template <typename DType> inline void DTreeInterface::Fill_TObject(string locBra
 
 template <typename DType> inline void DTreeInterface::Fill_TObject(string locBranchName, const DType& locObject)
 {
-	**Get_PointerToPointerTo_TObject<DType>(locBranchName) = locObject;
+    // Determine type of template DType
+    bool locIsTLorentVectorType = std::is_same<DType,TLorentzVector>::value;
+    if(!locIsTLorentVectorType && dSaveTLorentzVectorsAsFundamental) {
+        cout << "WARNING: cannot save branch " << locBranchName << ", type is not TLorentzVector and dSaveTLorentzVectorsAsFundamental is true" << endl;
+        return;
+    }
+
+    if(!dSaveTLorentzVectorsAsFundamental) { // Default: save object to ROOT tree
+        **Get_PointerToPointerTo_TObject<DType>(locBranchName) = locObject;
+    }
+
+    if(dSaveTLorentzVectorsAsFundamental) { // Alternative: if TLorentzVector, save to four doubles
+        TLorentzVector locT4 = (TLorentzVector)locObject;
+        if(locBranchName.find("_p4_")!= std::string::npos) {
+            Fill_Fundamental<Double_t>(locBranchName+"_px",locT4.Px());
+            Fill_Fundamental<Double_t>(locBranchName+"_py",locT4.Py());
+            Fill_Fundamental<Double_t>(locBranchName+"_pz",locT4.Pz());
+            Fill_Fundamental<Double_t>(locBranchName+"__E",locT4.E());
+        }
+        else if(locBranchName.find("_x4_")!= std::string::npos) {
+            Fill_Fundamental<Double_t>(locBranchName+"_x",locT4.X());
+            Fill_Fundamental<Double_t>(locBranchName+"_y",locT4.Y());
+            Fill_Fundamental<Double_t>(locBranchName+"_z",locT4.Z());
+            Fill_Fundamental<Double_t>(locBranchName+"_t",locT4.T());
+        }
+        else {
+            Fill_Fundamental<Double_t>(locBranchName+"_x1",locT4.X());
+            Fill_Fundamental<Double_t>(locBranchName+"_x2",locT4.Y());
+            Fill_Fundamental<Double_t>(locBranchName+"_x3",locT4.Z());
+            Fill_Fundamental<Double_t>(locBranchName+"_x0",locT4.T());
+        }
+    }
 }
 
 /************************************************************** GET BRANCH MEMORY ***********************************************************/

@@ -57,6 +57,7 @@ class DSelector : public TSelector
 		string dFlatTreeFileName; //for output flat trees
 		string dFlatTreeName; //for output flat trees
 		bool dSaveDefaultFlatBranches; // True by default
+		bool dSaveTLorentzVectorsAsFundamentaFlatTree; // False by default. True: save TLorentzVector info instead as four doubles, rather than as TLorentzVector objects.
 
 		//TREE INTERFACE
 		DTreeInterface* dTreeInterface; //for event-based tree
@@ -191,7 +192,7 @@ class DSelector : public TSelector
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
 inline DSelector::DSelector(TTree* locTree) :
-		 dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dSaveDefaultFlatBranches(true), dTreeInterface(NULL), dFlatTreeInterface(NULL),
+		 dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dSaveDefaultFlatBranches(true), dSaveTLorentzVectorsAsFundamentaFlatTree(false), dTreeInterface(NULL), dFlatTreeInterface(NULL),
 		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
