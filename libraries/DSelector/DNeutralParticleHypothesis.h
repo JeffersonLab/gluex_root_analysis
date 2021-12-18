@@ -50,11 +50,13 @@ class DNeutralParticleHypothesis : public DKinematicData
 		//SHOWER INFO
 		TLorentzVector Get_X4_Shower(void) const;
 		Float_t Get_Shower_Quality(void) const;
-		Int_t Get_Shower_TOFVeto(void) const;
-		Int_t Get_Shower_SCVeto(void) const;
 		Int_t Get_Shower_SC_BCAL_match(void) const;
 		Int_t Get_Shower_SC_FCAL_match(void) const;
 		Int_t Get_Shower_TOF_FCAL_match(void) const;
+		Float_t Get_Shower_SC_BCAL_phi_min(void) const;
+		Float_t Get_Shower_SC_FCAL_phi_min(void) const;
+		Float_t Get_Shower_TOF_FCAL_x_min(void) const;
+		Float_t Get_Shower_TOF_FCAL_y_min(void) const;
 
 		Float_t Get_Energy_BCAL(void) const;
 		Float_t Get_Energy_BCALPreshower(void) const;
@@ -106,11 +108,13 @@ class DNeutralParticleHypothesis : public DKinematicData
 		//SHOWER INFO
 		TClonesArray** dX4_Shower;
 		TBranch* dBranch_Shower_Quality;
-		TBranch* dBranch_Shower_TOFVeto;
-		TBranch* dBranch_Shower_SCVeto;
 		TBranch* dBranch_Shower_SC_BCAL_match;
 		TBranch* dBranch_Shower_SC_FCAL_match;
 		TBranch* dBranch_Shower_TOF_FCAL_match;
+		TBranch* dBranch_Shower_SC_BCAL_phi_min;
+		TBranch* dBranch_Shower_SC_FCAL_phi_min;
+		TBranch* dBranch_Shower_TOF_FCAL_x_min;
+		TBranch* dBranch_Shower_TOF_FCAL_y_min;
 
 		TBranch* dBranch_Energy_BCAL;
 		TBranch* dBranch_Energy_BCALPreshower;
@@ -184,12 +188,6 @@ inline void DNeutralParticleHypothesis::Setup_Branches(void)
 	locBranchName = "NeutralHypo__ShowerQuality";
 	dBranch_Shower_Quality = dTreeInterface->Get_Branch(locBranchName);
 
-	locBranchName = "NeutralHypo__ShowerTOFVeto";
-	dBranch_Shower_TOFVeto = dTreeInterface->Get_Branch(locBranchName);
-
-	locBranchName = "NeutralHypo__ShowerSCVeto";
-	dBranch_Shower_SCVeto = dTreeInterface->Get_Branch(locBranchName);
-
 	locBranchName = "NeutralHypo__ShowerSC_BCAL_match";
 	dBranch_Shower_SC_BCAL_match = dTreeInterface->Get_Branch(locBranchName);
 
@@ -198,6 +196,18 @@ inline void DNeutralParticleHypothesis::Setup_Branches(void)
 
 	locBranchName = "NeutralHypo__ShowerTOF_FCAL_match";
 	dBranch_Shower_TOF_FCAL_match = dTreeInterface->Get_Branch(locBranchName);
+	
+	locBranchName = "NeutralHypo__ShowerSC_BCAL_phi_min";
+	dBranch_Shower_SC_BCAL_phi_min = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "NeutralHypo__ShowerSC_FCAL_phi_min";
+	dBranch_Shower_SC_FCAL_phi_min = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "NeutralHypo__ShowerTOF_FCAL_x_min";
+	dBranch_Shower_TOF_FCAL_x_min = dTreeInterface->Get_Branch(locBranchName);
+	
+	locBranchName = "NeutralHypo__ShowerTOF_FCAL_y_min";
+	dBranch_Shower_TOF_FCAL_y_min = dTreeInterface->Get_Branch(locBranchName);
 
 	locBranchName = "NeutralHypo__Energy_BCAL";
 	dBranch_Energy_BCAL = dTreeInterface->Get_Branch(locBranchName);
@@ -347,16 +357,6 @@ inline Float_t DNeutralParticleHypothesis::Get_Shower_Quality(void) const
 	return ((Float_t*)dBranch_Shower_Quality->GetAddress())[dMeasuredArrayIndex];
 }
 
-inline Int_t DNeutralParticleHypothesis::Get_Shower_TOFVeto(void) const
-{
-	return ((Int_t*)dBranch_Shower_TOFVeto->GetAddress())[dMeasuredArrayIndex];
-}
-
-inline Int_t DNeutralParticleHypothesis::Get_Shower_SCVeto(void) const
-{
-	return ((Int_t*)dBranch_Shower_SCVeto->GetAddress())[dMeasuredArrayIndex];
-}
-
 inline Int_t DNeutralParticleHypothesis::Get_Shower_SC_BCAL_match(void) const
 {
 	return ((Int_t*)dBranch_Shower_SC_BCAL_match->GetAddress())[dMeasuredArrayIndex];
@@ -370,6 +370,26 @@ inline Int_t DNeutralParticleHypothesis::Get_Shower_SC_FCAL_match(void) const
 inline Int_t DNeutralParticleHypothesis::Get_Shower_TOF_FCAL_match(void) const
 {
 	return ((Int_t*)dBranch_Shower_TOF_FCAL_match->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DNeutralParticleHypothesis::Get_Shower_SC_BCAL_phi_min(void) const
+{
+	return ((Float_t*)dBranch_Shower_SC_BCAL_phi_min->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DNeutralParticleHypothesis::Get_Shower_SC_FCAL_phi_min(void) const
+{
+        return ((Float_t*)dBranch_Shower_SC_FCAL_phi_min->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DNeutralParticleHypothesis::Get_Shower_TOF_FCAL_x_min(void) const
+{
+        return ((Float_t*)dBranch_Shower_TOF_FCAL_x_min->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DNeutralParticleHypothesis::Get_Shower_TOF_FCAL_y_min(void) const
+{
+        return ((Float_t*)dBranch_Shower_TOF_FCAL_y_min->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline Float_t DNeutralParticleHypothesis::Get_Energy_BCAL(void) const
