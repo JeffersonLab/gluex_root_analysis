@@ -518,21 +518,10 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	}" << endl;
 	locSourceStream << "*/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	/************ EXAMPLE: FILL CLONE OF TTREE HERE WITH CUTS APPLIED ************************************/" << endl;
-	locSourceStream << "/*" << endl;
-	locSourceStream << "	Bool_t locIsEventCut = true;" << endl;
-	locSourceStream << "	for(UInt_t loc_i = 0; loc_i < Get_NumCombos(); ++loc_i) {" << endl;
-	locSourceStream << "		//Set branch array indices for combo and all combo particles" << endl;
-	locSourceStream << "		dComboWrapper->Set_ComboIndex(loc_i);" << endl;
-	locSourceStream << "		// Is used to indicate when combos have been cut" << endl;
-	locSourceStream << "		if(dComboWrapper->Get_IsComboCut())" << endl;
-	locSourceStream << "			continue;" << endl;
-	locSourceStream << "		locIsEventCut = false; // At least one combo succeeded" << endl;
-	locSourceStream << "		break;" << endl;
-	locSourceStream << "	}" << endl;
-	locSourceStream << "	if(!locIsEventCut && dOutputTreeFileName != \"\")" << endl;
+	locSourceStream << "	/* FILL CLONE OF TTREE HERE WITH CUTS APPLIED (If Files Name is defined)*/" << endl;
+
+	locSourceStream << "	if( (dGoodComoboCount.Size()>0) && (dOutputTreeFileName != \"\") )" << endl;
 	locSourceStream << "		Fill_OutputTree();" << endl;
-	locSourceStream << "*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	return kTRUE;" << endl;
 	locSourceStream << "}" << endl;
@@ -853,7 +842,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	if ( (locAllCutsOK) && (LoopID == 0) ) { " <<endl;
 	locSourceStream << "		// updated dGoodComboCount object "<<endl;
-	locSourceStream << "		dGoodComboCount.AddBunch(locBeamID, locChi2NDF); "<<endl;
+	locSourceStream << "		dGoodComboCount.AddBunch(locBeamID, ComboID, locChi2NDF); "<<endl;
 	locSourceStream << "		// " <<endl;
 	locSourceStream << "	} " << endl;
 	locSourceStream << endl;

@@ -22,7 +22,7 @@ class DBeamPhotonCounter {
   //DBeamPhotonCounter();
   //~DBeamPhotonCounter();
 
-  int AddBunch(int ID, double Chi2); /// add combo chi2 for this beamID as 1./chi2
+  int AddBunch(int ID, int ComboID, double Chi2); /// add combo chi2 for this beamID as 1./chi2
   int GetBunchNentries(int beamID);  /// get total number of combos for this beamID
   double GetBunchChi2Sum(int beamID);   /// get sum of all chi2 for this beamID
   void Init(); /// initialize (clear) all unordered_maps
@@ -30,17 +30,30 @@ class DBeamPhotonCounter {
   double GetWeightChi2(int ID, double chi2); /// get the weight modifyer based on the normalized Chi2 of good combos.
   void PrintAll(); /// Print out all chi2 of all beamphoton-FS combos that passed all cuts separate for each beam Photon
   int Size(){ return Nentries;} /// return the overall size of the unsored map
-  
+  bool IsTheComboToUse(int beamID, int comboID); // return true if this combo is the best chi2 for this beam photon
+
  private:
   /// for each beam photon ID (int) hold a list of Chi2 from KinFit for 
   /// the combos that survive all analysis cuts.
   unordered_map<int, vector<double> > BeamBunchChi2List; ///< List of Chi2 for beam photon id
   unordered_map<int, double > BeamBunchChi2Sum; ///< Sum of Chi2 in the list for beam photon id
+  unordered_map<int, double > BestChi2; ///< Best Chi2 for a given beam photon id
+  unordered_map<int, int > BestChi2ComboID; ///< ComboID with best Chi2 for a given beam photon id
   int Nentries; /// Number of entries in map: 
 
 };
 
 #endif //_DBeamPhotonCounter_
+
+bool DBeamPhotonCounter::IsTheComboToUse(int beamID, int comboID){
+  
+  bool retval = false;
+  if (BestChi2ComboID[beamID] == comboID) {
+    retval = true;
+  }
+  
+  return retval;
+}
 
 void DBeamPhotonCounter::PrintAll(){
   
@@ -93,7 +106,7 @@ void DBeamPhotonCounter::Init(){
 }
 
 
-int DBeamPhotonCounter::AddBunch(int ID, double Chi2){
+int DBeamPhotonCounter::AddBunch(int ID, int ComboID, double Chi2){
 
   /// Add Chi2 of this combo to the list for the used beam photon ID
   /// First Test if this ID already has an existing List entry
@@ -115,8 +128,17 @@ int DBeamPhotonCounter::AddBunch(int ID, double Chi2){
     vector <double> V;
     V.push_back(1./Chi2);
     BeamBunchChi2List[key] = V;     
+    BestChi2[key] = 1./Chi2;
+    BestChi2ComboID[key] = ComboID;
   } else {
-    BeamBunchChi2List.at(key).push_back(1./Chi2);        
+
+    double val = 1./Chi2;
+    BeamBunchChi2List.at(key).push_back(val);        
+    if (BestChi2[key]<val){
+      BestChi2[key] = val;
+      BestChi2ComboID[key] = ComboID;
+    }
+
   }
 
   Nentries += 1;
