@@ -520,7 +520,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	/* FILL CLONE OF TTREE HERE WITH CUTS APPLIED (If Files Name is defined)*/" << endl;
 
-	locSourceStream << "	if( (dGoodComoboCount.Size()>0) && (dOutputTreeFileName != \"\") )" << endl;
+	locSourceStream << "	if( (dGoodComboCount.Size()>0) && (dOutputTreeFileName != \"\") )" << endl;
 	locSourceStream << "		Fill_OutputTree();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	return kTRUE;" << endl;
