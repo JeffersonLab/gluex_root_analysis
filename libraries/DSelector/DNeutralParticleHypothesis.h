@@ -74,6 +74,7 @@ class DNeutralParticleHypothesis : public DKinematicData
 		Float_t Get_SumU_FCAL(void) const;
 		Float_t Get_SumV_FCAL(void) const;
 		Float_t Get_NumBlocks_FCAL(void) const;
+		Float_t Get_TrackFCAL_DeltaT(void) const;
 
 		//TRACK MATCHING
 		Float_t Get_TrackBCAL_DeltaPhi(void) const; //999.0 if not matched //units are radians
@@ -133,6 +134,7 @@ class DNeutralParticleHypothesis : public DKinematicData
 		TBranch* dBranch_SumU_FCAL;
 		TBranch* dBranch_SumV_FCAL;
 		TBranch* dBranch_NumBlocks_FCAL;
+		TBranch* dBranch_TrackFCAL_DeltaT;
 
 		//TRACK MATCHING
 		TBranch* dBranch_TrackBCAL_DeltaPhi;
@@ -255,6 +257,9 @@ inline void DNeutralParticleHypothesis::Setup_Branches(void)
 
 	locBranchName = "NeutralHypo__NumBlocks_FCAL";
 	dBranch_NumBlocks_FCAL = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "NeutralHypo__TrackFCAL_DeltaT";
+	dBranch_TrackFCAL_DeltaT = dTreeInterface->Get_Branch(locBranchName);
 
 
 
@@ -494,6 +499,14 @@ inline Float_t DNeutralParticleHypothesis::Get_NumBlocks_FCAL(void) const
 		return -1.;
 	else
 		return ((Float_t*)dBranch_NumBlocks_FCAL->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DNeutralParticleHypothesis::Get_TrackFCAL_DeltaT(void) const
+{
+	if(dBranch_TrackFCAL_DeltaT == NULL)
+		return -1.;
+	else
+		return ((Float_t*)dBranch_TrackFCAL_DeltaT->GetAddress())[dMeasuredArrayIndex];
 }
 
 inline TLorentzVector DNeutralParticleHypothesis::Get_X4_Shower(void) const
