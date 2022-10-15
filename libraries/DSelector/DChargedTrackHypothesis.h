@@ -93,6 +93,10 @@ class DChargedTrackHypothesis : public DKinematicData
                 Float_t Get_Track_Lk_DIRC(void) const;
                 Float_t Get_Track_Lp_DIRC(void) const;
 
+				Int_t Get_DIRC_Bar_Number(void) const;
+
+
+
 	private:
 		DChargedTrackHypothesis(void); //Cannot call default constructor!
 
@@ -165,6 +169,12 @@ class DChargedTrackHypothesis : public DKinematicData
                 TBranch* dBranch_Track_Lpi_DIRC;
                 TBranch* dBranch_Track_Lk_DIRC;
                 TBranch* dBranch_Track_Lp_DIRC;
+
+		const Float_t DIRC_BAR_Y[48] = { 
+-10.9715 , -14.4865 , -18.0015 , -21.5165 , -25.0315 , -28.5465 , -32.0615 , -35.5765 , -39.0915 , -42.6065 , -46.1215 , -49.6365 , -62.4417 , -65.9567 , -69.4717 , -72.9867 , -76.5017 , -80.0167 , -83.5317 , -87.0467 , -90.5617 , -94.0767 , -97.5917 , -101.107 , 10.528 , 14.043 , 17.558 , 21.073 , 24.588 , 28.103 , 31.618 , 35.133 , 38.648 , 42.163 , 45.678 , 49.193 , 62.0265 , 65.5415 , 69.0565 , 72.5715 , 76.0865 , 79.6015 , 83.1165 , 86.6315 , 90.1465 , 93.6615 , 97.1765 , 100.691};
+
+		const Float_t DIRC_QZBL_DY = 3.515;
+
 };
 
 /******************************************************************** CONSTRUCTOR *********************************************************************/
@@ -629,6 +639,51 @@ inline Float_t DChargedTrackHypothesis::Get_Track_Lp_DIRC(void) const
         return ((Float_t*)dBranch_Track_Lp_DIRC->GetAddress())[dMeasuredArrayIndex];
 }
 
+inline Int_t DChargedTrackHypothesis::Get_DIRC_Bar_Number(void) const
+{	
+	int locBar = 23;
+	if(dBranch_Track_ExtrapolatedY_DIRC){
+		for(int i=0; i<48; i++) {
+			float y = ((Float_t*)dBranch_Track_ExtrapolatedY_DIRC->GetAddress())[dMeasuredArrayIndex];
+			if(y > (DIRC_BAR_Y[i] - DIRC_QZBL_DY/2.0) && y <= (DIRC_BAR_Y[i] + DIRC_QZBL_DY/2.0)) {
+				locBar = i;
+			} else if (y <= DIRC_BAR_Y[23]) {
+				// Track position out of bound in -y
+				locBar = 23;
+			} else if (y > DIRC_BAR_Y[47]) {
+				// Track position out of bound in +y
+				locBar = 47;
+			} else if (y > DIRC_BAR_Y[0] && y < DIRC_BAR_Y[24]) { 
+				// Track position out of bound near the beam pipe
+				if (y > DIRC_BAR_Y[0] && y <= 0.0) {
+ 					locBar = 0;
+ 				} else if (y < DIRC_BAR_Y[24] && y > 0.0) {
+ 					locBar = 24;
+				}
+ 			} else if (y < DIRC_BAR_Y[11] && y > DIRC_BAR_Y[12]) { 
+				// Track position out of bound in -y between two bar boxes
+				if (y < DIRC_BAR_Y[11] && y > (DIRC_BAR_Y[11]+DIRC_BAR_Y[12])/2.0) {
+ 					locBar = 11;
+				} else {
+ 					locBar = 12;
+				}
+ 			} else if (y > DIRC_BAR_Y[35] && y < DIRC_BAR_Y[36]) {
+				// Track position out of bound  in -y between two bar boxes
+				if (y > DIRC_BAR_Y[35] && y < (DIRC_BAR_Y[35]+DIRC_BAR_Y[36])/2.0) {
+ 					locBar = 35;
+				} else {
+ 					locBar = 36;
+				}
+			} else {
+				// For some reason, the track still fallthrough the crack, return return to the most inrelevent bar
+				locBar = 23;
+			}
+		}
+
+	    return locBar; }
+	else 
+		return 23;
+}
 
 #endif //DChargedTrackHypothesis_h
 

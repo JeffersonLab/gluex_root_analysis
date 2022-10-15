@@ -17,6 +17,7 @@ all: install
 #LIBRARIES
 .libraries_copied: .directories_made
 	cp ../../${BMS_OSNAME}/lib/libDSelector.so ${DIRNAME}/
+	cp ../../${BMS_OSNAME}/lib/DSelectorDict_rdict.pcm ${DIRNAME}/
 	date > $@
 
 #HEADERS
