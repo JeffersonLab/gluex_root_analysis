@@ -385,7 +385,7 @@ bool DCutAction_NoPIDHit::Perform_Action(void)
 string DCutAction_PIDFOM::Get_ActionName(void) const
 {
 	ostringstream locStream;
-	locStream << DAnalysisAction::Get_ActionName() << "_" << dMinimumConfidenceLevel;
+	locStream << DAnalysisAction::Get_ActionName() << "_" << dParticleID << "_" << dMinimumConfidenceLevel;
 	return locStream.str();
 }
 
