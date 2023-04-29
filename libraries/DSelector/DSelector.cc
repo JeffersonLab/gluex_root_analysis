@@ -13,21 +13,6 @@ void DSelector::Init(TTree *locTree)
 	dOption = GetOption(); //optional argument given to TTree::Process()
 	if(fInput != NULL) 
 		dOption = ((TNamed*)fInput->FindObject("OPTIONS"))->GetTitle();
-	
-	// Parse any runtime options here...
-	TString locOptions = dOption;
-	locOptions.ToUpper(); // Want options to be case-insensitive
-	
-	// To reduce disk footprint, can turn off default flat branches at runtime with options flag "DefaultFlatOff"
-	// e.g. execute DSelector with: TreeName->Process("DSelector_name.C+","DefaultFlatOff") (case insensitive)
-	// or, you can change the value of dSaveDefaultFlatBranches in your DSelector
-	if(locOptions.Contains("DEFAULTFLATOFF")) dSaveDefaultFlatBranches=false;
-	if(dSaveDefaultFlatBranches==false) {
-		cout << "DefaultFlatOff specified" << endl; 
-		cout << "DEFAULT FLAT TREE BRANCHES WILL NOT BE SAVED!" << endl;
-		cout << "(this will reduce disk footprint of flat trees)" << endl;
-
-	}
 
 	// SETUP OUTPUT
 	// This must be done BEFORE initializing the DTreeInterface, etc. Why? I have no idea. Probably something to do with gDirectory changing.
@@ -340,54 +325,6 @@ map<Particle_t, UInt_t> DSelector::Get_NumFinalStateThrown(void) const
 	return locNumFinalStateThrown;
 }
 
-TString DSelector::Get_ThrownTopologyString() const
-{
-	TString locReactionName;
-	int locNumPi0s = 0;
-
-	// Get final state particles and multiplicity
-	map<Particle_t, UInt_t> locNumFinalStateThrown = Get_NumFinalStateThrown();
-	for(auto const& locParticle : locNumFinalStateThrown) {
-		Particle_t locPID = locParticle.first; //= DemultiplexPID(ibit, false);
-		int locNumParticles = locParticle.second; //= locNumPIDThrown_FinalState/long(pow(10,ParticleMultiplexPower(locDemultiplexPID)))%10;
-		if(locNumParticles > 0) {
-			// List pi0s with decaying particles, since all final state photons are given
-			if(locPID == Pi0) {
-				locNumPi0s = locNumParticles;
-				continue;
-			}
-
-			if(locNumParticles > 1) locReactionName += locNumParticles;
-			locReactionName += ParticleName_ROOT(locPID);
-		}
-	}
-
-	// Get list of decaying particles (if they exist)
-	vector<Particle_t> locThrownDecayingPIDs = Get_ThrownDecayingPIDs();
-	if(locThrownDecayingPIDs.size() > 0 || locNumPi0s > 0) {
-		locReactionName += "[";
-		if(locNumPi0s == 1) locReactionName += "#pi^{0}";
-		else if(locNumPi0s > 1) {
-			locReactionName += locNumPi0s;
-			locReactionName += "#pi^{0}";
-		}
-					  
-		// add comma if previous decaying particle exists
-		bool locAddComma = false; 
-		if(locNumPi0s > 0) locAddComma = true;
-
-		for(uint i = 0; i<locThrownDecayingPIDs.size(); i++) {
-			Particle_t locPID = locThrownDecayingPIDs[i]; //DemultiplexPID(ibit, true);
-			if(locAddComma) locReactionName += ",";
-			locReactionName += ParticleName_ROOT(locPID);
-			locAddComma = true;
-		}
-		locReactionName += "]";
-	}
-
-	return locReactionName;
-}
-
 void DSelector::Fill_OutputTree(string locKeyName)
 {
 	// The FillOutputTree() function is called for events in the tree which pass
@@ -430,7 +367,7 @@ void DSelector::Create_FlatTree(void)
 	//create flat tree & interface
 	string locTreeName = (dFlatTreeName != "") ? dFlatTreeName : dTreeInterface->Get_TreeName().substr(0, dTreeInterface->Get_TreeName().size() - 5);
 	TTree* locFlatTree = new TTree(locTreeName.c_str(), locTreeName.c_str());
-	dFlatTreeInterface = new DTreeInterface(locFlatTree, false, dSaveTLorentzVectorsAsFundamentaFlatTree); //false: is output
+	dFlatTreeInterface = new DTreeInterface(locFlatTree, false); //false: is output
 
 	//set user info
 	TList* locInputUserInfo = dTreeInterface->Get_UserInfo();
@@ -440,12 +377,6 @@ void DSelector::Create_FlatTree(void)
 
 	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
 	bool locIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
-
-	// Skip default branches below
-	// (custom branches defined in your DSelector will still be saved)
-	if(!dSaveDefaultFlatBranches) {
-		return; //Stop here
-	}
 
 	//CREATE BRANCHES: MAIN EVENT INFO //Copy memory addresses from main tree, so won't even need to set these branch's data
 	dFlatTreeInterface->Create_Branch_Fundamental<UInt_t>("run", dTreeInterface->Get_BranchMemory_Fundamental<UInt_t>("RunNumber"));
@@ -473,7 +404,7 @@ void DSelector::Create_FlatTree(void)
 		dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("is_truecombo");
 		dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("is_bdtcombo");
 	}
-	dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("rftime");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("rftime");
 	if(dTreeInterface->Get_Branch("ChiSq_KinFit") != NULL)
 	{
 		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("kin_chisq");
@@ -574,12 +505,12 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 		dFlatTreeInterface->Create_Branch_Fundamental<UInt_t>(locBranchPrefix + "_trkid");
 
 		//kinematics
-                dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_x4_meas");
-                dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_p4_meas");
-    	        if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__X4_KinFit") != NULL)
-    		        dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_x4_kin");
-            	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__P4_KinFit") != NULL)
-    	        	dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_p4_kin");
+        dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_x4_meas");
+        dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_p4_meas");
+    	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__X4_KinFit") != NULL)
+    		dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_x4_kin");
+    	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__P4_KinFit") != NULL)
+    		dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_p4_kin");
 
 		if(locIsMCFlag)
 		{
@@ -587,9 +518,6 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 	        dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_x4_true");
 	        dFlatTreeInterface->Create_Branch_NoSplitTObject<TLorentzVector>(locBranchPrefix + "_p4_true");
 		}
-
-		// Global PID
-		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>(locBranchPrefix + "_pid_fom");
 
 		//timing
 		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>(locBranchPrefix + "_beta_time");
@@ -671,23 +599,13 @@ void DSelector::Create_FlatBranches(DKinematicData* locParticle, bool locIsMCFla
 
 void DSelector::Fill_FlatTree(void)
 {
-	
 	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
 	bool locIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
 
 	if(locIsMCGenOnlyFlag)
 	{
 		//CODE SOMETHING HERE!!
-		dFlatTreeInterface->Fill_OutputTree("");
 		return;
-	}
-
-	// Fill tree, but not the default branches below
-	// (custom branches defined in your DSelector will still be saved)
-	if(!dSaveDefaultFlatBranches) {
-		//FILL TREE
-		dFlatTreeInterface->Fill_OutputTree("");
-		return; //Stop here
 	}
 
 	//FILL BRANCHES: MAIN COMBO INFO
@@ -696,7 +614,7 @@ void DSelector::Fill_FlatTree(void)
 		dFlatTreeInterface->Fill_Fundamental<Bool_t>("is_truecombo", dComboWrapper->Get_IsTrueCombo());
 		dFlatTreeInterface->Fill_Fundamental<Bool_t>("is_bdtcombo", dComboWrapper->Get_IsBDTSignalCombo());
 	}
-	dFlatTreeInterface->Fill_Fundamental<Bool_t>("rftime", dComboWrapper->Get_RFTime());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("rftime", dComboWrapper->Get_RFTime());
 	if(dTreeInterface->Get_Branch("ChiSq_KinFit") != NULL)
 	{
 		dFlatTreeInterface->Fill_Fundamental<Float_t>("kin_chisq", dComboWrapper->Get_ChiSq_KinFit( "" ));
@@ -810,13 +728,13 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 		dFlatTreeInterface->Fill_Fundamental<UInt_t>(locBranchPrefix + "_trkid", locChargedTrackHypothesis->Get_ID());
 
 		//kinematics
-                dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_x4_meas", locChargedTrackHypothesis->Get_X4_Measured());
-                dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_meas", locChargedTrackHypothesis->Get_P4_Measured());
-            	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__X4_KinFit") != NULL)
-            		dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_x4_kin", locChargedTrackHypothesis->Get_X4());
-            	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__P4_KinFit") != NULL)
-            		dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_kin", locChargedTrackHypothesis->Get_P4());
-              
+        dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_x4_meas", locChargedTrackHypothesis->Get_X4_Measured());
+        dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_meas", locChargedTrackHypothesis->Get_P4_Measured());
+    	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__X4_KinFit") != NULL)
+    		dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_x4_kin", locChargedTrackHypothesis->Get_X4());
+    	if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__P4_KinFit") != NULL)
+    		dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_kin", locChargedTrackHypothesis->Get_P4());
+
 		if(locIsMCFlag)
 		{
 			Int_t locThrownIndex = locChargedTrackHypothesis->Get_ThrownIndex();
@@ -834,10 +752,6 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 				dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_true", TLorentzVector());
 			}
 		}
-	       
-		// Global PID
-        if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__PIDFOM") != NULL)
-            dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_pid_fom", locChargedTrackHypothesis->Get_PIDFOM());
 
 		//timing
 		dFlatTreeInterface->Fill_Fundamental<Float_t>(locBranchPrefix + "_beta_time", locChargedTrackHypothesis->Get_Beta_Timing());
@@ -927,37 +841,4 @@ void DSelector::Fill_FlatBranches(DKinematicData* locParticle, bool locIsMCFlag)
 		if(dTreeInterface->Get_Branch(locEventBranchPrefix + "__P4_KinFit") != NULL)
 			dFlatTreeInterface->Fill_TObject<TLorentzVector>(locBranchPrefix + "_p4_kin", locParticle->Get_P4());
 	}
-}
-
-void DSelector::SetupAmpTools_FlatTree() {
-
-	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Weight");
-	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("E_Beam");
-	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Px_Beam");
-	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Py_Beam");
-	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("Pz_Beam");
-	dFlatTreeInterface->Create_Branch_Fundamental<Int_t>("NumFinalState");
-	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("E_FinalState","NumFinalState");
-	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Px_FinalState","NumFinalState");
-	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Py_FinalState","NumFinalState");
-	dFlatTreeInterface->Create_Branch_FundamentalArray<Float_t>("Pz_FinalState","NumFinalState");
-
-	return;
-}
-
-void DSelector::FillAmpTools_FlatTree(TLorentzVector locBeamP4, vector<TLorentzVector> locFinalStateP4) {
-
-	dFlatTreeInterface->Fill_Fundamental<Float_t>("E_Beam", locBeamP4.E());
-	dFlatTreeInterface->Fill_Fundamental<Float_t>("Px_Beam", locBeamP4.Px());
-	dFlatTreeInterface->Fill_Fundamental<Float_t>("Py_Beam", locBeamP4.Py());
-	dFlatTreeInterface->Fill_Fundamental<Float_t>("Pz_Beam", locBeamP4.Pz());
-	dFlatTreeInterface->Fill_Fundamental<Int_t>("NumFinalState", (Int_t)locFinalStateP4.size());
-
-	for(unsigned int j=0; j<locFinalStateP4.size(); j++) {
-		dFlatTreeInterface->Fill_Fundamental<Float_t>("E_FinalState", locFinalStateP4[j].E(), j);
-		dFlatTreeInterface->Fill_Fundamental<Float_t>("Px_FinalState", locFinalStateP4[j].Px(), j);
-		dFlatTreeInterface->Fill_Fundamental<Float_t>("Py_FinalState", locFinalStateP4[j].Py(), j);
-		dFlatTreeInterface->Fill_Fundamental<Float_t>("Pz_FinalState", locFinalStateP4[j].Pz(), j);
-	}	
-
 }

@@ -81,6 +81,7 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "#include \"DSelector/DSelector.h\"" << endl;
 	locHeaderStream << "#include \"DSelector/DHistogramActions.h\"" << endl;
 	locHeaderStream << "#include \"DSelector/DCutActions.h\"" << endl;
+	locHeaderStream << "#include \"DSelector/DComboTreeHelper.h\"" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "#include \"TH1I.h\"" << endl;
 	locHeaderStream << "#include \"TH2I.h\"" << endl;
@@ -104,8 +105,6 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		UInt_t dPreviousRunNumber;" << endl;
 	locHeaderStream << "		bool dIsPolarizedFlag; //else is AMO" << endl;
 	locHeaderStream << "		bool dIsPARAFlag; //else is PERP or AMO" << endl;
-	locHeaderStream << endl;
-	locHeaderStream << "		bool dIsMC;" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "		// ANALYZE CUT ACTIONS" << endl;
 	locHeaderStream << "		// // Automatically makes mass histograms where one cut is missing" << endl;
@@ -161,6 +160,9 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locHeaderStream << "		// EXAMPLES:" << endl;
 	locHeaderStream << "		TH1I* dHist_MissingMassSquared;" << endl;
 	locHeaderStream << "		TH1I* dHist_BeamEnergy;" << endl;
+	locHeaderStream << endl;
+	locHeaderStream << "		// TOOL FOR FLAT TREE OUTPUT" << endl;
+	locHeaderStream << "		DComboTreeHelper *dComboTreeHelper;" << endl;
 	locHeaderStream << endl;
 	locHeaderStream << "	ClassDef(" << locSelectorName << ", 0);" << endl;
 	locHeaderStream << "};" << endl;
@@ -236,12 +238,12 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	// Init() will be called many times when running on PROOF (once per file to be processed)." << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//USERS: SET OUTPUT FILE NAME //can be overriden by user in PROOF" << endl;
-	locSourceStream << "	dOutputFileName = \"" << locSelectorBaseName << ".root\"; //\"\" for none" << endl;
+	locSourceStream << "    TString option = GetOption();" << endl;
+	locSourceStream << "    if (option==\"\") option = \""<< locSelectorBaseName <<"\";" << endl<<endl;
+	locSourceStream << "	dOutputFileName = option + \".root\"; //\"\" for none" << endl;
 	locSourceStream << "	dOutputTreeFileName = \"\"; //\"\" for none" << endl;
-	locSourceStream << "	dFlatTreeFileName = \"\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
-	locSourceStream << "	dFlatTreeName = \"\"; //if blank, default name will be chosen" << endl;
-	locSourceStream << "	//dSaveDefaultFlatBranches = true; // False: don't save default branches, reduce disk footprint." << endl;
-	locSourceStream << "	//dSaveTLorentzVectorsAsFundamentaFlatTree = false; // Default (or false): save particles as TLorentzVector objects. True: save as four doubles instead." << endl;
+	locSourceStream << "	dFlatTreeFileName = option + \"_flat.root\"; //output flat tree (one combo per tree entry), \"\" for none" << endl;
+	locSourceStream << "	dFlatTreeName = \"ntp\"; //if blank, default name will be chosen" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//Because this function gets called for each TTree in the TChain, we must be careful:" << endl;
 	locSourceStream << "		//We need to re-initialize the tree interface & branch wrappers, but don't want to recreate histograms" << endl;
@@ -270,11 +272,6 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//below: value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDDeltaT(dComboWrapper, false, 0.5, KPlus, SYS_BCAL));" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//PIDFOM (for charged tracks)" << endl;
-	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_PIDFOM(dComboWrapper));" << endl;
-	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDFOM(dComboWrapper, KPlus, 0.1));" << endl;
-	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_EachPIDFOM(dComboWrapper, 0.1));" << endl;
-	locSourceStream << endl;
 	locSourceStream << "	//MASSES" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_InvariantMass(dComboWrapper, false, Lambda, 1000, 1.0, 1.2, \"Lambda\"));" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DHistogramAction_MissingMassSquared(dComboWrapper, false, 1000, -0.1, 0.1));" << endl;
@@ -285,12 +282,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	//CUT MISSING MASS" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_MissingMassSquared(dComboWrapper, false, -0.03, 0.02));" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	//CUT ON SHOWER QUALITY" << endl;
-	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_ShowerQuality(dComboWrapper, SYS_FCAL, 0.5));" << endl;
-	locSourceStream << endl;
 	locSourceStream << "	//BEAM ENERGY" << endl;
 	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_BeamEnergy(dComboWrapper, false));" << endl;
-	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, false, 8.2, 8.8));  // Coherent peak for runs in the range 30000-59999" << endl;
+	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_BeamEnergy(dComboWrapper, false, 8.4, 9.05));" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//KINEMATICS" << endl;
 	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleComboKinematics(dComboWrapper, false));" << endl;
@@ -326,9 +320,6 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	/************************** EXAMPLE USER INITIALIZATION: CUSTOM OUTPUT BRANCHES - FLAT TREE *************************/" << endl;
 	locSourceStream << endl;
-	locSourceStream << "	// RECOMMENDED: CREATE ACCIDENTAL WEIGHT BRANCH" << endl;
-	locSourceStream << "	// dFlatTreeInterface->Create_Branch_Fundamental<Double_t>(\"accidweight\");" << endl;
-	locSourceStream << endl;
 	locSourceStream << "	//EXAMPLE FLAT TREE CUSTOM BRANCHES (OUTPUT ROOT FILE NAME MUST FIRST BE GIVEN!!!! (ABOVE: TOP)):" << endl;
 	locSourceStream << "	//The type for the branch must be included in the brackets" << endl;
 	locSourceStream << "	//1st function argument is the name of the branch" << endl;
@@ -340,6 +331,9 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "	dFlatTreeInterface->Create_Branch_ClonesArray<TLorentzVector>(\"flat_my_p4_array\");" << endl;
 	locSourceStream << "	*/" << endl;
 	locSourceStream << endl;
+	locSourceStream << "	//CREATE HELPER AND INITIALIZE WITH DESIRED COMBINATIONS TO BE STORED" << endl;
+	locSourceStream << "	//dComboTreeHelper = new DComboTreeHelper(dTreeInterface, dComboWrapper, dFlatTreeInterface, \"K+ K- p; K+ K-; K- p\", dThrownWrapper ,\"p4:marker:angle:dalitz:acc\");" << endl;
+	locSourceStream << endl;
 	locSourceStream << "	/************************************* ADVANCED EXAMPLE: CHOOSE BRANCHES TO READ ************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//TO SAVE PROCESSING TIME" << endl;
@@ -350,11 +344,6 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	//dTreeInterface->Clear_GetEntryBranches(); //now get none" << endl;
 	locSourceStream << "	//dTreeInterface->Register_GetEntryBranch(\"Proton__P4\"); //manually set the branches you want" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	/************************************** DETERMINE IF ANALYZING SIMULATED DATA *************************************/" << endl;
-	locSourceStream << endl;
-	locSourceStream << "	dIsMC = (dTreeInterface->Get_Branch(\"MCWeight\") != NULL);" << endl;
-	locSourceStream << endl;
 	locSourceStream << "}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "Bool_t " << locSelectorName << "::Process(Long64_t locEntry)" << endl;
@@ -372,6 +361,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	//CALL THIS FIRST" << endl;
 	locSourceStream << "	DSelector::Process(locEntry); //Gets the data from the tree for the entry" << endl;
+	locSourceStream << "	if (locEntry%1000==0) cout <<\"ENTRY \"<<locEntry<<\",  RUN \" << Get_RunNumber() << \", EVENT \" << Get_EventNumber() << endl;" << endl;
 	locSourceStream << "	//cout << \"RUN \" << Get_RunNumber() << \", EVENT \" << Get_EventNumber() << endl;" << endl;
 	locSourceStream << "	//TLorentzVector locProductionX4 = Get_X4_Production();" << endl;
 	locSourceStream << endl;
@@ -545,26 +535,6 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	}
 
 	locSourceStream << endl;
-	locSourceStream << "		/********************************************* GET COMBO RF TIMING INFO *****************************************/" << endl;
-	locSourceStream << endl;
-	locSourceStream << "		TLorentzVector locBeamX4_Measured = dComboBeamWrapper->Get_X4_Measured();" << endl;
-	locSourceStream << "		//Double_t locBunchPeriod = dAnalysisUtilities.Get_BeamBunchPeriod(Get_RunNumber());" << endl;
-	locSourceStream << "		// Double_t locDeltaT_RF = dAnalysisUtilities.Get_DeltaT_RF(Get_RunNumber(), locBeamX4_Measured, dComboWrapper);" << endl;
-	locSourceStream << "		// Int_t locRelBeamBucket = dAnalysisUtilities.Get_RelativeBeamBucket(Get_RunNumber(), locBeamX4_Measured, dComboWrapper); // 0 for in-time events, non-zero integer for out-of-time photons" << endl;
-	locSourceStream << "		// Int_t locNumOutOfTimeBunchesInTree = XXX; //YOU need to specify this number" << endl;
-	locSourceStream << "			//Number of out-of-time beam bunches in tree (on a single side, so that total number out-of-time bunches accepted is 2 times this number for left + right bunches) " << endl;
-	locSourceStream << endl;
-	locSourceStream << "		// Bool_t locSkipNearestOutOfTimeBunch = true; // True: skip events from nearest out-of-time bunch on either side (recommended)." << endl;
-	locSourceStream << "		// Int_t locNumOutOfTimeBunchesToUse = locSkipNearestOutOfTimeBunch ? locNumOutOfTimeBunchesInTree-1:locNumOutOfTimeBunchesInTree; " << endl;
-	locSourceStream << "		// Double_t locAccidentalScalingFactor = dAnalysisUtilities.Get_AccidentalScalingFactor(Get_RunNumber(), locBeamP4.E(), dIsMC); // Ideal value would be 1, but deviations require added factor, which is different for data and MC." << endl;
-	locSourceStream << "		// Double_t locAccidentalScalingFactorError = dAnalysisUtilities.Get_AccidentalScalingFactorError(Get_RunNumber(), locBeamP4.E()); // Ideal value would be 1, but deviations observed, need added factor." << endl;
-	locSourceStream << "		// Double_t locHistAccidWeightFactor = locRelBeamBucket==0 ? 1 : -locAccidentalScalingFactor/(2*locNumOutOfTimeBunchesToUse) ; // Weight by 1 for in-time events, ScalingFactor*(1/NBunches) for out-of-time" << endl;
-	locSourceStream << "		// if(locSkipNearestOutOfTimeBunch && abs(locRelBeamBucket)==1) { // Skip nearest out-of-time bunch: tails of in-time distribution also leak in" << endl;
-	locSourceStream << "		// 	dComboWrapper->Set_IsComboCut(true); " << endl;
-	locSourceStream << "		// 	continue; " << endl;
-	locSourceStream << "		// } " << endl;
-
-	locSourceStream << endl;
 	locSourceStream << "		/********************************************* COMBINE FOUR-MOMENTUM ********************************************/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		// DO YOUR STUFF HERE" << endl;
@@ -630,9 +600,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//Histogram beam energy (if haven\'t already)" << endl;
 	locSourceStream << "		if(locUsedSoFar_BeamEnergy.find(locBeamID) == locUsedSoFar_BeamEnergy.end())" << endl;
 	locSourceStream << "		{" << endl;
-	locSourceStream << "			dHist_BeamEnergy->Fill(locBeamP4.E()); // Fills in-time and out-of-time beam photon combos" << endl;
-	locSourceStream << "			//dHist_BeamEnergy->Fill(locBeamP4.E(),locHistAccidWeightFactor); // Alternate version with accidental subtraction" << endl;
-	locSourceStream << endl;
+	locSourceStream << "			dHist_BeamEnergy->Fill(locBeamP4.E());" << endl;
 	locSourceStream << "			locUsedSoFar_BeamEnergy.insert(locBeamID);" << endl;
 	locSourceStream << "		}" << endl;
 	locSourceStream << endl;
@@ -678,9 +646,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		if(locUsedSoFar_MissingMass.find(locUsedThisCombo_MissingMass) == locUsedSoFar_MissingMass.end())" << endl;
 	locSourceStream << "		{" << endl;
 	locSourceStream << "			//unique missing mass combo: histogram it, and register this combo of particles" << endl;
-	locSourceStream << "			dHist_MissingMassSquared->Fill(locMissingMassSquared); // Fills in-time and out-of-time beam photon combos" << endl;
-	locSourceStream << "			//dHist_MissingMassSquared->Fill(locMissingMassSquared,locHistAccidWeightFactor); // Alternate version with accidental subtraction" << endl;
-	locSourceStream << endl;
+	locSourceStream << "			dHist_MissingMassSquared->Fill(locMissingMassSquared);" << endl;
 	locSourceStream << "			locUsedSoFar_MissingMass.insert(locUsedThisCombo_MissingMass);" << endl;
 	locSourceStream << "		}" << endl;
 	locSourceStream << endl;
@@ -692,9 +658,6 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		//}" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/****************************************** FILL FLAT TREE (IF DESIRED) ******************************************/" << endl;
-	locSourceStream << endl;
-	locSourceStream << "		// RECOMMENDED: FILL ACCIDENTAL WEIGHT" << endl;
-	locSourceStream << "		// dFlatTreeInterface->Fill_Fundamental<Double_t>(\"accidweight\",locHistAccidWeightFactor);" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		/*" << endl;
 	locSourceStream << "		//FILL ANY CUSTOM BRANCHES FIRST!!" << endl;
@@ -713,6 +676,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		*/" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//FILL FLAT TREE" << endl;
+	locSourceStream << "		//dComboTreeHelper->Fill(locEntry); //fills branches for sub-combinations" << endl;
 	locSourceStream << "		//Fill_FlatTree(); //for the active combo" << endl;
 	locSourceStream << "	} // end of combo loop" << endl;
 	locSourceStream << endl;
