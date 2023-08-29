@@ -473,7 +473,7 @@ void DSelector::Create_FlatTree(void)
 		dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("is_truecombo");
 		dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("is_bdtcombo");
 	}
-	dFlatTreeInterface->Create_Branch_Fundamental<Bool_t>("rftime");
+	dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("rftime");
 	if(dTreeInterface->Get_Branch("ChiSq_KinFit") != NULL)
 	{
 		dFlatTreeInterface->Create_Branch_Fundamental<Float_t>("kin_chisq");
@@ -696,7 +696,7 @@ void DSelector::Fill_FlatTree(void)
 		dFlatTreeInterface->Fill_Fundamental<Bool_t>("is_truecombo", dComboWrapper->Get_IsTrueCombo());
 		dFlatTreeInterface->Fill_Fundamental<Bool_t>("is_bdtcombo", dComboWrapper->Get_IsBDTSignalCombo());
 	}
-	dFlatTreeInterface->Fill_Fundamental<Bool_t>("rftime", dComboWrapper->Get_RFTime());
+	dFlatTreeInterface->Fill_Fundamental<Float_t>("rftime", dComboWrapper->Get_RFTime());
 	if(dTreeInterface->Get_Branch("ChiSq_KinFit") != NULL)
 	{
 		dFlatTreeInterface->Fill_Fundamental<Float_t>("kin_chisq", dComboWrapper->Get_ChiSq_KinFit( "" ));
