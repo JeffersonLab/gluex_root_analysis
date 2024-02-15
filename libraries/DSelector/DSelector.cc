@@ -245,6 +245,16 @@ Bool_t DSelector::Process(Long64_t locEntry)
 
 	dTreeInterface->Get_Entry(locEntry);
 
+	// zero out loop indicies if there are no trigger bits set, so that we skip such events
+	// leave this as an togglable option for trigger studies
+	if( (dL1TriggerBits==0) && dSkipNoTriggerEvents) {
+		*dNumBeam = 0;
+		*dNumChargedHypos = 0;
+		*dNumNeutralHypos = 0;
+		*dNumCombos = 0;
+		if(dNumThrown != NULL)  *dNumThrown = 0;
+	}
+
 	return kTRUE;
 }
 
