@@ -58,6 +58,7 @@ class DSelector : public TSelector
 		string dFlatTreeName; //for output flat trees
 		bool dSaveDefaultFlatBranches; // True by default
 		bool dSaveTLorentzVectorsAsFundamentaFlatTree; // False by default. True: save TLorentzVector info instead as four doubles, rather than as TLorentzVector objects.
+		bool dSkipNoTriggerEvents; // True by default
 
 		//TREE INTERFACE
 		DTreeInterface* dTreeInterface; //for event-based tree
@@ -87,6 +88,8 @@ class DSelector : public TSelector
 		UInt_t Get_RunNumber(void) const;
 		ULong64_t Get_EventNumber(void) const;
 		UInt_t Get_L1TriggerBits(void) const;
+		Double_t Get_L1BCALEnergy(void) const;
+		Double_t Get_L1FCALEnergy(void) const;
 		Bool_t Get_IsThrownTopology(void) const;
 		Float_t Get_MCWeight(void) const;
 		Float_t Get_GeneratedEnergy(void) const;
@@ -148,6 +151,8 @@ class DSelector : public TSelector
 		UInt_t* dRunNumber;
 		ULong64_t* dEventNumber;
 		UInt_t* dL1TriggerBits;
+		Double_t* dL1BCALEnergy;
+		Double_t* dL1FCALEnergy;
 		Float_t* dMCWeight; //only present if simulated data
 		Float_t* dGeneratedEnergy; //only present if simulated data
 		Bool_t* dIsThrownTopology; //only present if simulated data
@@ -192,7 +197,8 @@ class DSelector : public TSelector
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
 inline DSelector::DSelector(TTree* locTree) :
-		 dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dSaveDefaultFlatBranches(true), dSaveTLorentzVectorsAsFundamentaFlatTree(false), dTreeInterface(NULL), dFlatTreeInterface(NULL),
+		 dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dSaveDefaultFlatBranches(true), 
+		 dSaveTLorentzVectorsAsFundamentaFlatTree(false), dSkipNoTriggerEvents(true), dTreeInterface(NULL), dFlatTreeInterface(NULL),
 		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
@@ -217,6 +223,16 @@ inline ULong64_t DSelector::Get_EventNumber(void) const
 inline UInt_t DSelector::Get_L1TriggerBits(void) const
 {
 	return *dL1TriggerBits;
+}
+
+inline Double_t DSelector::Get_L1BCALEnergy(void) const
+{
+	return *dL1BCALEnergy;
+}
+
+inline Double_t DSelector::Get_L1FCALEnergy(void) const
+{
+	return *dL1FCALEnergy;
 }
 
 inline Bool_t DSelector::Get_IsThrownTopology(void) const

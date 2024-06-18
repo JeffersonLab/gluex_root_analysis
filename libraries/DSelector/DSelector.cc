@@ -93,6 +93,10 @@ void DSelector::Setup_Branches(void)
 	dEventNumber = (ULong64_t*)dTreeInterface->Get_Branch("EventNumber")->GetAddress();
 	TBranch* locL1TriggerBitsBranch = dTreeInterface->Get_Branch("L1TriggerBits");
 	dL1TriggerBits = (locL1TriggerBitsBranch != NULL) ? (UInt_t*)locL1TriggerBitsBranch->GetAddress() : NULL;
+	TBranch* locL1BCALEnergyBranch = dTreeInterface->Get_Branch("L1BCALEnergy");
+	dL1BCALEnergy = (locL1BCALEnergyBranch != NULL) ? (Double_t*)locL1BCALEnergyBranch->GetAddress() : NULL;
+	TBranch* locL1FCALEnergyBranch = dTreeInterface->Get_Branch("L1FCALEnergy");
+	dL1FCALEnergy = (locL1FCALEnergyBranch != NULL) ? (Double_t*)locL1FCALEnergyBranch->GetAddress() : NULL;
 
 	// MC
 	if(locIsMCFlag)
@@ -240,6 +244,16 @@ Bool_t DSelector::Process(Long64_t locEntry)
 	}
 
 	dTreeInterface->Get_Entry(locEntry);
+
+	// zero out loop indicies if there are no trigger bits set, so that we skip such events
+	// leave this as an togglable option for trigger studies
+	if( (dL1TriggerBits==0) && dSkipNoTriggerEvents) {
+		*dNumBeam = 0;
+		*dNumChargedHypos = 0;
+		*dNumNeutralHypos = 0;
+		*dNumCombos = 0;
+		if(dNumThrown != NULL)  *dNumThrown = 0;
+	}
 
 	return kTRUE;
 }
