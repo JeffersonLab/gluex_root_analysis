@@ -323,7 +323,8 @@ template <typename DType> inline void DTreeInterface::Set_TObjectBranchAddress(s
 	if(dFirstInputTreeFlag)
 		dMemoryMap_TObject[locBranchName] = (TObject*)(new DType());
 
-	DType** locPointerToPointer = (DType**)&(dMemoryMap_TObject[locBranchName]);
+	TObject **locPointerToPointer = new TObject*;
+	*locPointerToPointer = dMemoryMap_TObject[locBranchName];
 	dInputTree->SetBranchAddress(locBranchName.c_str(), locPointerToPointer);
 
 	//if cloning an output, set the branch address for it as well (may be invalidated when done with original TTree (read TTree::CloneTree()))
@@ -340,7 +341,8 @@ inline void DTreeInterface::Set_ClonesArrayBranchAddress(string locBranchName)
 	if(dFirstInputTreeFlag)
 		dMemoryMap_ClonesArray[locBranchName] = new TClonesArray();
 
-	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
+	TClonesArray** locPointerToPointer = new TClonesArray*;
+	*locPointerToPointer = dMemoryMap_ClonesArray[locBranchName];
 	dInputTree->SetBranchAddress(locBranchName.c_str(), locPointerToPointer);
 
 	if(dFirstInputTreeFlag) //initialize TClonesArray, getting the type of the array (TClass), so that cloning will work
@@ -559,7 +561,8 @@ template <typename DType> inline void DTreeInterface::Create_Branch_ClonesArray(
 	}
 
 	dMemoryMap_ClonesArray[locBranchName] = (locMemoryPointer == NULL) ? new TClonesArray(DType::Class()->GetName(), locSize) : locMemoryPointer;
-	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
+	TClonesArray** locPointerToPointer = new TClonesArray*;
+	*locPointerToPointer = dMemoryMap_ClonesArray[locBranchName];
 
 	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
 	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
@@ -596,7 +599,8 @@ inline void DTreeInterface::Clone_Branch_FundamentalArray(string locBranchName, 
 
 inline void DTreeInterface::Clone_Branch_ClonesArray(string locBranchName, string locTreeKeyName)
 {
-	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
+	TClonesArray** locPointerToPointer = new TClonesArray*;
+	*locPointerToPointer = dMemoryMap_ClonesArray[locBranchName];
 	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locPointerToPointer, 32000, 0); //0: don't split
 }
 
