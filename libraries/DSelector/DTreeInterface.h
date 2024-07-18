@@ -185,8 +185,8 @@ class DTreeInterface
 		/****************************************************** BRANCH MEMORY AND TYPE MAPPING ******************************************************/
 
 		//For fundamental objects/arrays: memory stored in the branches themselves
-		map<string, TClonesArray*> dMemoryMap_ClonesArray;
-		map<string, TObject*> dMemoryMap_TObject;
+		map<string, TClonesArray**> dMemoryMap_ClonesArray;
+		map<string, TObject**> dMemoryMap_TObject;
 		map<string, void*> dMemoryMap_Fundamental;
 
 		map<string, string> dFundamentalBranchTypeMap; //key is branch name, value is the root string for the branch type
@@ -298,7 +298,9 @@ template <typename DType> inline void DTreeInterface::Set_FundamentalBranchAddre
 
 	if(locArraySizeString == "")
 	{
-		dMemoryMap_Fundamental[locBranchName] = static_cast<void*>(new DType());
+		if(dMemoryMap_Fundamental[locBranchName])
+			delete (DType*)dMemoryMap_Fundamental[locBranchName];
+		dMemoryMap_Fundamental[locBranchName] = static_cast<DType*>(new DType());
 		dInputTree->SetBranchAddress(locBranchName.c_str(), dMemoryMap_Fundamental[locBranchName]);
 		return;
 	}
@@ -310,7 +312,9 @@ template <typename DType> inline void DTreeInterface::Set_FundamentalBranchAddre
 	UInt_t locInitialArraySize = dFundamentalArraySizeMap[locArraySizeString];
 
 	//Create new array, and register the array size information
-	dMemoryMap_Fundamental[locBranchName] = static_cast<void*>(new DType[locInitialArraySize]);
+	if(dMemoryMap_Fundamental[locBranchName])
+		delete (DType*)dMemoryMap_Fundamental[locBranchName];
+	dMemoryMap_Fundamental[locBranchName] = static_cast<DType*>(new DType[locInitialArraySize]);
 	dInputTree->SetBranchAddress(locBranchName.c_str(), dMemoryMap_Fundamental[locBranchName]);
 
 	dArraySizeToBranchMap[locArraySizeString].insert(locBranchName);
@@ -320,28 +324,30 @@ template <typename DType> inline void DTreeInterface::Set_FundamentalBranchAddre
 
 template <typename DType> inline void DTreeInterface::Set_TObjectBranchAddress(string locBranchName)
 {
+	if(!dMemoryMap_TObject[locBranchName])
+		dMemoryMap_TObject[locBranchName] = static_cast<TObject**>(new TObject*);
 	if(dFirstInputTreeFlag)
-		dMemoryMap_TObject[locBranchName] = (TObject*)(new DType());
+		*dMemoryMap_TObject[locBranchName] = (TObject*)(new DType());
 
-	DType** locPointerToPointer = (DType**)&(dMemoryMap_TObject[locBranchName]);
-	dInputTree->SetBranchAddress(locBranchName.c_str(), locPointerToPointer);
+	dInputTree->SetBranchAddress(locBranchName.c_str(), (DType**)dMemoryMap_TObject[locBranchName]);
 
 	//if cloning an output, set the branch address for it as well (may be invalidated when done with original TTree (read TTree::CloneTree()))
 	if(!dOutputTreeMap.empty() && !dFirstInputTreeFlag)
 	{
 		map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
 		for(; locIterator != dOutputTreeMap.end(); ++locIterator)
-			locIterator->second->SetBranchAddress(locBranchName.c_str(), locPointerToPointer);
+			locIterator->second->SetBranchAddress(locBranchName.c_str(), dMemoryMap_TObject[locBranchName]);
 	}
 }
 
 inline void DTreeInterface::Set_ClonesArrayBranchAddress(string locBranchName)
 {
+	if(!dMemoryMap_ClonesArray[locBranchName])
+		dMemoryMap_ClonesArray[locBranchName] = new TClonesArray*;
 	if(dFirstInputTreeFlag)
-		dMemoryMap_ClonesArray[locBranchName] = new TClonesArray();
+		*dMemoryMap_ClonesArray[locBranchName] = new TClonesArray();
 
-	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
-	dInputTree->SetBranchAddress(locBranchName.c_str(), locPointerToPointer);
+	dInputTree->SetBranchAddress(locBranchName.c_str(), dMemoryMap_ClonesArray[locBranchName]);
 
 	if(dFirstInputTreeFlag) //initialize TClonesArray, getting the type of the array (TClass), so that cloning will work
 		Get_Branch(locBranchName)->GetEntry(0);
@@ -351,7 +357,7 @@ inline void DTreeInterface::Set_ClonesArrayBranchAddress(string locBranchName)
 	{
 		map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
 		for(; locIterator != dOutputTreeMap.end(); ++locIterator)
-			locIterator->second->SetBranchAddress(locBranchName.c_str(), locPointerToPointer);
+			locIterator->second->SetBranchAddress(locBranchName.c_str(), dMemoryMap_ClonesArray[locBranchName]);
 	}
 }
 
@@ -417,7 +423,9 @@ template <typename DType> inline void DTreeInterface::Increase_ArraySize(string 
 		//DOES NOT copy the old results!  In other words, only call BETWEEN entries, not DURING an entry
 	DType* locOldBranchAddress = Get_Pointer_Fundamental<DType>(locBranchName);
 
-	dMemoryMap_Fundamental[locBranchName] = static_cast<void*>(new DType[locNewArraySize]);
+	if (dMemoryMap_Fundamental[locBranchName])
+		delete static_cast<DType*>(dMemoryMap_Fundamental[locBranchName]);
+	dMemoryMap_Fundamental[locBranchName] = static_cast<DType*>(new DType[locNewArraySize]);
 	Get_Branch(locBranchName)->SetAddress(dMemoryMap_Fundamental[locBranchName]);
 
 	//if cloning into output trees, must set their branches addresses as well
@@ -473,10 +481,11 @@ template <typename DType> inline void DTreeInterface::Create_Branch_NoSplitTObje
             return;
         }
 
-        dMemoryMap_TObject[locBranchName] = static_cast<TObject*>((locMemoryPointer == NULL) ? new DType() : locMemoryPointer);
-        TObject* locTObjectMemoryPointer = dMemoryMap_TObject[locBranchName];
+        dMemoryMap_TObject[locBranchName] = new TObject*;
+        *dMemoryMap_TObject[locBranchName] = static_cast<TObject*>((locMemoryPointer == NULL) ? new DType() : locMemoryPointer);
+        TObject* locTObjectMemoryPointer = *dMemoryMap_TObject[locBranchName];
 
-        string locClassName = dMemoryMap_TObject[locBranchName]->ClassName();
+        string locClassName = ((TObject*)locTObjectMemoryPointer)->ClassName();
 
         map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
         for(; locIterator != dOutputTreeMap.end(); ++locIterator)
@@ -558,8 +567,9 @@ template <typename DType> inline void DTreeInterface::Create_Branch_ClonesArray(
 		return;
 	}
 
-	dMemoryMap_ClonesArray[locBranchName] = (locMemoryPointer == NULL) ? new TClonesArray(DType::Class()->GetName(), locSize) : locMemoryPointer;
-	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
+	dMemoryMap_ClonesArray[locBranchName] = new TClonesArray*;
+	*dMemoryMap_ClonesArray[locBranchName] = (locMemoryPointer == NULL) ? new TClonesArray(DType::Class()->GetName(), locSize) : locMemoryPointer;
+	TClonesArray** locPointerToPointer = dMemoryMap_ClonesArray[locBranchName];
 
 	map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
 	for(; locIterator != dOutputTreeMap.end(); ++locIterator)
@@ -581,9 +591,10 @@ inline void DTreeInterface::Clone_Branch_Fundamental(string locBranchName, strin
 
 inline void DTreeInterface::Clone_Branch_TObject(string locBranchName, string locTreeKeyName)
 {
-	TObject* locMemoryPointer = dMemoryMap_TObject[locBranchName];
-	string locClassName = dMemoryMap_TObject[locBranchName]->ClassName();
-	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locClassName.c_str(), locMemoryPointer, 32000, 0); //0: don't split
+	TObject** locMemoryPointerPointer = dMemoryMap_TObject[locBranchName];
+	TObject* locMemoryPointer = *locMemoryPointerPointer;
+	string locClassName = ((TObject*)locMemoryPointer)->ClassName();
+	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locClassName.c_str(), locMemoryPointerPointer, 32000, 0); //0: don't split
 }
 
 inline void DTreeInterface::Clone_Branch_FundamentalArray(string locBranchName, string locTreeKeyName)
@@ -596,7 +607,7 @@ inline void DTreeInterface::Clone_Branch_FundamentalArray(string locBranchName, 
 
 inline void DTreeInterface::Clone_Branch_ClonesArray(string locBranchName, string locTreeKeyName)
 {
-	TClonesArray** locPointerToPointer = &(dMemoryMap_ClonesArray[locBranchName]);
+	TClonesArray** locPointerToPointer = dMemoryMap_ClonesArray[locBranchName];
 	dBranchMap_OutputTree[locBranchName] = dOutputTreeMap[locTreeKeyName]->Branch(locBranchName.c_str(), locPointerToPointer, 32000, 0); //0: don't split
 }
 
@@ -617,7 +628,9 @@ template <typename DType> inline void DTreeInterface::Fill_Fundamental(string lo
 	{
 		DType* locOldArray = locArray;
 		unsigned int locNewArraySize = locArrayIndex + 100;
-		dMemoryMap_Fundamental[locBranchName] = static_cast<void*>(new DType[locNewArraySize]);
+		if(dMemoryMap_Fundamental[locBranchName])
+			delete (DType*)dMemoryMap_Fundamental[locBranchName];
+		dMemoryMap_Fundamental[locBranchName] = static_cast<DType*>(new DType[locNewArraySize]);
 
 		map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
 		for(; locIterator != dOutputTreeMap.end(); ++locIterator)
@@ -719,7 +732,7 @@ inline TClonesArray* DTreeInterface::Get_BranchMemory_ClonesArray(string locBran
 	auto locIterator = dMemoryMap_ClonesArray.find(locBranchName);
 	if(locIterator == dMemoryMap_ClonesArray.end())
 		return NULL;
-	return locIterator->second;
+	return *locIterator->second;
 }
 
 /************************************************************** TEMPLATE SPECIALIZATIONS **************************************************************/
