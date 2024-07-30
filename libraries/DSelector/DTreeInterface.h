@@ -423,8 +423,6 @@ template <typename DType> inline void DTreeInterface::Increase_ArraySize(string 
 		//DOES NOT copy the old results!  In other words, only call BETWEEN entries, not DURING an entry
 	DType* locOldBranchAddress = Get_Pointer_Fundamental<DType>(locBranchName);
 
-	if (dMemoryMap_Fundamental[locBranchName])
-		delete static_cast<DType*>(dMemoryMap_Fundamental[locBranchName]);
 	dMemoryMap_Fundamental[locBranchName] = static_cast<DType*>(new DType[locNewArraySize]);
 	Get_Branch(locBranchName)->SetAddress(dMemoryMap_Fundamental[locBranchName]);
 
@@ -628,8 +626,6 @@ template <typename DType> inline void DTreeInterface::Fill_Fundamental(string lo
 	{
 		DType* locOldArray = locArray;
 		unsigned int locNewArraySize = locArrayIndex + 100;
-		if(dMemoryMap_Fundamental[locBranchName])
-			delete (DType*)dMemoryMap_Fundamental[locBranchName];
 		dMemoryMap_Fundamental[locBranchName] = static_cast<DType*>(new DType[locNewArraySize]);
 
 		map<string, TTree*>::const_iterator locIterator = dOutputTreeMap.begin();
