@@ -85,9 +85,9 @@ void DSelector::Init(TTree *locTree)
 
 void DSelector::Setup_Branches(void)
 {
-	bool locIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
-	bool locIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
-
+	dIsMCFlag = (dTreeInterface->Get_Branch("MCWeight") != NULL);
+	dIsMCGenOnlyFlag = (dTreeInterface->Get_Branch("NumCombos") == NULL);
+	
 	// EVENT DATA
 	dRunNumber = (UInt_t*)dTreeInterface->Get_Branch("RunNumber")->GetAddress();
 	dEventNumber = (ULong64_t*)dTreeInterface->Get_Branch("EventNumber")->GetAddress();
@@ -99,7 +99,7 @@ void DSelector::Setup_Branches(void)
 	dL1FCALEnergy = (locL1FCALEnergyBranch != NULL) ? (Double_t*)locL1FCALEnergyBranch->GetAddress() : NULL;
 
 	// MC
-	if(locIsMCFlag)
+	if(dIsMCFlag)
 	{
 		dMCWeight = (Float_t*)dTreeInterface->Get_Branch("MCWeight")->GetAddress();
 		TBranch* locGenEnergyBranch = dTreeInterface->Get_Branch("GeneratedEnergy");
@@ -107,12 +107,12 @@ void DSelector::Setup_Branches(void)
 		dNumThrown = (UInt_t*)dTreeInterface->Get_Branch("NumThrown")->GetAddress();
 		dNumPIDThrown_FinalState = (ULong64_t*)dTreeInterface->Get_Branch("NumPIDThrown_FinalState")->GetAddress();
 		dPIDThrown_Decaying = (ULong64_t*)dTreeInterface->Get_Branch("PIDThrown_Decaying")->GetAddress();
-		if(!locIsMCGenOnlyFlag)
+		if(!dIsMCGenOnlyFlag)
 			dIsThrownTopology = (Bool_t*)dTreeInterface->Get_Branch("IsThrownTopology")->GetAddress();
 	}
 
 	// DATA
-	if(!locIsMCGenOnlyFlag)
+	if(!dIsMCGenOnlyFlag)
 	{
 		dNumBeam = (UInt_t*)dTreeInterface->Get_Branch("NumBeam")->GetAddress();
 		dNumChargedHypos = (UInt_t*)dTreeInterface->Get_Branch("NumChargedHypos")->GetAddress();
@@ -247,7 +247,7 @@ Bool_t DSelector::Process(Long64_t locEntry)
 
 	// zero out loop indicies if there are no trigger bits set, so that we skip such events
 	// leave this as an togglable option for trigger studies
-	if( (dL1TriggerBits==0) && dSkipNoTriggerEvents) {
+	if( (dL1TriggerBits==0) && dSkipNoTriggerEvents && !dIsMCGenOnlyFlag ) {
 		*dNumBeam = 0;
 		*dNumChargedHypos = 0;
 		*dNumNeutralHypos = 0;
