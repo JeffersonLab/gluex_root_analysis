@@ -43,6 +43,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_dEdx_CDC(void) const;
 		Float_t Get_dEdx_CDC_integral(void) const;
 		Float_t Get_dEdx_FDC(void) const;
+  		Float_t Get_FDC1_X(void) const;
+    		Float_t Get_FDC1_Y(void) const;
+    		Float_t Get_FDC1_Z(void) const;
 
 		//TIMING INFO
 		Float_t Get_HitTime(void) const; //the system that is hit is in order of preference: BCAL/TOF/FCAL/ST 
@@ -124,6 +127,9 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_dEdx_CDC;
 		TBranch* dBranch_dEdx_CDC_integral;
 		TBranch* dBranch_dEdx_FDC;
+		TBranch* dBranch_FDC1_X;
+  		TBranch* dBranch_FDC1_Y;
+  		TBranch* dBranch_FDC1_Z;
  
 		//TIMING INFO
 		TBranch* dBranch_HitTime;
@@ -224,6 +230,16 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	locBranchName = "ChargedHypo__dEdx_FDC";
 	dBranch_dEdx_FDC = dTreeInterface->Get_Branch(locBranchName);
 
+	locBranchName = "ChargedHypo__FDC_pos1_X";
+	dBranch_FDC1_X = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC_pos1_Y";
+	dBranch_FDC1_Y = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC_pos1_Z";
+	dBranch_FDC1_Z = dTreeInterface->Get_Branch(locBranchName);
+
+	
 	//TIMING INFO
 	locBranchName = "ChargedHypo__HitTime";
 	dBranch_HitTime = dTreeInterface->Get_Branch(locBranchName);
@@ -401,6 +417,24 @@ inline Float_t DChargedTrackHypothesis::Get_dEdx_FDC(void) const
 {
 	return ((Float_t*)dBranch_dEdx_FDC->GetAddress())[dMeasuredArrayIndex];
 }
+
+inline Float_t DChargedTrackHypothesis::Get_FDC1_X(void) const
+{
+	return ((Float_t*)dBranch_FDC1_X->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC1_Y(void) const
+{
+	return ((Float_t*)dBranch_FDC1_Y->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC1_Z(void) const
+{
+	return ((Float_t*)dBranch_FDC1_Z->GetAddress())[dMeasuredArrayIndex];
+}
+
+
+
 
 //TIMING INFO
 inline Float_t DChargedTrackHypothesis::Get_HitTime(void) const
