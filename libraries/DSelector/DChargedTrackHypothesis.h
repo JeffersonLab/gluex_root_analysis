@@ -102,7 +102,7 @@ class DChargedTrackHypothesis : public DKinematicData
                 Float_t Get_Track_Lk_DIRC(void) const;
                 Float_t Get_Track_Lp_DIRC(void) const;
 
-				Int_t Get_DIRC_Bar_Number(void) const;
+	    	Int_t Get_DIRC_Bar_Number(void) const;
 
 
 
@@ -448,42 +448,74 @@ inline Float_t DChargedTrackHypothesis::Get_dEdx_FDC(void) const
 
 inline Float_t DChargedTrackHypothesis::Get_FDC1_X(void) const
 {
-	return ((Float_t*)dBranch_FDC1_X->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC1_X) {
+    		return ((Float_t*)dBranch_FDC1_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 inline Float_t DChargedTrackHypothesis::Get_FDC1_Y(void) const
 {
-	return ((Float_t*)dBranch_FDC1_Y->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC1_Y) {
+    		return ((Float_t*)dBranch_FDC1_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 inline Float_t DChargedTrackHypothesis::Get_FDC2_X(void) const
 {
-	return ((Float_t*)dBranch_FDC2_X->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC2_X) {
+    		return ((Float_t*)dBranch_FDC2_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 inline Float_t DChargedTrackHypothesis::Get_FDC2_Y(void) const
 {
-	return ((Float_t*)dBranch_FDC2_Y->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC2_Y) {
+    		return ((Float_t*)dBranch_FDC2_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 inline Float_t DChargedTrackHypothesis::Get_FDC3_X(void) const
 {
-	return ((Float_t*)dBranch_FDC3_X->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC3_X) {
+    		return ((Float_t*)dBranch_FDC3_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 inline Float_t DChargedTrackHypothesis::Get_FDC3_Y(void) const
 {
-	return ((Float_t*)dBranch_FDC3_Y->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC3_Y) {
+    		return ((Float_t*)dBranch_FDC3_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 inline Float_t DChargedTrackHypothesis::Get_FDC4_X(void) const
 {
-	return ((Float_t*)dBranch_FDC4_X->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC4_X) {
+    		return ((Float_t*)dBranch_FDC4_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 inline Float_t DChargedTrackHypothesis::Get_FDC4_Y(void) const
 {
-	return ((Float_t*)dBranch_FDC4_Y->GetAddress())[dMeasuredArrayIndex];
+	if (dBranch_FDC4_Y) {
+    		return ((Float_t*)dBranch_FDC4_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
 }
 
 
