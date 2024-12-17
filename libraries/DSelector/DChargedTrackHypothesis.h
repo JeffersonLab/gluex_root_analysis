@@ -43,6 +43,15 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_dEdx_CDC(void) const;
 		Float_t Get_dEdx_CDC_integral(void) const;
 		Float_t Get_dEdx_FDC(void) const;
+  		Float_t Get_FDC1_X(void) const;
+    		Float_t Get_FDC1_Y(void) const;
+  		Float_t Get_FDC2_X(void) const;
+    		Float_t Get_FDC2_Y(void) const;
+  		Float_t Get_FDC3_X(void) const;
+    		Float_t Get_FDC3_Y(void) const;
+  		Float_t Get_FDC4_X(void) const;
+    		Float_t Get_FDC4_Y(void) const;
+
 
 		//TIMING INFO
 		Float_t Get_HitTime(void) const; //the system that is hit is in order of preference: BCAL/TOF/FCAL/ST 
@@ -93,7 +102,7 @@ class DChargedTrackHypothesis : public DKinematicData
                 Float_t Get_Track_Lk_DIRC(void) const;
                 Float_t Get_Track_Lp_DIRC(void) const;
 
-				Int_t Get_DIRC_Bar_Number(void) const;
+	    	Int_t Get_DIRC_Bar_Number(void) const;
 
 
 
@@ -124,6 +133,15 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_dEdx_CDC;
 		TBranch* dBranch_dEdx_CDC_integral;
 		TBranch* dBranch_dEdx_FDC;
+		TBranch* dBranch_FDC1_X;
+  		TBranch* dBranch_FDC1_Y;
+		TBranch* dBranch_FDC2_X;
+  		TBranch* dBranch_FDC2_Y;
+		TBranch* dBranch_FDC3_X;
+  		TBranch* dBranch_FDC3_Y;
+		TBranch* dBranch_FDC4_X;
+  		TBranch* dBranch_FDC4_Y;
+
  
 		//TIMING INFO
 		TBranch* dBranch_HitTime;
@@ -224,6 +242,32 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	locBranchName = "ChargedHypo__dEdx_FDC";
 	dBranch_dEdx_FDC = dTreeInterface->Get_Branch(locBranchName);
 
+	locBranchName = "ChargedHypo__FDC1_X";
+	dBranch_FDC1_X = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC1_Y";
+	dBranch_FDC1_Y = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC2_X";
+	dBranch_FDC2_X = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC2_Y";
+	dBranch_FDC2_Y = dTreeInterface->Get_Branch(locBranchName);
+	
+	locBranchName = "ChargedHypo__FDC3_X";
+	dBranch_FDC3_X = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC3_Y";
+	dBranch_FDC3_Y = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC4_X";
+	dBranch_FDC4_X = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "ChargedHypo__FDC4_Y";
+	dBranch_FDC4_Y = dTreeInterface->Get_Branch(locBranchName);
+	
+
+	
 	//TIMING INFO
 	locBranchName = "ChargedHypo__HitTime";
 	dBranch_HitTime = dTreeInterface->Get_Branch(locBranchName);
@@ -401,6 +445,82 @@ inline Float_t DChargedTrackHypothesis::Get_dEdx_FDC(void) const
 {
 	return ((Float_t*)dBranch_dEdx_FDC->GetAddress())[dMeasuredArrayIndex];
 }
+
+inline Float_t DChargedTrackHypothesis::Get_FDC1_X(void) const
+{
+	if (dBranch_FDC1_X) {
+    		return ((Float_t*)dBranch_FDC1_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC1_Y(void) const
+{
+	if (dBranch_FDC1_Y) {
+    		return ((Float_t*)dBranch_FDC1_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC2_X(void) const
+{
+	if (dBranch_FDC2_X) {
+    		return ((Float_t*)dBranch_FDC2_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC2_Y(void) const
+{
+	if (dBranch_FDC2_Y) {
+    		return ((Float_t*)dBranch_FDC2_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC3_X(void) const
+{
+	if (dBranch_FDC3_X) {
+    		return ((Float_t*)dBranch_FDC3_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC3_Y(void) const
+{
+	if (dBranch_FDC3_Y) {
+    		return ((Float_t*)dBranch_FDC3_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC4_X(void) const
+{
+	if (dBranch_FDC4_X) {
+    		return ((Float_t*)dBranch_FDC4_X->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+inline Float_t DChargedTrackHypothesis::Get_FDC4_Y(void) const
+{
+	if (dBranch_FDC4_Y) {
+    		return ((Float_t*)dBranch_FDC4_Y->GetAddress())[dMeasuredArrayIndex];
+	} else {
+		return 0;
+	} 
+}
+
+
+
+
 
 //TIMING INFO
 inline Float_t DChargedTrackHypothesis::Get_HitTime(void) const
