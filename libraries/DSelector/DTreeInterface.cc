@@ -322,7 +322,7 @@ Particle_t DTreeInterface::Get_TargetPID(void) const
 {
 	TMap* locMiscInfoMap = (TMap*)Get_UserInfo()->FindObject("MiscInfoMap");
 	if(locMiscInfoMap->FindObject("Target__PID") == NULL)
-		return Unknown;
+		return UnknownParticle;
 
 	TObjString* locPIDObjString = (TObjString*)locMiscInfoMap->GetValue("Target__PID");
 	int locPDGPID;

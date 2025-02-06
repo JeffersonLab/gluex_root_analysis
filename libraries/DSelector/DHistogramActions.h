@@ -33,7 +33,7 @@ class DHistogramAction_AnalyzeCutActions : public DAnalysisAction
 	public:
 		DHistogramAction_AnalyzeCutActions(vector<DAnalysisAction*> locAllAnalysisActions, const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_AnalyzeCutActions", locUseKinFitFlag, locActionUniqueString),
-			dAllAnalysisActions(locAllAnalysisActions), dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
+			dAllAnalysisActions(locAllAnalysisActions), dInitialPID(UnknownParticle), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
 			dNumMassBins(locNumMassBins), dMinMass(locMinMass), dMaxMass(locMaxMass) {}
 
 		void Reset_NewEvent(void){dPreviouslyHistogrammed.clear();}; //reset uniqueness tracking
@@ -94,7 +94,7 @@ class DHistogramAction_ParticleComboKinematics : public DAnalysisAction
 		TH1I* dBeamParticleHist_DeltaTRF;
 		TH2I* dBeamParticleHist_DeltaTRFVsBeamE;
 
-		//keys are step index, PID //beam has PID Unknown
+		//keys are step index, PID //beam has PID UnknownParticle
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_PVsTheta;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaBetaVsP;
@@ -198,7 +198,7 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		void Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex);
 		void Fill_BackgroundHists(size_t locStepIndex, Particle_t locFinalStatePID);
 
-		//keys are step index, PID //beam has PID Unknown
+		//keys are step index, PID //beam has PID UnknownParticle
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_CDC;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_CDC_integral;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_dEdxVsP_FDC;
@@ -264,7 +264,7 @@ class DHistogramAction_PIDFOM : public DAnalysisAction
 		void Create_Hists(int locStepIndex, Particle_t locPID, string locStepROOTName);
 		void Fill_Hists(const DKinematicData* locKinematicData, size_t locStepIndex);
 
-		//keys are step index, PID //beam has PID Unknown
+		//keys are step index, PID //beam has PID UnknownParticle
 		map<size_t, map<Particle_t, TH1I*> > dHistMap_PIDFOM;
 
 		map<size_t, map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed; //step index, PID, particle indices
@@ -284,7 +284,7 @@ class DHistogramAction_InvariantMass : public DAnalysisAction
 			//call with step = 0, PIDs = pi+, pi-, and will histogram rho mass
 		DHistogramAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, unsigned int locNumMassBins, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Hist_InvariantMass", locUseKinFitFlag, locActionUniqueString),
-			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
+			dInitialPID(UnknownParticle), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs),
 			dNumMassBins(locNumMassBins), dNum2DMassBins(locNumMassBins/2), dMinMass(locMinMass), dMaxMass(locMaxMass),
 			dNum2DBeamEBins(500), dMinBeamE(2.0), dMaxBeamE(12.0),
 			dNumConLevBins(1000), dNumBinsPerConLevPower(18), dConLevLowest10Power(-50) {}

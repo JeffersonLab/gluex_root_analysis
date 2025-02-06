@@ -202,7 +202,7 @@ inline DSelector::DSelector(TTree* locTree) :
 		 dInitializedFlag(false), dOption(""), dOutputFileName(""), dOutputTreeFileName(""), dFlatTreeFileName(""), dSaveDefaultFlatBranches(true), 
 		 dSaveTLorentzVectorsAsFundamentaFlatTree(false), dSkipNoTriggerEvents(true), dIsMCFlag(false), dIsMCGenOnlyFlag(false),
 		 dTreeInterface(NULL), dFlatTreeInterface(NULL),
-		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(Unknown),
+		dAnalysisUtilities(DAnalysisUtilities()), dTargetCenter(TVector3()), dTargetP4(TLorentzVector()), dTargetPID(UnknownParticle),
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
 		dFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputFlatTreeProofFile(NULL),

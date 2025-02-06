@@ -31,7 +31,7 @@ TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParti
 	{
 		//initial particle
 		DKinematicData* locKinematicData = locParticleComboStepWrapper->Get_InitialParticle();
-		locSourceObjects[Unknown].insert(locKinematicData->Get_ID()); //Unknown for beam: don't mix with final-state photons //not ideal, but easy
+		locSourceObjects[UnknownParticle].insert(locKinematicData->Get_ID()); //UnknownParticle for beam: don't mix with final-state photons //not ideal, but easy
 		if(!locUseKinFitDataFlag) //measured
 			locMissingP4 += locKinematicData->Get_P4_Measured();
 		else
@@ -40,7 +40,7 @@ TLorentzVector DAnalysisUtilities::Calc_MissingP4(const DParticleCombo* locParti
 
 	//target particle
 	Particle_t locTargetPID = locParticleComboStepWrapper->Get_TargetPID();
-	if(locTargetPID != Unknown)
+	if(locTargetPID != UnknownParticle)
 	{
 		double locMass = ParticleMass(locTargetPID);
 		locMissingP4 += TLorentzVector(TVector3(0.0, 0.0, 0.0), locMass);
@@ -105,7 +105,7 @@ TLorentzVector DAnalysisUtilities::Calc_FinalStateP4(const DParticleCombo* locPa
 	if(locStepIndex != 0)
 	{
 		Particle_t locPID = locParticleComboStepWrapper->Get_TargetPID();
-		if(locPID != Unknown)
+		if(locPID != UnknownParticle)
 			locFinalStateP4 -= TLorentzVector(TVector3(0.0, 0.0, 0.0), ParticleMass(locPID));
 	}
 

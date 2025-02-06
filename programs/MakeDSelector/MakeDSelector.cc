@@ -130,7 +130,7 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locHeaderStream << "		DBeamParticle* dComboBeamWrapper;" << endl;
@@ -186,7 +186,7 @@ void Print_HeaderFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locHeaderStream << "	dComboBeamWrapper = static_cast<DBeamParticle*>(dStep" << locStepIndex << "Wrapper->Get_InitialParticle());" << endl;
@@ -268,7 +268,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << endl;
 	locSourceStream << "	//PID" << endl;
 	locSourceStream << "	dAnalysisActions.push_back(new DHistogramAction_ParticleID(dComboWrapper, false));" << endl;
-	locSourceStream << "	//below: value: +/- N ns, Unknown: All PIDs, SYS_NULL: all timing systems" << endl;
+	locSourceStream << "	//below: value: +/- N ns, UnknownParticle: All PIDs, SYS_NULL: all timing systems" << endl;
 	locSourceStream << "	//dAnalysisActions.push_back(new DCutAction_PIDDeltaT(dComboWrapper, false, 0.5, KPlus, SYS_BCAL));" << endl;
 	locSourceStream << endl;
 	locSourceStream << "	//PIDFOM (for charged tracks)" << endl;
@@ -476,7 +476,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locSourceStream << "		Int_t locBeamID = dComboBeamWrapper->Get_BeamID();" << endl;
@@ -512,7 +512,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locSourceStream << "		TLorentzVector locBeamP4 = dComboBeamWrapper->Get_P4();" << endl;
@@ -550,7 +550,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 				continue;
 			else if(locParticleName == "ComboBeam")
 				locSourceStream << "		TLorentzVector locBeamP4_Measured = dComboBeamWrapper->Get_P4_Measured();" << endl;
@@ -605,7 +605,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 				continue;
 			else if(locParticleName == "ComboBeam")
 				continue;
@@ -676,7 +676,7 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 	locSourceStream << "		double locMissingMassSquared = locMissingP4_Measured.M2();" << endl;
 	locSourceStream << endl;
 	locSourceStream << "		//Uniqueness tracking: Build the map of particles used for the missing mass" << endl;
-	locSourceStream << "			//For beam: Don\'t want to group with final-state photons. Instead use \"Unknown\" PID (not ideal, but it\'s easy)." << endl;
+	locSourceStream << "			//For beam: Don\'t want to group with final-state photons. Instead use \"UnknownParticle\" PID (not ideal, but it\'s easy)." << endl;
 	locSourceStream << "		map<Particle_t, set<Int_t> > locUsedThisCombo_MissingMass;" << endl;
 
 	//insert uniqueness tracking
@@ -690,10 +690,10 @@ void Print_SourceFile(string locSelectorBaseName, DTreeInterface* locTreeInterfa
 			Particle_t locPID = locParticleIterator->second.first;
 			string locParticleName = locParticleIterator->second.second;
 
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 				continue;
 			else if(locParticleName == "ComboBeam")
-				locSourceStream << "		locUsedThisCombo_MissingMass[Unknown].insert(locBeamID); //beam" << endl;
+				locSourceStream << "		locUsedThisCombo_MissingMass[UnknownParticle].insert(locBeamID); //beam" << endl;
 			else if(locParticleName.substr(0, 6) == "Target")
 				continue;
 			else if(locParticleName.substr(0, 8) == "Decaying")

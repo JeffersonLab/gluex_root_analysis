@@ -54,7 +54,7 @@ class DMCThrown : public DKinematicData
 /******************************************************************** CONSTRUCTOR *********************************************************************/
 
 inline DMCThrown::DMCThrown(DTreeInterface* locTreeInterface) : 
-DKinematicData(locTreeInterface, "Thrown", Unknown)
+DKinematicData(locTreeInterface, "Thrown", UnknownParticle)
 {
 	Setup_Branches();
 }

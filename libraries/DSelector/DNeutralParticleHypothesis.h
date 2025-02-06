@@ -25,7 +25,7 @@ class DNeutralParticleHypothesis : public DKinematicData
 
 	public:
 
-		DNeutralParticleHypothesis(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = Unknown);
+		DNeutralParticleHypothesis(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = UnknownParticle);
 		~DNeutralParticleHypothesis(void){}
 
 		//IDENTIFIERS / MATCHING

@@ -29,7 +29,7 @@ DParticleCombo::DParticleCombo(DTreeInterface* locTreeInterface) : dTreeInterfac
 
 			//Create particle
 			DKinematicData* locKinematicData = NULL;
-			if(locPID == Unknown)
+			if(locPID == UnknownParticle)
 			{
 				locKinematicData = NULL;
 				locMissingIndices = pair<int, int>(locStepIndex, locParticleIndex);
