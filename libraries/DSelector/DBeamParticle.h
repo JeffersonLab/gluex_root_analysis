@@ -24,7 +24,7 @@ class DBeamParticle : public DKinematicData
 
 	public:
 
-		DBeamParticle(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = Unknown);
+		DBeamParticle(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = UnknownParticle);
 		~DBeamParticle(void){}
 
 		Bool_t Get_IsGenerator(void) const;

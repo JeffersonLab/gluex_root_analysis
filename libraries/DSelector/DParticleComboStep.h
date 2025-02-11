@@ -29,7 +29,7 @@ class DParticleComboStep
 
 		// GET PIDS:
 		Particle_t Get_InitialPID(void) const{return dInitialPID;}
-		Particle_t Get_TargetPID(void) const{return ((dTargetParticle != NULL) ? dTargetParticle->Get_PID() : Unknown);}
+		Particle_t Get_TargetPID(void) const{return ((dTargetParticle != NULL) ? dTargetParticle->Get_PID() : UnknownParticle);}
 		Particle_t Get_FinalPID(size_t locIndex) const{return dFinalStatePIDs[locIndex];}
 		deque<Particle_t> Get_FinalPIDs(void) const{return dFinalStatePIDs;}
 
@@ -41,7 +41,7 @@ class DParticleComboStep
 		DKinematicData* Get_MissingParticle(void) const; //NULL if none or not reconstructed
 
 		//GET PARTICLES BY TRAIT
-		deque<DKinematicData*> Get_FinalParticles(bool locOnlyDetectedFlag = false, Particle_t locDesiredPID = Unknown) const;
+		deque<DKinematicData*> Get_FinalParticles(bool locOnlyDetectedFlag = false, Particle_t locDesiredPID = UnknownParticle) const;
 		deque<DKinematicData*> Get_FinalParticles_ByCharge(bool locChargedFlag, bool locOnlyDetectedFlag = false) const; //locChargedFlag = false for neutrals
 
 		// GET INDICES
@@ -106,7 +106,7 @@ private:
 inline DParticleComboStep::DParticleComboStep(DTreeInterface* locTreeInterface, const map<int, pair<Particle_t, DKinematicData*> >& locParticleMap, const map<int, string > &locParticleNameMap) : 
 dTreeInterface(locTreeInterface), dComboIndex(0), dInitialParticle(NULL), dTargetParticle(NULL)
 {
-	dInitialPID = Unknown;
+	dInitialPID = UnknownParticle;
 	dMissingParticleIndex = -2;
 	dX4_Step = NULL;
 	dBranch_X4MeasuredIndex = NULL;
@@ -214,7 +214,7 @@ inline deque<DKinematicData*> DParticleComboStep::Get_FinalParticles(bool locOnl
 			continue;
 
 		Particle_t locPID = Get_FinalPID(loc_i);
-		if((locPID == locDesiredPID) || (locDesiredPID == Unknown))
+		if((locPID == locDesiredPID) || (locDesiredPID == UnknownParticle))
 			locParticles.push_back(dFinalParticles[loc_i]);
 	}
 
@@ -240,7 +240,7 @@ inline deque<DKinematicData*> DParticleComboStep::Get_FinalParticles_ByCharge(bo
 inline string DParticleComboStep::Get_InitialParticlesROOTName(void) const
 {
 	string locStepROOTName = ParticleName_ROOT(dInitialPID);
-	if(Get_TargetPID() != Unknown)
+	if(Get_TargetPID() != UnknownParticle)
 		locStepROOTName += ParticleName_ROOT(Get_TargetPID());
 	return locStepROOTName;
 }
@@ -295,7 +295,7 @@ inline string DParticleComboStep::Get_StepROOTName(void) const
 inline string DParticleComboStep::Get_StepName(void) const
 {
 	string locStepName = ParticleType(dInitialPID);
-	if(Get_TargetPID() != Unknown)
+	if(Get_TargetPID() != UnknownParticle)
 		locStepName += string("_") + ParticleType(Get_TargetPID());
 	locStepName += "_->";
 	for(size_t loc_i = 0; loc_i < dFinalStatePIDs.size(); ++loc_i)

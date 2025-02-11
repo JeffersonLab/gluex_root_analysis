@@ -15,7 +15,7 @@ void DKinematicData::Setup_Branches(void)
 	dX4_Measured = nullptr;
 
 	//PID
-	if(dPID == Unknown)
+	if(dPID == UnknownParticle)
 	{
 		locBranchName = dBranchNamePrefix + string("__PID");
 		dBranch_PID = dTreeInterface->Get_Branch(locBranchName);

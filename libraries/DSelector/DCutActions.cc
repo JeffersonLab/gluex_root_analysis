@@ -217,7 +217,7 @@ bool DCutAction_PIDDeltaT::Perform_Action(void)
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
-			if((dPID != Unknown) && (locKinematicData->Get_PID() != dPID))
+			if((dPID != UnknownParticle) && (locKinematicData->Get_PID() != dPID))
 				continue;
 
 			// determine detector system
@@ -292,7 +292,7 @@ bool DCutAction_PIDBeta::Perform_Action(void)
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
-			if((dPID != Unknown) && (locKinematicData->Get_PID() != dPID))
+			if((dPID != UnknownParticle) && (locKinematicData->Get_PID() != dPID))
 				continue;
 
 			// determine detector system
@@ -355,7 +355,7 @@ bool DCutAction_NoPIDHit::Perform_Action(void)
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
-			if((dPID != Unknown) && (locKinematicData->Get_PID() != dPID))
+			if((dPID != UnknownParticle) && (locKinematicData->Get_PID() != dPID))
 				continue;
 
 			// determine detector system
@@ -407,7 +407,7 @@ bool DCutAction_PIDFOM::Perform_Action(void)
 			if(locDecayStepIndex != -2)
 				continue; //not measured
 
-			if((locKinematicData->Get_PID() != dParticleID) && (dParticleID != Unknown))
+			if((locKinematicData->Get_PID() != dParticleID) && (dParticleID != UnknownParticle))
 				continue;
 			if(locKinematicData->Get_PID() != 0 && ParticleCharge(locKinematicData->Get_PID()) != 0)
 			{
@@ -536,7 +536,7 @@ bool DCutAction_dEdx::Perform_Action(void)
 				continue; //not measured
 
 			Particle_t locPID = locKinematicData->Get_PID();
-			if((dPID != Unknown) && (locPID != dPID))
+			if((dPID != UnknownParticle) && (locPID != dPID))
 				continue;
 
 			const DChargedTrackHypothesis* locChargedTrackHypothesis = dynamic_cast<const DChargedTrackHypothesis*>(locKinematicData);
@@ -662,7 +662,7 @@ bool DCutAction_InvariantMass::Perform_Action(void)
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
 		const DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
-		if((dInitialPID != Unknown) && (locComboWrapperStep->Get_InitialPID() != dInitialPID))
+		if((dInitialPID != UnknownParticle) && (locComboWrapperStep->Get_InitialPID() != dInitialPID))
 			continue;
 		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
 			continue;
@@ -701,7 +701,7 @@ bool DCutAction_InvariantMassVeto::Perform_Action(void)
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
 		const DParticleComboStep* locComboWrapperStep = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
-		if((dInitialPID != Unknown) && (locComboWrapperStep->Get_InitialPID() != dInitialPID))
+		if((dInitialPID != UnknownParticle) && (locComboWrapperStep->Get_InitialPID() != dInitialPID))
 			continue;
 		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
 			continue;
@@ -941,7 +941,7 @@ bool DCutAction_Kinematics::Perform_Action(void)
 				continue; //e.g. a decaying or missing particle whose params aren't set yet
 
 			Particle_t locPID = locKinematicData->Get_PID();
-			if((locPID != dPID) && (dPID != Unknown))
+			if((locPID != dPID) && (dPID != UnknownParticle))
 				continue;
 
 			TLorentzVector locP4 = dUseKinFitFlag ? locKinematicData->Get_P4() : locKinematicData->Get_P4_Measured();

@@ -26,8 +26,8 @@ class DKinematicData
 
 	public:
 
-		//locPID should be set for combo particles, and Unknown otherwise
-		DKinematicData(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = Unknown);
+		//locPID should be set for combo particles, and UnknownParticle otherwise
+		DKinematicData(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = UnknownParticle);
 		virtual ~DKinematicData(void){}
 
 		//GET PID & KINEMATIC DATA
@@ -94,8 +94,8 @@ class DKinematicData
 		TBranch* dBranch_MeasuredIndex;
 
 		// Particle ID
-		// If fixed, get from dPID //else is Unknown
-		Particle_t dPID; //if Unknown, get from dBranch_PID
+		// If fixed, get from dPID //else is UnknownParticle
+		Particle_t dPID; //if UnknownParticle, get from dBranch_PID
 		// If not fixed: ChargedHypo, Thrown: varies from particle to particle: must get from branch
 		TBranch* dBranch_PID;
 
@@ -121,7 +121,7 @@ dTreeInterface(locTreeInterface), dBranchNamePrefix(locBranchNamePrefix), dMeasu
 dArraySize(NULL), dArrayIndex(0), dMeasuredArrayIndex(0), dBranch_MeasuredIndex(NULL), dPID(locPID), dBranch_PID(NULL),
 dP4_KinFit(NULL), dP4_Measured(NULL), dFixedP4(TLorentzVector()), dThrownBeamP4(NULL), dX4_KinFit(NULL), dX4_Measured(NULL), dThrownBeamX4(NULL), dBranch_PathLengthSigma(NULL)
 {
-	//locPID should be set for combo particles, and Unknown otherwise
+	//locPID should be set for combo particles, and UnknownParticle otherwise
 	Setup_Branches();
 }
 
@@ -164,7 +164,7 @@ inline bool DKinematicData::Get_IsDetectedComboNeutralParticle(void) const
 //PID
 inline Particle_t DKinematicData::Get_PID(void) const
 {
-	if(dPID != Unknown)
+	if(dPID != UnknownParticle)
 		return dPID;
 	Int_t locPID_PDG = ((Int_t*)dBranch_PID->GetAddress())[dArrayIndex];
 	return PDGtoPType(locPID_PDG);

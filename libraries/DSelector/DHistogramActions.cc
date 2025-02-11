@@ -11,7 +11,7 @@ void DHistogramAction_AnalyzeCutActions::Initialize(void)
 	string locHistName = "InvariantMass";
 	string locParticleNamesForHist = "";
 
-	if(dInitialPID != Unknown)
+	if(dInitialPID != UnknownParticle)
 		locParticleNamesForHist = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(dInitialPID, dUseKinFitFlag);
 	else
 	{
@@ -224,7 +224,7 @@ void DHistogramAction_ParticleComboKinematics::Create_Hists(int locStepIndex, st
 {
 	string locParticleROOTName = ParticleName_ROOT(locPID);
 	string locHistName, locHistTitle;
-	Particle_t locFillPID = locIsBeamFlag ? Unknown : locPID;
+	Particle_t locFillPID = locIsBeamFlag ? UnknownParticle : locPID;
 
 	// Momentum
 	double locMaxP = locIsBeamFlag ? dMaxBeamE : dMaxP;
@@ -311,7 +311,7 @@ bool DHistogramAction_ParticleComboKinematics::Perform_Action(void)
 			if(locInitialPID == Gamma)
 			{
 				//check if will be duplicate
-				set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][Unknown];
+				set<Int_t>& locParticleSet = dPreviouslyHistogrammed[loc_i][UnknownParticle];
 				if(locParticleSet.find(locKinematicData->Get_ID()) == locParticleSet.end())
 				{
 					double locRFTime = dUseKinFitFlag ? dParticleComboWrapper->Get_RFTime() : dParticleComboWrapper->Get_RFTime_Measured();
@@ -431,10 +431,10 @@ void DHistogramAction_ParticleComboKinematics::Fill_BeamHists(const DKinematicDa
 	double locP = locP4.P();
 	double locDeltaTRF = locX4.T() - (locRFTime + (locX4.Z() - dTargetCenterZ)/29.9792458);
 
-	dHistMap_P[0][Unknown]->Fill(locP);
-	dHistMap_VertexZ[0][Unknown]->Fill(locX4.Z());
-	dHistMap_VertexYVsX[0][Unknown]->Fill(locX4.X(), locX4.Y());
-	dHistMap_VertexT[0][Unknown]->Fill(locX4.T());
+	dHistMap_P[0][UnknownParticle]->Fill(locP);
+	dHistMap_VertexZ[0][UnknownParticle]->Fill(locX4.Z());
+	dHistMap_VertexYVsX[0][UnknownParticle]->Fill(locX4.X(), locX4.Y());
+	dHistMap_VertexT[0][UnknownParticle]->Fill(locX4.T());
 	dBeamParticleHist_DeltaTRF->Fill(locDeltaTRF);
 	dBeamParticleHist_DeltaTRFVsBeamE->Fill(locP4.E(), locDeltaTRF);
 }
@@ -961,7 +961,7 @@ void DHistogramAction_InvariantMass::Initialize(void)
 	double locMassPerBin = 1000.0*(dMaxMass - dMinMass)/((double)dNumMassBins);
 
 	string locParticleNamesForHist = "";
-	if(dInitialPID != Unknown)
+	if(dInitialPID != UnknownParticle)
 		locParticleNamesForHist = dParticleComboWrapper->Get_DecayChainFinalParticlesROOTNames(dInitialPID, dUseKinFitFlag);
 	else
 	{
@@ -1005,7 +1005,7 @@ bool DHistogramAction_InvariantMass::Perform_Action(void)
 	for(size_t loc_i = 0; loc_i < dParticleComboWrapper->Get_NumParticleComboSteps(); ++loc_i)
 	{
 		const DParticleComboStep* locParticleComboStepWrapper = dParticleComboWrapper->Get_ParticleComboStep(loc_i);
-		if((dInitialPID != Unknown) && (locParticleComboStepWrapper->Get_InitialPID() != dInitialPID))
+		if((dInitialPID != UnknownParticle) && (locParticleComboStepWrapper->Get_InitialPID() != dInitialPID))
 			continue;
 		if((dStepIndex != -1) && (int(loc_i) != dStepIndex))
 			continue;
@@ -1582,7 +1582,7 @@ bool DHistogramAction_vanHove::Perform_Action(void)
 	DKinematicData* locBeamParticle = locParticleComboStepWrapper->Get_InitialParticle();
 	Int_t locBeamID = locBeamParticle->Get_ID();
 	map<unsigned int, set<Int_t> > locBeamObject;
-	locBeamObject[Unknown].insert(locBeamID);
+	locBeamObject[UnknownParticle].insert(locBeamID);
 	
 	TLorentzVector locBeam_P4;
 	if(dUseKinFitFlag){
@@ -1662,7 +1662,7 @@ bool DHistogramAction_vanHoveFour::Perform_Action(void)
   DKinematicData* locBeamParticle = locParticleComboStepWrapper->Get_InitialParticle();
   Int_t locBeamID = locBeamParticle->Get_ID();
   map<unsigned int, set<Int_t> > locBeamObject;
-  locBeamObject[Unknown].insert(locBeamID);
+  locBeamObject[UnknownParticle].insert(locBeamID);
   
   TLorentzVector locBeam_P4;
   if(dUseKinFitFlag){

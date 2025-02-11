@@ -80,7 +80,7 @@ class DCutAction_ChiSqOrCL : public DAnalysisAction
 class DCutAction_PIDDeltaT : public DAnalysisAction
 {
 	public:
-		DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+		DCutAction_PIDDeltaT(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locDeltaTCut, Particle_t locPID = UnknownParticle, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_PIDDeltaT", locUseKinFitFlag, locActionUniqueString),
 			dFunc_PIDCut_SelectPositive(nullptr), dFunc_PIDCut_SelectNegative(nullptr), dDeltaTCut(locDeltaTCut), dPID(locPID), dSystem(locSystem) {}
 
@@ -102,7 +102,7 @@ class DCutAction_PIDDeltaT : public DAnalysisAction
 class DCutAction_PIDBeta : public DAnalysisAction
 {
 	public:
-		DCutAction_PIDBeta(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locMinBetaCut, double locMaxBetaCut, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+		DCutAction_PIDBeta(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, double locMinBetaCut, double locMaxBetaCut, Particle_t locPID = UnknownParticle, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_PIDBeta", locUseKinFitFlag, locActionUniqueString),
 			dFunc_BetaCut_SelectPositive(nullptr), dFunc_BetaCut_SelectNegative(nullptr), dMinBetaCut(locMinBetaCut), dMaxBetaCut(locMaxBetaCut), dPID(locPID), dSystem(locSystem) {}
 
@@ -123,7 +123,7 @@ class DCutAction_PIDBeta : public DAnalysisAction
 class DCutAction_NoPIDHit : public DAnalysisAction
 {
 	public:
-		DCutAction_NoPIDHit(const DParticleCombo* locParticleComboWrapper, Particle_t locPID = Unknown, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
+		DCutAction_NoPIDHit(const DParticleCombo* locParticleComboWrapper, Particle_t locPID = UnknownParticle, DetectorSystem_t locSystem = SYS_NULL, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_NoPIDHit", false, locActionUniqueString),
 			dPID(locPID), dSystem(locSystem) {}
 
@@ -379,7 +379,7 @@ class DCutAction_InvariantMass : public DAnalysisAction
 			//call with step = 0, PIDs = pi+, pi-, and will histogram rho mass
 		DCutAction_InvariantMass(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMass", locUseKinFitFlag, locActionUniqueString),
-			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs), dMinMass(locMinMass), dMaxMass(locMaxMass){}
+			dInitialPID(UnknownParticle), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs), dMinMass(locMinMass), dMaxMass(locMaxMass){}
 
 		string Get_ActionName(void) const;
 		void Initialize(void){};
@@ -407,7 +407,7 @@ class DCutAction_InvariantMassVeto : public DAnalysisAction
 			//call with step = 0, PIDs = pi+, pi-, and will histogram rho mass
 		DCutAction_InvariantMassVeto(const DParticleCombo* locParticleComboWrapper, bool locUseKinFitFlag, size_t locStepIndex, deque<Particle_t> locToIncludePIDs, double locMinMass, double locMaxMass, string locActionUniqueString = "") :
 			DAnalysisAction(locParticleComboWrapper, "Cut_InvariantMassVeto", locUseKinFitFlag, locActionUniqueString),
-			dInitialPID(Unknown), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs), dMinMass(locMinMass), dMaxMass(locMaxMass){}
+			dInitialPID(UnknownParticle), dStepIndex(locStepIndex), dToIncludePIDs(locToIncludePIDs), dMinMass(locMinMass), dMaxMass(locMaxMass){}
 
 		string Get_ActionName(void) const;
 		void Initialize(void){};
@@ -491,7 +491,7 @@ class DCutAction_Kinematics : public DAnalysisAction
 {
 	//input range is what is cut: cut is ignored if min > max
 	//if step index == -1: all steps
-	//if PID == Unknown: all particles
+	//if PID == UnknownParticle: all particles
 	//particle must be detected
 	//angles in degrees
 	public:

@@ -24,7 +24,7 @@ class DChargedTrackHypothesis : public DKinematicData
 
 	public:
 
-		DChargedTrackHypothesis(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = Unknown);
+		DChargedTrackHypothesis(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = UnknownParticle);
 		~DChargedTrackHypothesis(void){}
 
 		//IDENTIFIERS / MATCHING
