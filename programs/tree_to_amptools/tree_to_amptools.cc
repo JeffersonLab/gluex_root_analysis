@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 	    cout << "Weights set to " << locWeight <<"!";
 	    cout << endl;
 	  }
-	  if (arg == "-gen"){
+	  else if (arg == "-gen"){
 	    locGen = true;
 	    cout << "Fill tree with generated events" << endl;
 	  }
