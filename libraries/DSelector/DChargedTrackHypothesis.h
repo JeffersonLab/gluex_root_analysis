@@ -86,6 +86,8 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_SumU_FCAL(void) const;
 		Float_t Get_SumV_FCAL(void) const;
 
+	        Float_t Get_Energy_ECAL(void) const;
+
 		//SHOWER MATCHING
 		Float_t Get_TrackBCAL_DeltaPhi(void) const; //999.0 if not matched //units are radians
 		Float_t Get_TrackBCAL_DeltaZ(void) const; //999.0 if not matched
@@ -172,6 +174,8 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_E9E25_FCAL;
 		TBranch* dBranch_SumU_FCAL;
 		TBranch* dBranch_SumV_FCAL;
+
+	        TBranch* dBranch_Energy_ECAL;
  
 		//SHOWER MATCHING
 		TBranch* dBranch_TrackBCAL_DeltaPhi;
@@ -353,6 +357,9 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	locBranchName = "ChargedHypo__SumV_FCAL";
 	dBranch_SumV_FCAL = dTreeInterface->Get_Branch(locBranchName);
 
+	locBranchName = "ChargedHypo__Energy_ECAL";
+	dBranch_Energy_ECAL = dTreeInterface->Get_Branch(locBranchName);
+	
 	//SHOWER MATCHING:
 	locBranchName = "ChargedHypo__TrackBCAL_DeltaPhi";
 	dBranch_TrackBCAL_DeltaPhi = dTreeInterface->Get_Branch(locBranchName);
@@ -693,6 +700,10 @@ inline Float_t DChargedTrackHypothesis::Get_SumV_FCAL(void) const
 		return ((Float_t*)dBranch_SumV_FCAL->GetAddress())[dMeasuredArrayIndex];
 }
 
+inline Float_t DChargedTrackHypothesis::Get_Energy_ECAL(void) const
+{
+	return ((Float_t*)dBranch_Energy_ECAL->GetAddress())[dMeasuredArrayIndex];
+}
 
 //SHOWER MATCHING:
 inline Float_t DChargedTrackHypothesis::Get_TrackBCAL_DeltaPhi(void) const

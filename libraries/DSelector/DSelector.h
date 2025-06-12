@@ -92,6 +92,8 @@ class DSelector : public TSelector
 		UInt_t Get_L1TriggerBits(void) const;
 		Double_t Get_L1BCALEnergy(void) const;
 		Double_t Get_L1FCALEnergy(void) const;
+	        Double_t Get_L1ECALEnergy(void) const;
+		Double_t Get_L1FCAL2Energy(void) const;
 		Bool_t Get_IsThrownTopology(void) const;
 		Float_t Get_MCWeight(void) const;
 		Float_t Get_GeneratedEnergy(void) const;
@@ -155,6 +157,8 @@ class DSelector : public TSelector
 		UInt_t* dL1TriggerBits;
 		Double_t* dL1BCALEnergy;
 		Double_t* dL1FCALEnergy;
+	        Double_t* dL1ECALEnergy;
+		Double_t* dL1FCAL2Energy;
 		Float_t* dMCWeight; //only present if simulated data
 		Float_t* dGeneratedEnergy; //only present if simulated data
 		Bool_t* dIsThrownTopology; //only present if simulated data
@@ -207,6 +211,7 @@ inline DSelector::DSelector(TTree* locTree) :
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
 		dFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputFlatTreeProofFile(NULL),
 		dTreeNumber(0), dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dGeneratedEnergy(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
+		dL1BCALEnergy(NULL), dL1FCALEnergy(NULL), dL1ECALEnergy(NULL), dL1FCAL2Energy(NULL), 
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
 
@@ -236,6 +241,16 @@ inline Double_t DSelector::Get_L1BCALEnergy(void) const
 inline Double_t DSelector::Get_L1FCALEnergy(void) const
 {
 	return *dL1FCALEnergy;
+}
+
+inline Double_t DSelector::Get_L1ECALEnergy(void) const
+{
+	return *dL1ECALEnergy;
+}
+
+inline Double_t DSelector::Get_L1FCAL2Energy(void) const
+{
+	return *dL1FCAL2Energy;
 }
 
 inline Bool_t DSelector::Get_IsThrownTopology(void) const

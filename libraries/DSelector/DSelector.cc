@@ -97,6 +97,10 @@ void DSelector::Setup_Branches(void)
 	dL1BCALEnergy = (locL1BCALEnergyBranch != NULL) ? (Double_t*)locL1BCALEnergyBranch->GetAddress() : NULL;
 	TBranch* locL1FCALEnergyBranch = dTreeInterface->Get_Branch("L1FCALEnergy");
 	dL1FCALEnergy = (locL1FCALEnergyBranch != NULL) ? (Double_t*)locL1FCALEnergyBranch->GetAddress() : NULL;
+	TBranch* locL1ECALEnergyBranch = dTreeInterface->Get_Branch("L1ECALEnergy");
+	dL1ECALEnergy = (locL1ECALEnergyBranch != NULL) ? (Double_t*)locL1ECALEnergyBranch->GetAddress() : NULL;
+	TBranch* locL1FCAL2EnergyBranch = dTreeInterface->Get_Branch("L1FCAL2Energy");
+	dL1FCAL2Energy = (locL1FCAL2EnergyBranch != NULL) ? (Double_t*)locL1FCAL2EnergyBranch->GetAddress() : NULL;
 
 	// MC
 	if(dIsMCFlag)
