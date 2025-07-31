@@ -535,6 +535,13 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 	locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL #beta");
 	dHistMap_BetaVsP_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
 
+	locHistName = "DeltaTVsP_ECAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); ECAL #Delta T (ns)");
+	dHistMap_DeltaTVsP_ECAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+	locHistName = "BetaVsP_ECAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); ECAL #beta");
+	dHistMap_BetaVsP_ECAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumBetaBins, dMinBeta, dMaxBeta);
+
 	if(ParticleCharge(locPID) != 0)
 	{
 		
@@ -580,6 +587,13 @@ void DHistogramAction_ParticleID::Create_Hists(int locStepIndex, Particle_t locP
 		locHistName = "EoverPVsTheta_FCAL";
 		locHistTitle = locParticleROOTName + string(";#theta (degrees); FCAL E/p");
 		dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);
+
+		locHistName = "EoverPVsP_ECAL";
+		locHistTitle = locParticleROOTName + string(";p (GeV/c); ECAL E/p");
+		dHistMap_EoverPVsP_ECAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumEoverPBins, dMinEoverP, dMaxEoverP);
+		locHistName = "EoverPVsTheta_ECAL";
+		locHistTitle = locParticleROOTName + string(";#theta (degrees); ECAL E/p");
+		dHistMap_EoverPVsTheta_ECAL[locStepIndex][locPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), 120, 0., 12., dNumEoverPBins, dMinEoverP, dMaxEoverP);
 
 		// PreshowerFraction BCAL vs p, theta
 		locHistName = "PreshowerFractionVsP_BCAL";
@@ -634,6 +648,10 @@ void DHistogramAction_ParticleID::Create_BackgroundHists(int locStepIndex, Parti
 	locHistName = "DeltaTVsP_FCAL";
 	locHistTitle = locParticleROOTName + string(";p (GeV/c); FCAL #Delta T (ns)");
 	dBackgroundHistMap_DeltaTVsP_FCAL[locStepIndex][locFinalStatePID][locBackgroundPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
+
+	locHistName = "DeltaTVsP_ECAL";
+	locHistTitle = locParticleROOTName + string(";p (GeV/c); ECAL #Delta T (ns)");
+	dBackgroundHistMap_DeltaTVsP_ECAL[locStepIndex][locFinalStatePID][locBackgroundPID] = new TH2I(locHistName.c_str(), locHistTitle.c_str(), dNum2DPBins, dMinP, dMaxP, dNumDeltaTBins, dMinDeltaT, dMaxDeltaT);
 
 	locHistName = "DeltaTVsP_TOF";
 	locHistTitle = locParticleROOTName + string(";p (GeV/c); TOF #Delta T (ns)");
@@ -747,6 +765,10 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 				dHistMap_BetaVsP_FCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
 				dHistMap_DeltaTVsP_FCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
 			}
+			else if(locChargedTrackHypothesis->Get_Detector_System_Timing() == SYS_ECAL) {
+				dHistMap_BetaVsP_ECAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
+				dHistMap_DeltaTVsP_ECAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
+			}
 			
 			// dE/dx vs p
 			if(locChargedTrackHypothesis->Get_dEdx_CDC() > 0.)
@@ -777,6 +799,11 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 				double locEoverP = locChargedTrackHypothesis->Get_Energy_FCAL()/locP;
 				dHistMap_EoverPVsP_FCAL[locStepIndex][locPID]->Fill(locP, locEoverP);
 				dHistMap_EoverPVsTheta_FCAL[locStepIndex][locPID]->Fill(locTheta, locEoverP);
+			}
+			if(locChargedTrackHypothesis->Get_Energy_ECAL() > 0.) {
+				double locEoverP = locChargedTrackHypothesis->Get_Energy_ECAL()/locP;
+				dHistMap_EoverPVsP_ECAL[locStepIndex][locPID]->Fill(locP, locEoverP);
+				dHistMap_EoverPVsTheta_ECAL[locStepIndex][locPID]->Fill(locTheta, locEoverP);
 			}
 
 			// DIRC
@@ -818,6 +845,10 @@ void DHistogramAction_ParticleID::Fill_Hists(const DKinematicData* locKinematicD
 				dHistMap_BetaVsP_FCAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
 				dHistMap_DeltaTVsP_FCAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
 			}
+			else if(locNeutralParticleHypothesis->Get_Energy_ECAL() > 0.) {
+				dHistMap_BetaVsP_ECAL[locStepIndex][locPID]->Fill(locP, locBeta_Timing);
+				dHistMap_DeltaTVsP_ECAL[locStepIndex][locPID]->Fill(locP, locDeltaT);
+			}
 		}
 	}
 }
@@ -839,6 +870,8 @@ void DHistogramAction_ParticleID::Fill_BackgroundHists(size_t locStepIndex, Part
 		dBackgroundHistMap_DeltaTVsP_TOF[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
 	else if(dChargedHypoWrapper->Get_Detector_System_Timing() == SYS_FCAL)
 		dBackgroundHistMap_DeltaTVsP_FCAL[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
+	else if(dChargedHypoWrapper->Get_Detector_System_Timing() == SYS_ECAL)
+		dBackgroundHistMap_DeltaTVsP_ECAL[locStepIndex][locFinalStatePID][locPID]->Fill(locP, locDeltaT);
 }
 
 void DHistogramAction_PIDFOM::Initialize(void)

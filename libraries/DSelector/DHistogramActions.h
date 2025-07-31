@@ -208,9 +208,11 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_BCAL;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_TOF;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_FCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_BetaVsP_ECAL;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_BCAL;	
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_TOF;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_FCAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_DeltaTVsP_ECAL;
 
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_BCAL;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_BCAL;
@@ -220,6 +222,9 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_FCAL;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_FCAL;
+
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsP_ECAL;
+		map<size_t, map<Particle_t, TH2I*> > dHistMap_EoverPVsTheta_ECAL;
 		
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerZVsParticleZ;
 		map<size_t, map<Particle_t, TH2I*> > dHistMap_ShowerTVsParticleT;
@@ -233,6 +238,7 @@ class DHistogramAction_ParticleID : public DAnalysisAction
 		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_BCAL;	
 		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_TOF;
 		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_FCAL;
+		map<size_t, map<Particle_t, map<Particle_t, TH2I*> > > dBackgroundHistMap_DeltaTVsP_ECAL;
 
 		map<size_t, map<Particle_t, set<Int_t> > > dPreviouslyHistogrammed; //step index, PID, particle indices
 		map<size_t, map<Particle_t, map<Particle_t, set<Int_t> > > > dPreviouslyHistogrammed_Background; //step index, PID, background PID, particle indices

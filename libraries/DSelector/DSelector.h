@@ -210,8 +210,9 @@ inline DSelector::DSelector(TTree* locTree) :
 		dThrownBeam(NULL), dThrownWrapper(NULL), dChargedHypoWrapper(NULL), dNeutralHypoWrapper(NULL),
 		dBeamWrapper(NULL), dComboWrapper(NULL), dAnalysisActions(vector<DAnalysisAction*>()),
 		dFile(NULL), dOutputFlatTreeFile(NULL), dProofFile(NULL), dOutputFlatTreeProofFile(NULL),
-		dTreeNumber(0), dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL), dMCWeight(NULL), dGeneratedEnergy(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
-		dL1BCALEnergy(NULL), dL1FCALEnergy(NULL), dL1ECALEnergy(NULL), dL1FCAL2Energy(NULL), 
+		dTreeNumber(0), dRunNumber(NULL), dEventNumber(NULL), dL1TriggerBits(NULL),
+		dL1BCALEnergy(NULL), dL1FCALEnergy(NULL), dL1ECALEnergy(NULL), dL1FCAL2Energy(NULL),
+		dMCWeight(NULL), dGeneratedEnergy(NULL), dIsThrownTopology(NULL), dX4_Production(NULL),
 		dNumBeam(NULL), dNumChargedHypos(NULL), dNumNeutralHypos(NULL), dNumCombos(NULL), dNumThrown(NULL),
 		dNumPIDThrown_FinalState(NULL), dPIDThrown_Decaying(NULL) {}
 
