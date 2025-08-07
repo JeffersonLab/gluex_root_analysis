@@ -702,7 +702,10 @@ inline Float_t DChargedTrackHypothesis::Get_SumV_FCAL(void) const
 
 inline Float_t DChargedTrackHypothesis::Get_Energy_ECAL(void) const
 {
-	return ((Float_t*)dBranch_Energy_ECAL->GetAddress())[dMeasuredArrayIndex];
+	if(dBranch_Energy_ECAL)
+	  return ((Float_t*)dBranch_Energy_ECAL->GetAddress())[dMeasuredArrayIndex];
+	else
+	  return 0;
 }
 
 //SHOWER MATCHING:
