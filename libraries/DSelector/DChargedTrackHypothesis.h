@@ -85,6 +85,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		Float_t Get_E9E25_FCAL(void) const;
 		Float_t Get_SumU_FCAL(void) const;
 		Float_t Get_SumV_FCAL(void) const;
+		Float_t Get_NumBlocks_FCAL(void) const;
 
 	        Float_t Get_Energy_ECAL(void) const;
 
@@ -105,6 +106,18 @@ class DChargedTrackHypothesis : public DKinematicData
                 Float_t Get_Track_Lp_DIRC(void) const;
 
 	    	Int_t Get_DIRC_Bar_Number(void) const;
+
+		Float_t Get_Chamber1_Multiplicity(void) const;
+		Float_t Get_Chamber2_Multiplicity(void) const;
+		Float_t Get_Chamber3_Multiplicity(void) const;
+		Float_t Get_Chamber4_Multiplicity(void) const;
+		Float_t Get_Chamber5_Multiplicity(void) const;
+		Float_t Get_Chamber6_Multiplicity(void) const;
+
+		Float_t Get_Single_FCAL_E1E9(void) const;
+		Float_t Get_Single_FCAL_DOCA(void) const;
+		Float_t Get_Single_FCAL_Energy(void) const;
+		Float_t Get_Single_FCAL_NumBlocks(void) const;
 
 
 
@@ -174,6 +187,7 @@ class DChargedTrackHypothesis : public DKinematicData
 		TBranch* dBranch_E9E25_FCAL;
 		TBranch* dBranch_SumU_FCAL;
 		TBranch* dBranch_SumV_FCAL;
+		TBranch* dBranch_NumBlocks_FCAL;
 
 	        TBranch* dBranch_Energy_ECAL;
  
@@ -191,6 +205,18 @@ class DChargedTrackHypothesis : public DKinematicData
                 TBranch* dBranch_Track_Lpi_DIRC;
                 TBranch* dBranch_Track_Lk_DIRC;
                 TBranch* dBranch_Track_Lp_DIRC;
+		
+		TBranch* dBranch_Chamber1_Multiplicity;
+		TBranch* dBranch_Chamber2_Multiplicity;
+		TBranch* dBranch_Chamber3_Multiplicity;
+		TBranch* dBranch_Chamber4_Multiplicity;
+		TBranch* dBranch_Chamber5_Multiplicity;
+		TBranch* dBranch_Chamber6_Multiplicity;
+
+		TBranch* dBranch_Single_FCAL_E1E9;
+		TBranch* dBranch_Single_FCAL_DOCA;
+		TBranch* dBranch_Single_FCAL_Energy;
+		TBranch* dBranch_Single_FCAL_NumBlocks;
 
 		const Float_t DIRC_BAR_Y[48] = { 
 -10.9715 , -14.4865 , -18.0015 , -21.5165 , -25.0315 , -28.5465 , -32.0615 , -35.5765 , -39.0915 , -42.6065 , -46.1215 , -49.6365 , -62.4417 , -65.9567 , -69.4717 , -72.9867 , -76.5017 , -80.0167 , -83.5317 , -87.0467 , -90.5617 , -94.0767 , -97.5917 , -101.107 , 10.528 , 14.043 , 17.558 , 21.073 , 24.588 , 28.103 , 31.618 , 35.133 , 38.648 , 42.163 , 45.678 , 49.193 , 62.0265 , 65.5415 , 69.0565 , 72.5715 , 76.0865 , 79.6015 , 83.1165 , 86.6315 , 90.1465 , 93.6615 , 97.1765 , 100.691};
@@ -357,6 +383,9 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 	locBranchName = "ChargedHypo__SumV_FCAL";
 	dBranch_SumV_FCAL = dTreeInterface->Get_Branch(locBranchName);
 
+	locBranchName = "ChargedHypo__NumBlocks_FCAL";
+	dBranch_NumBlocks_FCAL = dTreeInterface->Get_Branch(locBranchName);
+	
 	locBranchName = "ChargedHypo__Energy_ECAL";
 	dBranch_Energy_ECAL = dTreeInterface->Get_Branch(locBranchName);
 	
@@ -394,6 +423,37 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
         locBranchName = "ChargedHypo__Lp_DIRC";
         dBranch_Track_Lp_DIRC = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__Chamber1_Multiplicity";
+	dBranch_Chamber1_Multiplicity = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__Chamber2_Multiplicity";
+	dBranch_Chamber2_Multiplicity = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__Chamber3_Multiplicity";
+	dBranch_Chamber3_Multiplicity = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__Chamber4_Multiplicity";
+	dBranch_Chamber4_Multiplicity = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__Chamber5_Multiplicity";
+	dBranch_Chamber5_Multiplicity = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__Chamber6_Multiplicity";
+	dBranch_Chamber6_Multiplicity = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__FCAL_E1E9";
+	dBranch_Single_FCAL_E1E9 = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__FCAL_DOCA";
+	dBranch_Single_FCAL_DOCA = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__FCAL_Energy";
+	dBranch_Single_FCAL_Energy = dTreeInterface->Get_Branch(locBranchName);
+
+	locBranchName = "PIMUFeatures__FCAL_NumBlocks";
+	dBranch_Single_FCAL_Energy = dTreeInterface->Get_Branch(locBranchName);
+
 }
 
 inline void DChargedTrackHypothesis::ReInitialize(void)
@@ -708,6 +768,11 @@ inline Float_t DChargedTrackHypothesis::Get_Energy_ECAL(void) const
 	  return 0;
 }
 
+inline Float_t DChargedTrackHypothesis::Get_NumBlocks_FCAL(void) const
+{
+	return ((Float_t*)dBranch_NumBlocks_FCAL->GetAddress())[dMeasuredArrayIndex];
+}
+
 //SHOWER MATCHING:
 inline Float_t DChargedTrackHypothesis::Get_TrackBCAL_DeltaPhi(void) const
 {
@@ -819,5 +884,47 @@ inline Int_t DChargedTrackHypothesis::Get_DIRC_Bar_Number(void) const
 		return 23;
 }
 
+inline Float_t DChargedTrackHypothesis::Get_Chamber1_Multiplicity(void) const
+{
+	return((Float_t*)dBranch_Chamber1_Multiplicity->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_Chamber2_Multiplicity(void) const
+{
+	return((Float_t*)dBranch_Chamber2_Multiplicity->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_Chamber3_Multiplicity(void) const
+{
+	return((Float_t*)dBranch_Chamber3_Multiplicity->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_Chamber4_Multiplicity(void) const
+{
+	return((Float_t*)dBranch_Chamber4_Multiplicity->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_Chamber5_Multiplicity(void) const
+{
+	return((Float_t*)dBranch_Chamber5_Multiplicity->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_Chamber6_Multiplicity(void) const
+{
+	return((Float_t*)dBranch_Chamber6_Multiplicity->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Single_FCAL_E1E9(void) const
+{
+	return((Float_t*)dBranch_Single_FCAL_E1E9->GetAddress())[dMeasuredArrayIndex];
+}
+
+inline Float_t DChargedTrackHypothesis::Get_Single_FCAL_DOCA(void) const
+{
+	return((Float_t*)dBranch_Single_FCAL_DOCA->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_Single_FCAL_Energy(void) const
+{
+	return((Float_t*)dBranch_Single_FCAL_Energy->GetAddress())[dMeasuredArrayIndex];
+}
+inline Float_t DChargedTrackHypothesis::Get_Single_FCAL_NumBlocks(void) const
+{
+	return((Float_t*)dBranch_Single_FCAL_NumBlocks->GetAddress())[dMeasuredArrayIndex];
+}
 #endif //DChargedTrackHypothesis_h
 
