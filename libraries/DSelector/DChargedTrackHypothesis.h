@@ -237,6 +237,8 @@ DKinematicData(locTreeInterface, locBranchNamePrefix, locPID)
 
 inline void DChargedTrackHypothesis::Setup_Branches(void)
 {
+
+	std::cout << "setup branches" << std::endl;
 	string locBranchName;
 
 	//IDENTIFIERS / MATCHING
@@ -453,6 +455,7 @@ inline void DChargedTrackHypothesis::Setup_Branches(void)
 
 	locBranchName = "PIMUFeatures__FCAL_NumBlocks";
 	dBranch_Single_FCAL_Energy = dTreeInterface->Get_Branch(locBranchName);
+	std::cout << "finish set up branches" << std::endl;
 
 }
 
