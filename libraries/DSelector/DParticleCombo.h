@@ -51,6 +51,8 @@ class DParticleCombo
 		Bool_t Get_IsComboCut(void) const;
 		Bool_t Get_IsTrueCombo(void) const;
   Bool_t Get_IsTagm(void) const;
+  Bool_t Get_IsOverlap(void) const;
+  Int_t Get_Counter(void) const;
   Bool_t Get_IsBDTSignalCombo(void) const;
 		void Set_IsComboCut(Bool_t locIsComboCut) const;
 
@@ -128,7 +130,9 @@ class DParticleCombo
 		TBranch* dBranch_IsTrueCombo; //"IsThrownTopology" = kTRUE, each particle has the right PID, and the combo particle chain matches the thrown decay chain
 		TBranch* dBranch_IsBDTSignalCombo; //Similar to "IsTrueCombo", except other thrown topologies that decay to the DReaction topology are marked as signal
   TBranch* dBranch_IsTagm;
-  
+  TBranch* dBranch_IsOverlap;
+  TBranch* dBranch_Counter;
+    
 		TBranch* dBranch_RFTime_Measured;
 		TBranch* dBranch_RFTime_KinFit; //only if spacetime kinematic fit performed
 
@@ -169,7 +173,9 @@ inline void DParticleCombo::Setup_Branches(void)
 	dBranch_IsComboCut = dTreeInterface->Get_Branch("IsComboCut");
 	dBranch_IsTrueCombo = dTreeInterface->Get_Branch("IsTrueCombo");
 	dBranch_IsBDTSignalCombo = dTreeInterface->Get_Branch("IsBDTSignalCombo");
-	dBranch_IsTagm = dTreeInterface->Get_Branch("Beam_isTAGM");
+	dBranch_IsTagm = dTreeInterface->Get_Branch("Beam__IsTAGM");
+	dBranch_IsOverlap = dTreeInterface->Get_Branch("Beam__IsOverlap");
+	dBranch_Counter = dTreeInterface->Get_Branch("Beam__Counter");
 	
 	// RF:
 	dBranch_RFTime_Measured = dTreeInterface->Get_Branch("RFTime_Measured");
@@ -215,9 +221,22 @@ inline Bool_t DParticleCombo::Get_IsTagm(void) const
 {
   std::cout << "Got to isTagm!" << endl;
   std::cout << "dComboIndex: " << dComboIndex << endl;
-  cout << "IsTagm result: " << dBranch_IsTagm->GetAddress() << endl;
+  //cout << "IsTagm result: " << dBranch_IsTagm->GetAddress() << endl;
   return ((Bool_t*)dBranch_IsTagm->GetAddress())[dComboIndex];
   
+}
+
+inline Bool_t DParticleCombo::Get_IsOverlap(void) const
+{
+   
+  return ((Bool_t*)dBranch_IsOverlap->GetAddress())[dComboIndex];
+
+}
+
+
+inline Int_t DParticleCombo::Get_Counter(void) const
+{
+  return ((Int_t*)dBranch_Counter->GetAddress())[dComboIndex];
 }
 
 inline Bool_t DParticleCombo::Get_IsTrueCombo(void) const
