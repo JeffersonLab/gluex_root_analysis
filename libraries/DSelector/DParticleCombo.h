@@ -50,7 +50,10 @@ class DParticleCombo
 		// COMBO INFO:
 		Bool_t Get_IsComboCut(void) const;
 		Bool_t Get_IsTrueCombo(void) const;
-		Bool_t Get_IsBDTSignalCombo(void) const;
+  Bool_t Get_IsTagm(void) const;
+  Bool_t Get_IsOverlap(void) const;
+  Int_t Get_Counter(void) const;
+  Bool_t Get_IsBDTSignalCombo(void) const;
 		void Set_IsComboCut(Bool_t locIsComboCut) const;
 
 		// RF: //Quoted at the center of the target
@@ -126,7 +129,10 @@ class DParticleCombo
 		TBranch* dBranch_IsComboCut; //if true, combo has been previously cut (all kFALSE originally, user can apply cuts in TSelector, change this flag, and output new TTree)
 		TBranch* dBranch_IsTrueCombo; //"IsThrownTopology" = kTRUE, each particle has the right PID, and the combo particle chain matches the thrown decay chain
 		TBranch* dBranch_IsBDTSignalCombo; //Similar to "IsTrueCombo", except other thrown topologies that decay to the DReaction topology are marked as signal
-
+  TBranch* dBranch_IsTagm;
+  TBranch* dBranch_IsOverlap;
+  TBranch* dBranch_Counter;
+    
 		TBranch* dBranch_RFTime_Measured;
 		TBranch* dBranch_RFTime_KinFit; //only if spacetime kinematic fit performed
 
@@ -136,7 +142,8 @@ class DParticleCombo
 		//Target not necessarily in the particle combo, so add the info here (for convenience)
 		Particle_t dTargetPID;
 		TVector3 dTargetCenter;
-
+  
+  
 		//Kinfit constraint info
 		string dKinFitConstraints;
 		size_t dNumKinFitConstraints;
@@ -166,7 +173,10 @@ inline void DParticleCombo::Setup_Branches(void)
 	dBranch_IsComboCut = dTreeInterface->Get_Branch("IsComboCut");
 	dBranch_IsTrueCombo = dTreeInterface->Get_Branch("IsTrueCombo");
 	dBranch_IsBDTSignalCombo = dTreeInterface->Get_Branch("IsBDTSignalCombo");
-
+	dBranch_IsTagm = dTreeInterface->Get_Branch("Beam__IsTAGM");
+	dBranch_IsOverlap = dTreeInterface->Get_Branch("Beam__IsOverlap");
+	dBranch_Counter = dTreeInterface->Get_Branch("Beam__Counter");
+	
 	// RF:
 	dBranch_RFTime_Measured = dTreeInterface->Get_Branch("RFTime_Measured");
 	dBranch_RFTime_KinFit = dTreeInterface->Get_Branch("RFTime_KinFit");
@@ -205,6 +215,28 @@ inline void DParticleCombo::ReInitialize(void)
 inline Bool_t DParticleCombo::Get_IsComboCut(void) const
 {
 	return ((Bool_t*)dBranch_IsComboCut->GetAddress())[dComboIndex];
+}
+
+inline Bool_t DParticleCombo::Get_IsTagm(void) const
+{
+  std::cout << "Got to isTagm!" << endl;
+  std::cout << "dComboIndex: " << dComboIndex << endl;
+  //cout << "IsTagm result: " << dBranch_IsTagm->GetAddress() << endl;
+  return ((Bool_t*)dBranch_IsTagm->GetAddress())[dComboIndex];
+  
+}
+
+inline Bool_t DParticleCombo::Get_IsOverlap(void) const
+{
+   
+  return ((Bool_t*)dBranch_IsOverlap->GetAddress())[dComboIndex];
+
+}
+
+
+inline Int_t DParticleCombo::Get_Counter(void) const
+{
+  return ((Int_t*)dBranch_Counter->GetAddress())[dComboIndex];
 }
 
 inline Bool_t DParticleCombo::Get_IsTrueCombo(void) const

@@ -3,6 +3,8 @@
 PACKAGENAME="DSelector"
 DIRNAME=${PACKAGENAME}
 
+echo $(pwd)
+
 if [  -d "$DIRNAME" ]; then
 	echo Need to create temporary directory $DIRNAME but it already exists. Either remove it, or run this script in a different folder. Aborting.
 	exit

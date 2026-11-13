@@ -27,8 +27,9 @@ class DBeamParticle : public DKinematicData
 		DBeamParticle(DTreeInterface* locTreeInterface, string locBranchNamePrefix, Particle_t locPID = UnknownParticle);
 		~DBeamParticle(void){}
 
-		Bool_t Get_IsGenerator(void) const;
-		Int_t Get_BeamID(void) const;
+  Bool_t Get_IsGenerator(void) const;
+  //Bool_t Get_IsTagm(void) const;
+  Int_t Get_BeamID(void) const;
 
 		//GET ID (Overriding base class)
 		Int_t Get_ID(void) const{return Get_BeamID();}
@@ -46,6 +47,8 @@ class DBeamParticle : public DKinematicData
 			//must store branch pointer instead
 
 		TBranch* dBranch_IsGenerator;
+  //TBranch* dBranch_IsTagm;
+  
 };
 
 /******************************************************************** CONSTRUCTOR *********************************************************************/
@@ -64,6 +67,7 @@ inline void DBeamParticle::Setup_Branches(void)
 		return;
 
 	dBranch_IsGenerator = dTreeInterface->Get_Branch("Beam__IsGenerator");
+	//dBranch_IsTagm = dTreeInterface->Get_Branch("Beam__isTAGM");
 }
 
 inline void DBeamParticle::ReInitialize(void)
@@ -80,6 +84,14 @@ inline Bool_t DBeamParticle::Get_IsGenerator(void) const
 		return kTRUE;
 	return ((Bool_t*)dBranch_IsGenerator->GetAddress())[dMeasuredArrayIndex];
 }
+
+/*
+inline Bool_t DBeamParticle::Get_IsTagm(void) const
+{
+  //cout << "Got here!" << endl;
+        return ((Bool_t*)dBranch_IsTagm->GetAddress())[dMeasuredArrayIndex];
+}
+*/
 
 inline Int_t DBeamParticle::Get_BeamID(void) const
 {
